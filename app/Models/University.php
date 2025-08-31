@@ -3,16 +3,31 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class University extends Model
 {
     protected $fillable = [
-        'name','slug','code','logo_path','favicon_path','primary_color','secondary_color','is_active'
+        'name',
+        'address',
+        'phone',
+        'logo_path',
+        'is_active', // ✅ أضفنا الحقل هنا
     ];
 
-    public function colleges() { return $this->hasMany(College::class); }
+    protected $casts = [
+        'is_active' => 'boolean', // ✅ يجعل القيمة Boolean تلقائيًا
+    ];
 
-    // مخرجات URL للصور
-    public function getLogoUrlAttribute()     { return $this->logo_path ? asset('storage/'.$this->logo_path) : null; }
-    public function getFaviconUrlAttribute()  { return $this->favicon_path ? asset('storage/'.$this->favicon_path) : null; }
+    public function colleges()
+    {
+        return $this->hasMany(College::class);
+    }
+
+    public function getLogoUrlAttribute(): ?string
+    {
+        return $this->logo_path
+            ? Storage::url($this->logo_path)
+            : asset('images/logo.png');
+    }
 }
