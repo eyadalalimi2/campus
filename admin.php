@@ -16,17 +16,17 @@ use App\Http\Controllers\Admin\AssetController;
 
 /*
 |--------------------------------------------------------------------------
-| Admin Routes (prefix=admin, name=admin.) via RouteServiceProvider
+| Admin Routes  (prefix=admin, name=admin.) from RouteServiceProvider
 |--------------------------------------------------------------------------
+| لا تضف prefix/name هنا. RouteServiceProvider يطبقها مسبقًا.
 */
 
 // ضيوف الأدمن
 Route::middleware('guest:admin')->group(function () {
-    Route::get('/login',  [AdminAuthController::class, 'showLogin'])->name('login');
+    Route::get('/login', [AdminAuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AdminAuthController::class, 'login'])->name('login.post');
 });
 
-// منطقة الإدارة (محميّة)
 // منطقة الإدارة (محميّة)
 Route::middleware('auth:admin')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');

@@ -8,34 +8,26 @@ use Illuminate\Support\Facades\Auth;
 
 class AdminAuthController extends Controller
 {
-    public function showLogin()
-    {
-        return view('admin.auth.login');
-    }
+    public function showLogin() { return view('admin.auth.login'); }
 
-    public function login(Request $request)
-    {
-        $data = $request->validate([
-            'email'    => ['required','email'],
-            'password' => ['required','string'],
+    public function login(Request $r) {
+        $r->validate([
+            'email' => 'required|email',
+            'password' => 'required|min:6',
+            'remember' => 'nullable|boolean'
         ]);
 
-        $remember = $request->boolean('remember');
-
-        if (Auth::guard('admin')->attempt($data, $remember)) {
-            $request->session()->regenerate();
+        if (Auth::guard('admin')->attempt($r->only('email','password'), (bool)$r->remember)) {
+            $r->session()->regenerate();
             return redirect()->route('admin.dashboard');
-            // أو redirect()->intended(route('admin.dashboard'));
         }
-
-        return back()->withErrors(['email' => 'بيانات الدخول غير صحيحة.'])->withInput();
+        return back()->withErrors(['email'=>'بيانات الدخول غير صحيحة'])->onlyInput('email');
     }
 
-    public function logout(Request $request)
-    {
+    public function logout(Request $r) {
         Auth::guard('admin')->logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        $r->session()->invalidate();
+        $r->session()->regenerateToken();
         return redirect()->route('admin.login');
     }
 }
