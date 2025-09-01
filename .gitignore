@@ -16,3 +16,14 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+# Laravel runtime/cache
+/storage/framework/* 
+/storage/logs/*
+/bootstrap/cache/*
+
+# إبقاء مجلد التخزين العام فقط
+!/storage/app/public
+!/storage/*.gitignore
+!/storage/app/*.gitignore
+!/storage/framework/*.gitignore
+!/storage/logs/*.gitignore
