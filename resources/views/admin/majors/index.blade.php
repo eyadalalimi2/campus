@@ -34,7 +34,7 @@
 <div class="table-responsive">
   <table class="table table-hover bg-white">
     <thead class="table-light">
-      <tr><th>التخصص</th><th>الكلية</th><th>الجامعة</th><th>الرمز</th><th>الحالة</th><th class="text-center">إجراءات</th></tr>
+      <tr><th>التخصص</th><th>الكلية</th><th>الجامعة</th><th>الحالة</th><th class="text-center">إجراءات</th></tr>
     </thead>
     <tbody>
       @forelse($majors as $m)
@@ -42,7 +42,6 @@
         <td>{{ $m->name }}</td>
         <td>{{ $m->college->name }}</td>
         <td>{{ $m->college->university->name }}</td>
-        <td>{{ $m->code }}</td>
         <td>{!! $m->is_active ? '<span class="badge bg-success">مفعل</span>' : '<span class="badge bg-secondary">موقوف</span>' !!}</td>
         <td class="text-center">
           <a class="btn btn-sm btn-outline-primary" href="{{ route('admin.majors.edit',$m) }}">تعديل</a>
