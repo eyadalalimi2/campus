@@ -27,7 +27,7 @@ class ContentController extends Controller
         if ($r->filled('doctor_id'))   $q->where('doctor_id',$r->doctor_id);
         if ($s = $r->get('q'))         $q->where(fn($w)=>$w->where('title','like',"%$s%")->orWhere('description','like',"%$s%"));
 
-        $contents = $q->withQueryString()->paginate(15);
+        $contents = $q->paginate(15)->withQueryString();
 
         $universities = University::orderBy('name')->get();
         $colleges     = $r->filled('university_id') ? College::where('university_id',$r->university_id)->orderBy('name')->get() : College::orderBy('name')->get();
