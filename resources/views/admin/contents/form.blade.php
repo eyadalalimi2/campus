@@ -1,141 +1,223 @@
-@php $isEdit = isset($content) && $content; @endphp
+@php
+  $type   = old('type', $content->type ?? 'file');
+  $scope  = old('scope', $content->scope ?? 'university');
+
+  $selUni = old('university_id', $content->university_id ?? '');
+  $selCol = old('college_id',    $content->college_id    ?? '');
+  $selMaj = old('major_id',      $content->major_id      ?? '');
+  $selMat = old('material_id',   $content->material_id   ?? '');
+
+  $selectedDevices = old('device_ids', $selectedDevices ?? []);
+@endphp
 
 <div class="row g-3">
 
   <div class="col-md-6">
-    <label class="form-label">العنوان</label>
-    <input type="text" name="title" class="form-control" required value="{{ old('title', $content->title ?? '') }}">
+    <label class="form-label">العنوان <span class="text-danger">*</span></label>
+    <input type="text" name="title" class="form-control" required
+           value="{{ old('title', $content->title ?? '') }}">
   </div>
 
   <div class="col-md-3">
-    <label class="form-label">نوع المحتوى</label>
-    <select name="type" id="type_select" class="form-select" onchange="toggleType()" required>
-      @php $t = old('type', $content->type ?? 'file'); @endphp
-      <option value="file"  @selected($t==='file')>ملف</option>
-      <option value="video" @selected($t==='video')>فيديو (YouTube)</option>
-      <option value="link"  @selected($t==='link')>رابط خارجي</option>
+    <label class="form-label">النوع <span class="text-danger">*</span></label>
+    <select name="type" id="type" class="form-select" required onchange="cnt_switchType()">
+      <option value="file"  @selected($type==='file')>ملف</option>
+      <option value="video" @selected($type==='video')>فيديو (رابط)</option>
+      <option value="link"  @selected($type==='link')>رابط خارجي</option>
     </select>
   </div>
 
   <div class="col-md-3">
-    <label class="form-label">النطاق</label>
-    <select name="scope" id="scope_select" class="form-select" onchange="toggleScope()" required>
-      @php $sc = old('scope', $content->scope ?? 'university'); @endphp
-      <option value="university" @selected($sc==='university')>خاص بجامعة</option>
-      <option value="global"     @selected($sc==='global')>عام (كل الجامعات)</option>
-    </select>
+    <label class="form-label">الحالة</label>
+    <div class="form-check pt-2">
+      <input type="hidden" name="is_active" value="0">
+      <input class="form-check-input" type="checkbox" name="is_active" value="1" id="c_active"
+        {{ old('is_active', $content->is_active ?? true) ? 'checked' : '' }}>
+      <label class="form-check-label" for="c_active">مفعل</label>
+    </div>
   </div>
 
+ 
+
+  {{-- الملف --}}
+  <div class="col-md-12 cnt-type-file">
+    <label class="form-label">الملف</label>
+    <input type="file" name="file" class="form-control"
+           accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.7z,.rar,.tar,.gz">
+    @if(!empty($content?->file_url))
+      <a href="{{ $content->file_url }}" target="_blank" class="small d-block mt-2">الملف الحالي</a>
+    @endif
+    <div class="form-text">مسموح: PDF/DOC/DOCX/XLS/XLSX/PPT/PPTX/TXT/ZIP/7Z/RAR/TAR/GZ (حتى 100MB).</div>
+  </div>
+
+  {{-- الرابط (لفيديو/رابط) --}}
+  <div class="col-md-12 cnt-type-link">
+    <label class="form-label">الرابط</label>
+    <input type="url" name="source_url" class="form-control"
+           placeholder="https://www.youtube.com/watch?v=... أو https://example.com/page"
+           value="{{ old('source_url', $content->source_url ?? '') }}">
+  </div>
+
+  {{-- الوصف --}}
   <div class="col-12">
-    <label class="form-label">الوصف (اختياري)</label>
+    <label class="form-label">الوصف</label>
     <textarea name="description" class="form-control" rows="3">{{ old('description', $content->description ?? '') }}</textarea>
   </div>
 
-  <!-- ملف -->
-  <div class="col-md-6 type-file">
-    <label class="form-label">الملف</label>
-    <input type="file" name="file" class="form-control" @if(!$isEdit || ($isEdit && ($content->type==='file' && !$content->file_path))) required @endif>
-    @if(!empty($content?->file_url))
-      <div class="form-text"><a href="{{ $content->file_url }}" target="_blank" download>تنزيل الملف الحالي</a></div>
-    @endif
+  {{-- النطاق --}}
+  <div class="col-md-3">
+    <label class="form-label">النطاق <span class="text-danger">*</span></label>
+    <select name="scope" id="scope_select" class="form-select" required onchange="cnt_toggleScope()">
+      <option value="university" @selected($scope==='university')>خاص بجامعة</option>
+      <option value="global"     @selected($scope==='global')>عام</option>
+    </select>
   </div>
 
-  <!-- رابط/فيديو -->
-  <div class="col-md-6 type-link">
-    <label class="form-label">الرابط (YouTube/خارجي)</label>
-    <input type="url" name="source_url" class="form-control" value="{{ old('source_url', $content->source_url ?? '') }}">
-  </div>
-
-  <!-- نطاق الجامعة -->
-  <div class="col-12 scope-university"><hr><strong>تحديد الجامعة/الكلية/التخصص (للمحتوى الخاص)</strong></div>
-
-  <div class="col-md-4 scope-university">
+  {{-- التدرّج --}}
+  <div class="col-md-3 cnt-scope-university">
     <label class="form-label">الجامعة</label>
-    <select name="university_id" id="university_id" class="form-select">
+    <select name="university_id" id="university_select" class="form-select">
       <option value="">— اختر —</option>
-      @foreach(\App\Models\University::orderBy('name')->get() as $u)
-        <option value="{{ $u->id }}" @selected(old('university_id', $content->university_id ?? '')==$u->id)>{{ $u->name }}</option>
+      @foreach($universities as $u)
+        <option value="{{ $u->id }}" @selected($selUni==$u->id)>{{ $u->name }}</option>
       @endforeach
     </select>
   </div>
 
-  <div class="col-md-4 scope-university">
-    <label class="form-label">الكلية (اختياري)</label>
-    <select name="college_id" id="college_id" class="form-select">
+  <div class="col-md-3 cnt-scope-university">
+    <label class="form-label">الكلية</label>
+    <select name="college_id" id="college_select" class="form-select">
       <option value="">— اختر —</option>
-      @foreach(\App\Models\College::orderBy('name')->get() as $c)
-        <option value="{{ $c->id }}" @selected(old('college_id', $content->college_id ?? '')==$c->id) data-university="{{ $c->university_id }}">
-          {{ $c->name }} ({{ $c->university->name }})
+      @foreach($colleges as $c)
+        <option value="{{ $c->id }}" data-university="{{ $c->university_id }}" @selected($selCol==$c->id)>
+          {{ $c->name }}
         </option>
       @endforeach
     </select>
   </div>
 
-  <div class="col-md-4 scope-university">
-    <label class="form-label">التخصص (اختياري)</label>
-    <select name="major_id" id="major_id" class="form-select">
+  <div class="col-md-3 cnt-scope-university">
+    <label class="form-label">التخصص</label>
+    <select name="major_id" id="major_select" class="form-select">
       <option value="">— اختر —</option>
-      @foreach(\App\Models\Major::with('college')->orderBy('name')->get() as $m)
-        <option value="{{ $m->id }}" @selected(old('major_id', $content->major_id ?? '')==$m->id) data-college="{{ $m->college_id }}">
-          {{ $m->name }} ({{ $m->college->name }})
+      @foreach($majors as $m)
+        <option value="{{ $m->id }}" data-college="{{ $m->college_id }}" @selected($selMaj==$m->id)>
+          {{ $m->name }}
         </option>
       @endforeach
     </select>
   </div>
 
-  <!-- ربط دكتور (اختياري) -->
-  <div class="col-12"><hr><strong>الدكتور المرتبط (اختياري)</strong></div>
-  <div class="col-md-6">
+  <div class="col-md-3 cnt-scope-university">
+    <label class="form-label">المادة</label>
+    <select name="material_id" id="material_select" class="form-select">
+      <option value="">— اختر —</option>
+      @foreach($materials as $mat)
+        <option value="{{ $mat->id }}" data-major="{{ $mat->major_id }}" @selected($selMat==$mat->id)>
+          {{ $mat->name }}
+        </option>
+      @endforeach
+    </select>
+  </div>
+ {{-- الدكتور --}}
+  <div class="col-md-4">
     <label class="form-label">الدكتور</label>
     <select name="doctor_id" class="form-select">
       <option value="">— بدون —</option>
-      @foreach(\App\Models\Doctor::orderBy('name')->get() as $d)
-        <option value="{{ $d->id }}" @selected(old('doctor_id', $content->doctor_id ?? '')==$d->id)>{{ $d->name }}</option>
+      @foreach($doctors as $d)
+        <option value="{{ $d->id }}" @selected(old('doctor_id', $content->doctor_id ?? '') == $d->id)>{{ $d->name }}</option>
       @endforeach
     </select>
   </div>
-
-  <div class="col-md-3 d-flex align-items-end">
-    <div class="form-check">
-      <input class="form-check-input" type="checkbox" name="is_active" value="1" id="is_active"
-        {{ old('is_active', $content->is_active ?? true) ? 'checked':'' }}>
-      <label class="form-check-label" for="is_active">مفعل</label>
-    </div>
+  {{-- الأجهزة المرتبطة بالمادة --}}
+  <div class="col-md-6">
+    <label class="form-label">الأجهزة المرتبطة بالمادة</label>
+    <select name="device_ids[]" id="device_select" class="form-select" multiple size="6">
+      @foreach($devices as $d)
+        <option value="{{ $d->id }}" data-material="{{ $d->material_id }}"
+          @selected(in_array($d->id, $selectedDevices))>
+          {{ $d->name }}
+        </option>
+      @endforeach
+    </select>
+    <div class="form-text">اختر أجهزة تابعة للمادة المختارة.</div>
   </div>
+
 </div>
 
 @push('scripts')
 <script>
-function toggleType(){
-  const t = document.getElementById('type_select').value;
-  document.querySelectorAll('.type-file').forEach(el => el.style.display = (t==='file'?'':'none'));
-  document.querySelectorAll('.type-link').forEach(el => el.style.display = (t!=='file'?'':'none'));
+function cnt_switchType(){
+  const t = document.getElementById('type').value;
+  document.querySelector('.cnt-type-file').style.display = (t==='file') ? 'block' : 'none';
+  document.querySelector('.cnt-type-link').style.display = (t==='video' || t==='link') ? 'block' : 'none';
 }
 
-function toggleScope(){
+function cnt_toggleScope(){
   const sc = document.getElementById('scope_select').value;
-  document.querySelectorAll('.scope-university').forEach(el => el.style.display = (sc==='university'?'':'none'));
+  document.querySelectorAll('.cnt-scope-university').forEach(e => e.style.display = (sc==='university') ? 'block' : 'none');
 }
 
-function filterCollegesByUniversity(){
-  const uniId = document.getElementById('university_id').value;
-  document.querySelectorAll('#college_id option[data-university]').forEach(o=>{
-    o.hidden = (uniId && o.dataset.university !== uniId);
+function cnt_cascade(){
+  const uni = document.getElementById('university_select')?.value || '';
+  const col = document.getElementById('college_select');
+  const maj = document.getElementById('major_select');
+  const mat = document.getElementById('material_select');
+  const dev = document.getElementById('device_select');
+
+  // الكليات حسب الجامعة
+  if(col){
+    [...col.options].forEach(o=>{
+      if(!o.value) return;
+      const show = !uni || (o.dataset.university === uni);
+      o.hidden = !show; if(!show && o.selected) o.selected = false;
+    });
+  }
+
+  // التخصصات حسب الكلية
+  const colVal = col?.value || '';
+  if(maj){
+    [...maj.options].forEach(o=>{
+      if(!o.value) return;
+      const show = !colVal || (o.dataset.college === colVal);
+      o.hidden = !show; if(!show && o.selected) o.selected = false;
+    });
+  }
+
+  // المواد حسب التخصص
+  const majVal = maj?.value || '';
+  if(mat){
+    [...mat.options].forEach(o=>{
+      if(!o.value) return;
+      const show = !majVal || (o.dataset.major === majVal);
+      o.hidden = !show; if(!show && o.selected) o.selected = false;
+    });
+  }
+
+  // الأجهزة حسب المادة
+  const matVal = mat?.value || '';
+  if(dev){
+    [...dev.options].forEach(o=>{
+      if(!o.value) return;
+      const show = !matVal || (o.dataset.material === matVal);
+      o.hidden = !show; if(!show && o.selected) o.selected = false;
+    });
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  cnt_switchType();
+  cnt_toggleScope();
+  cnt_cascade();
+
+  ['type','scope_select','university_select','college_select','major_select','material_select'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.addEventListener('change', function(){
+      if(id==='type') cnt_switchType();
+      else { cnt_cascade(); if(id==='scope_select') cnt_toggleScope(); }
+    });
   });
-}
-function filterMajorsByCollege(){
-  const colId = document.getElementById('college_id').value;
-  document.querySelectorAll('#major_id option[data-college]').forEach(o=>{
-    o.hidden = (colId && o.dataset.college !== colId);
-  });
-}
-
-document.getElementById('type_select').addEventListener('change', toggleType);
-document.getElementById('scope_select').addEventListener('change', toggleScope);
-document.getElementById('university_id').addEventListener('change', filterCollegesByUniversity);
-document.getElementById('college_id').addEventListener('change', filterMajorsByCollege);
-
-// تفعيل عند التحميل
-toggleType(); toggleScope(); filterCollegesByUniversity(); filterMajorsByCollege();
+});
 </script>
 @endpush
