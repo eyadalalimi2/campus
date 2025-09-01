@@ -13,7 +13,7 @@
 
         {{-- الشعار --}}
         <img src="{{ asset('storage/images/icon.png') }}" alt="شعار المناهج الأكاديمية"
-             class="d-block mx-auto mb-3" style="height:64px;width:auto;">
+             class="d-block mx-auto mb-3" style="height:150px;width:auto;">
 
         <h5 class="mb-3 text-center">تسجيل دخول الأدمن</h5>
 
