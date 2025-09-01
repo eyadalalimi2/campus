@@ -1,0 +1,36 @@
+[2025-09-01 01:51:39] local.ERROR: Call to undefined function Illuminate\Filesystem\symlink() {"exception":"[object] (Error(code: 0): Call to undefined function Illuminate\\Filesystem\\symlink() at /home/u127052915/domains/obdcodehub.com/campus/vendor/laravel/framework/src/Illuminate/Filesystem/Filesystem.php:355)
+[stacktrace]
+#0 /home/u127052915/domains/obdcodehub.com/campus/vendor/laravel/framework/src/Illuminate/Foundation/Console/StorageLinkCommand.php(49): Illuminate\\Filesystem\\Filesystem->link()
+#1 /home/u127052915/domains/obdcodehub.com/campus/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(36): Illuminate\\Foundation\\Console\\StorageLinkCommand->handle()
+#2 /home/u127052915/domains/obdcodehub.com/campus/vendor/laravel/framework/src/Illuminate/Container/Util.php(41): Illuminate\\Container\\BoundMethod::Illuminate\\Container\\{closure}()
+#3 /home/u127052915/domains/obdcodehub.com/campus/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(93): Illuminate\\Container\\Util::unwrapIfClosure()
+#4 /home/u127052915/domains/obdcodehub.com/campus/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(35): Illuminate\\Container\\BoundMethod::callBoundMethod()
+#5 /home/u127052915/domains/obdcodehub.com/campus/vendor/laravel/framework/src/Illuminate/Container/Container.php(662): Illuminate\\Container\\BoundMethod::call()
+#6 /home/u127052915/domains/obdcodehub.com/campus/vendor/laravel/framework/src/Illuminate/Console/Command.php(211): Illuminate\\Container\\Container->call()
+#7 /home/u127052915/domains/obdcodehub.com/campus/vendor/symfony/console/Command/Command.php(326): Illuminate\\Console\\Command->execute()
+#8 /home/u127052915/domains/obdcodehub.com/campus/vendor/laravel/framework/src/Illuminate/Console/Command.php(180): Symfony\\Component\\Console\\Command\\Command->run()
+#9 /home/u127052915/domains/obdcodehub.com/campus/vendor/symfony/console/Application.php(1096): Illuminate\\Console\\Command->run()
+#10 /home/u127052915/domains/obdcodehub.com/campus/vendor/symfony/console/Application.php(324): Symfony\\Component\\Console\\Application->doRunCommand()
+#11 /home/u127052915/domains/obdcodehub.com/campus/vendor/symfony/console/Application.php(175): Symfony\\Component\\Console\\Application->doRun()
+#12 /home/u127052915/domains/obdcodehub.com/campus/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(201): Symfony\\Component\\Console\\Application->run()
+#13 /home/u127052915/domains/obdcodehub.com/campus/artisan(35): Illuminate\\Foundation\\Console\\Kernel->handle()
+#14 {main}
+"} 
+[2025-09-01 01:52:21] local.ERROR: Call to undefined function Illuminate\Filesystem\symlink() {"exception":"[object] (Error(code: 0): Call to undefined function Illuminate\\Filesystem\\symlink() at /home/u127052915/domains/obdcodehub.com/campus/vendor/laravel/framework/src/Illuminate/Filesystem/Filesystem.php:355)
+[stacktrace]
+#0 /home/u127052915/domains/obdcodehub.com/campus/vendor/laravel/framework/src/Illuminate/Foundation/Console/StorageLinkCommand.php(49): Illuminate\\Filesystem\\Filesystem->link()
+#1 /home/u127052915/domains/obdcodehub.com/campus/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(36): Illuminate\\Foundation\\Console\\StorageLinkCommand->handle()
+#2 /home/u127052915/domains/obdcodehub.com/campus/vendor/laravel/framework/src/Illuminate/Container/Util.php(41): Illuminate\\Container\\BoundMethod::Illuminate\\Container\\{closure}()
+#3 /home/u127052915/domains/obdcodehub.com/campus/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(93): Illuminate\\Container\\Util::unwrapIfClosure()
+#4 /home/u127052915/domains/obdcodehub.com/campus/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(35): Illuminate\\Container\\BoundMethod::callBoundMethod()
+#5 /home/u127052915/domains/obdcodehub.com/campus/vendor/laravel/framework/src/Illuminate/Container/Container.php(662): Illuminate\\Container\\BoundMethod::call()
+#6 /home/u127052915/domains/obdcodehub.com/campus/vendor/laravel/framework/src/Illuminate/Console/Command.php(211): Illuminate\\Container\\Container->call()
+#7 /home/u127052915/domains/obdcodehub.com/campus/vendor/symfony/console/Command/Command.php(326): Illuminate\\Console\\Command->execute()
+#8 /home/u127052915/domains/obdcodehub.com/campus/vendor/laravel/framework/src/Illuminate/Console/Command.php(180): Symfony\\Component\\Console\\Command\\Command->run()
+#9 /home/u127052915/domains/obdcodehub.com/campus/vendor/symfony/console/Application.php(1096): Illuminate\\Console\\Command->run()
+#10 /home/u127052915/domains/obdcodehub.com/campus/vendor/symfony/console/Application.php(324): Symfony\\Component\\Console\\Application->doRunCommand()
+#11 /home/u127052915/domains/obdcodehub.com/campus/vendor/symfony/console/Application.php(175): Symfony\\Component\\Console\\Application->doRun()
+#12 /home/u127052915/domains/obdcodehub.com/campus/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(201): Symfony\\Component\\Console\\Application->run()
+#13 /home/u127052915/domains/obdcodehub.com/campus/artisan(35): Illuminate\\Foundation\\Console\\Kernel->handle()
+#14 {main}
+"} 

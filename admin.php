@@ -50,5 +50,5 @@ Route::middleware('auth:admin')->group(function () {
 
     Route::get('/import',                   [ImportController::class, 'index'])->name('import.index');
     Route::post('/import/run',              [ImportController::class, 'run'])->name('import.run');
-    Route::get('/import/sample/{type}',     [ImportController::class, 'sample'])->name('import.sample');
+    Route::get('/import/sample/{type}',    [ImportController::class, 'sample'])->name('import.sample');
 });
