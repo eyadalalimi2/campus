@@ -44,7 +44,6 @@ Route::middleware('auth:admin')->group(function () {
 
     // الثيمات + الاستيراد
     Route::get('/themes',                   [ThemeController::class, 'index'])->name('themes.index');
-    Route::post('/themes',                  [ThemeController::class, 'store'])->name('themes.store');
     Route::get('/themes/{university}/edit', [ThemeController::class, 'edit'])->name('themes.edit');
     Route::put('/themes/{university}',      [ThemeController::class, 'update'])->name('themes.update');
 

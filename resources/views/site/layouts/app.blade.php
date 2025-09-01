@@ -2,19 +2,62 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>@yield('title','الموقع')</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {{-- Bootstrap + Icons --}}
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
-  @stack('styles')
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
+  {{-- تطبيق الثيم على الموقع فقط --}}
+  <style>
+    :root{
+      --bs-primary: {{ $themeVars['primary'] }};
+      --bs-secondary: {{ $themeVars['secondary'] }};
+    }
+    @if(($themeVars['mode'] ?? 'auto') === 'dark')
+      body{ background:#0f1520; color:#e5e7eb; }
+      .navbar, .card{ background:#111827; color:#e5e7eb; }
+    @endif
+  </style>
 </head>
 <body>
-  @include('site.partials.header')
+
+  {{-- هيدر الموقع --}}
+  <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center gap-2" href="{{ route('site.home') }}">
+        <img src="{{ $themeVars['logoUrl'] }}" alt="Logo" style="height:40px">
+        <span class="fw-bold">{{ $currentUniversity->name ?? 'الجامعات' }}</span>
+      </a>
+
+      {{-- اختيار جامعة (اختياري) --}}
+      <form method="GET" action="{{ url()->current() }}" class="ms-auto d-flex gap-2">
+        <select name="university_id" class="form-select form-select-sm" onchange="this.form.submit()">
+          <option value="">— اختر جامعة —</option>
+          @foreach(\App\Models\University::where('is_active',true)->orderBy('name')->get() as $u)
+            <option value="{{ $u->id }}" @selected(request('university_id')==$u->id)>
+              {{ $u->name }}
+            </option>
+          @endforeach
+        </select>
+      </form>
+    </div>
+  </nav>
 
   <main class="py-4">
-    @yield('content')
+    <div class="container">
+      @yield('content')
+    </div>
   </main>
 
-  @include('site.partials.footer')
+  <footer class="border-top py-3">
+    <div class="container text-muted small d-flex justify-content-between">
+      <span>© {{ date('Y') }} — بوابة الطلاب</span>
+      @if($currentUniversity)
+        <span>{{ $currentUniversity->address }} — {{ $currentUniversity->phone }}</span>
+      @endif
+    </div>
+  </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   @stack('scripts')
