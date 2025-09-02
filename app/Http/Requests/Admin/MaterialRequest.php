@@ -7,13 +7,16 @@ use Illuminate\Validation\Rule;
 
 class MaterialRequest extends FormRequest
 {
-    public function authorize(): bool { return auth('admin')->check(); }
+    public function authorize(): bool
+    {
+        return auth('admin')->check();
+    }
 
     public function rules(): array
     {
         return [
             'name'  => 'required|string|max:200',
-            'code'  => 'nullable|string|max:50',
+
             'scope' => ['required', Rule::in(['global','university'])],
 
             'university_id' => 'nullable|required_if:scope,university|exists:universities,id',

@@ -1,5 +1,5 @@
 @extends('admin.layouts.app')
-@section('title','تعديل جهاز/مهمة')
+@section('title','تعديل جهاز')
 @section('content')
 <h4 class="mb-3">تعديل: {{ $device->name }}</h4>
 <form action="{{ route('admin.devices.update',$device) }}" method="POST" class="card p-3">

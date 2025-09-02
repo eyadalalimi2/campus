@@ -13,7 +13,6 @@ class DeviceRequest extends FormRequest
         return [
             'material_id' => 'required|exists:materials,id',
             'name'        => 'required|string|max:200',
-            'code'        => 'nullable|string|max:50',
             'description' => 'nullable|string',
             'is_active'   => 'nullable|boolean',
         ];

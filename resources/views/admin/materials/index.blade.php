@@ -61,14 +61,18 @@
 <table class="table table-hover bg-white align-middle">
   <thead class="table-light">
     <tr>
-      <th>الاسم</th><th>الكود</th><th>النطاق</th><th>الجامعة/الكلية/التخصص</th><th>المستوى/الفترة</th><th>الحالة</th><th class="text-center">إجراءات</th>
+      <th>الاسم</th>
+      <th>النطاق</th>
+      <th>الجامعة/الكلية/التخصص</th>
+      <th>المستوى/الفترة</th>
+      <th>الحالة</th>
+      <th class="text-center">إجراءات</th>
     </tr>
   </thead>
   <tbody>
     @forelse($materials as $m)
     <tr>
       <td class="fw-semibold">{{ $m->name }}</td>
-      <td>{{ $m->code ?: '—' }}</td>
       <td>{!! $m->scope==='global' ? '<span class="badge bg-success">عام</span>' : '<span class="badge bg-primary">خاص</span>' !!}</td>
       <td class="small text-muted">
         @if($m->scope==='university')
@@ -87,7 +91,7 @@
       </td>
     </tr>
     @empty
-    <tr><td colspan="7" class="text-center text-muted">لا توجد بيانات.</td></tr>
+    <tr><td colspan="6" class="text-center text-muted">لا توجد بيانات.</td></tr>
     @endforelse
   </tbody>
 </table>

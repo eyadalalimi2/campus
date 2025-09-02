@@ -1,7 +1,7 @@
 @extends('admin.layouts.app')
-@section('title','إضافة جهاز/مهمة')
+@section('title','إضافة جهاز')
 @section('content')
-<h4 class="mb-3">إضافة جهاز/مهمة</h4>
+<h4 class="mb-3">إضافة جهاز</h4>
 <form action="{{ route('admin.devices.store') }}" method="POST" class="card p-3">
   @csrf
   @include('admin.devices.form',['device'=>null])

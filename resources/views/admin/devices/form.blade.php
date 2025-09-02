@@ -13,10 +13,6 @@
     <label class="form-label">الاسم</label>
     <input type="text" name="name" class="form-control" required value="{{ old('name',$device->name ?? '') }}">
   </div>
-  <div class="col-md-2">
-    <label class="form-label">الكود</label>
-    <input type="text" name="code" class="form-control" value="{{ old('code',$device->code ?? '') }}">
-  </div>
   <div class="col-12">
     <label class="form-label">الوصف (اختياري)</label>
     <textarea name="description" class="form-control" rows="3">{{ old('description',$device->description ?? '') }}</textarea>
