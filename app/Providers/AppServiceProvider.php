@@ -21,35 +21,58 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+
+        // لا تشغّل composer أثناء أوامر Artisan
+        if (app()->runningInConsole()) return;
         // يطبّق فقط على قوالب الموقع site.*
         View::composer('site.*', function ($view) {
-            // آلية تحديد الجامعة الحالية لواجهات الطلاب:
-            // 1) من الـ Session (إن وُجدت)
-            // 2) أو من باراميتر ?university_id=...
-            // 3) أو أول جامعة مفعّلة
             $currentUniversity = null;
 
+            // 1) التقاط الاختيار من الـ GET
             if (request()->filled('university_id')) {
-                $currentUniversity = University::find(request('university_id'));
-                if ($currentUniversity) {
-                    session(['current_university_id' => $currentUniversity->id]);
+                if (request('university_id') === 'default') {
+                    // رجوع للثيم الافتراضي
+                    session()->forget('current_university_id');
+                    $currentUniversity = null;
+                } else {
+                    // تخزين الجامعة المختارة
+                    $u = University::find(request('university_id'));
+                    if ($u) {
+                        session(['current_university_id' => $u->id]);
+                        $currentUniversity = $u;
+                    }
                 }
             }
 
+            // 2) من الجلسة إذا لم يُمرر شيء الآن
             if (!$currentUniversity && session()->has('current_university_id')) {
                 $currentUniversity = University::find(session('current_university_id'));
             }
 
-            if (!$currentUniversity) {
-                $currentUniversity = University::where('is_active', true)->orderBy('name')->first();
-            }
-
-            $themeVars = [
-                'primary'   => $currentUniversity?->primary_color ?: '#0d6efd',
-                'secondary' => $currentUniversity?->secondary_color ?: '#6c757d',
-                'logoUrl'   => $currentUniversity?->logo_url ?? asset('images/logo.png'),
-                'mode'      => $currentUniversity?->theme_mode ?? 'auto', // إن كنت أضفت theme_mode
+            // 3) افتراض: لا جامعة محددة = ثيم افتراضي
+            // الثيم الافتراضي (مسارات ثابتة بدون asset() هنا)
+            $defaults = [
+                'primary'    => '#0d6efd',
+                'secondary'  => '#6c757d',
+                'logoPath'   => '/images/default-logo.png',
+                'faviconPath' => '/images/default-favicon.ico',
+                'mode'       => 'auto',
             ];
+
+            // بناء themeVars
+            if ($currentUniversity) {
+                $themeVars = [
+                    'primary'    => $currentUniversity->primary_color   ?: $defaults['primary'],
+                    'secondary'  => $currentUniversity->secondary_color ?: $defaults['secondary'],
+                    // إن كانت لديك accessors logo_url / favicon_url استخدمها، وإلا عدّل حسب حقولك
+                    'logoPath'   => $currentUniversity->logo_url        ?: $defaults['logoPath'],
+                    'faviconPath' => $currentUniversity->favicon_url     ?: $defaults['faviconPath'],
+                    'mode'       => $currentUniversity->theme_mode      ?? $defaults['mode'],
+                ];
+            } else {
+                // ثيم افتراضي
+                $themeVars = $defaults;
+            }
 
             $view->with(compact('currentUniversity', 'themeVars'));
         });
