@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\ContentController;
 use App\Http\Controllers\Admin\MaterialController;
 use App\Http\Controllers\Admin\DeviceController;
 use App\Http\Controllers\Admin\AssetController;
+use App\Http\Controllers\Admin\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -33,6 +34,7 @@ Route::middleware('auth:admin')->group(function () {
     Route::post('/logout', [AdminAuthController::class, 'logout'])->name('logout');
 
     // CRUD
+    Route::resource('users',        UserController::class)->except(['show']);  
     Route::resource('contents',     ContentController::class)->except(['show']);
     Route::resource('universities', UniversityController::class)->except(['show']);
     Route::resource('colleges',     CollegeController::class)->except(['show']);
