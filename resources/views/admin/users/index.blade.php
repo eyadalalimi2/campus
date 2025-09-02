@@ -35,6 +35,14 @@
                 @endforeach
             </select>
         </div>
+        <div class="col-md-2">
+            <select name="country_id" class="form-select" onchange="this.form.submit()">
+                <option value="">— الدولة —</option>
+                @foreach ($majors as $m)
+                    <option value="{{ $m->id }}" @selected(request('major_id') == $m->id)>{{ $m->name }}</option>
+                @endforeach
+            </select>
+        </div>
         <div class="col-md-1">
             <input type="number" name="level" class="form-control" value="{{ request('level') }}" placeholder="مستوى">
         </div>
@@ -69,6 +77,7 @@
                     <th>الجامعة / الكلية / التخصص</th>
                     <th>المستوى</th>
                     <th>الجنس</th>
+                    <th>الدولة</th>
                     <th>الحالة</th>
                     <th class="text-center">إجراءات</th>
                 </tr>
@@ -109,6 +118,7 @@
                                 —
                             @endif
                         </td>
+                        <td>{{ $u->country ?: '—' }}</td>
                         <td>
                             @if ($u->status === 'active')
                                 <span class="badge bg-success">نشط</span>
@@ -119,13 +129,17 @@
                             @endif
                         </td>
                         <td class="text-center">
-                            <a href="{{ route('admin.users.edit', $u) }}" class="btn btn-sm btn-outline-primary">تعديل</a>
+                            <a href="{{ route('admin.users.show', $u) }}"
+                                class="btn btn-sm btn-outline-secondary">عرض</a>
+                            <a href="{{ route('admin.users.edit', $u) }}"
+                                class="btn btn-sm btn-outline-primary">تعديل</a>
                             <form action="{{ route('admin.users.destroy', $u) }}" method="POST" class="d-inline">
                                 @csrf @method('DELETE')
                                 <button class="btn btn-sm btn-outline-danger"
                                     onclick="return confirm('حذف الطالب؟')">حذف</button>
                             </form>
                         </td>
+
                     </tr>
                 @empty
                     <tr>

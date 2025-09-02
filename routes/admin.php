@@ -34,7 +34,7 @@ Route::middleware('auth:admin')->group(function () {
     Route::post('/logout', [AdminAuthController::class, 'logout'])->name('logout');
 
     // CRUD
-    Route::resource('users',        UserController::class)->except(['show']);  
+    Route::resource('users', UserController::class);  
     Route::resource('contents',     ContentController::class)->except(['show']);
     Route::resource('universities', UniversityController::class)->except(['show']);
     Route::resource('colleges',     CollegeController::class)->except(['show']);
