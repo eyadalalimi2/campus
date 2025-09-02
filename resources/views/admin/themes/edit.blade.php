@@ -30,6 +30,12 @@
       <option value="dark"  @selected($mode==='dark')>داكن</option>
     </select>
   </div>
+  <div class="form-check form-switch">
+  <input class="form-check-input" type="checkbox" name="use_default_theme" id="use_default_theme"
+         value="1" {{ old('use_default_theme', $university->use_default_theme ?? false) ? 'checked' : '' }}>
+  <label class="form-check-label" for="use_default_theme">استخدام الثيم الافتراضي بدل ثيم الجامعة</label>
+</div>
+
 
   <div class="col-12">
     <button class="btn btn-primary">حفظ</button>

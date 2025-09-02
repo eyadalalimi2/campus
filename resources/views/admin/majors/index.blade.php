@@ -55,7 +55,9 @@
       @endforelse
     </tbody>
   </table>
+  
+
 </div>
 
-{{ $majors->links() }}
+{{ $majors->links('vendor.pagination.bootstrap-custom') }}
 @endsection

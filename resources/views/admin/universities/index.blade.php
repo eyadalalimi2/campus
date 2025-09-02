@@ -89,5 +89,5 @@
         </table>
     </div>
 
-    {{ $universities->withQueryString()->links() }}
+    {{ $universities->withQueryString()->links('vendor.pagination.bootstrap-custom') }}
 @endsection

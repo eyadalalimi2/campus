@@ -136,5 +136,5 @@
         </table>
     </div>
 
-    {{ $users->links() }}
+    {{ $users->links('vendor.pagination.bootstrap-custom') }}
 @endsection

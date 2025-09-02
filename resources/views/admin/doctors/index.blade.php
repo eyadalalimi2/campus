@@ -91,5 +91,5 @@
   </table>
 </div>
 
-{{ $doctors->links() }}
+{{ $doctors->links('vendor.pagination.bootstrap-custom') }}
 @endsection

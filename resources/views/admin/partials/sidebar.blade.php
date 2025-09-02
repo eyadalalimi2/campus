@@ -102,6 +102,13 @@
                 الاستيراد (Excel)
             </a>
         </div>
+        <div class="nav-item">
+      <a href="{{ route('admin.themes.index') }}"
+         class="nav-link {{ request()->is('admin/themes*') ? 'active' : '' }}">
+        <i class="bi bi-palette"></i>
+        إدارة الثيمات
+      </a>
+    </div>
 
         {{-- روابط للعرض فقط (غير مرتبطة بصفحات فعلية) --}}
         <div class="section-title mt-3">

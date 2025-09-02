@@ -133,5 +133,5 @@
 </table>
 </div>
 
-{{ $contents->links() }}
+{{ $contents->links('vendor.pagination.bootstrap-custom') }}
 @endsection

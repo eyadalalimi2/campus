@@ -96,5 +96,5 @@
   </tbody>
 </table>
 </div>
-{{ $materials->links() }}
+{{ $materials->links('vendor.pagination.bootstrap-custom') }}
 @endsection

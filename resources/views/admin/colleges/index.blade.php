@@ -69,5 +69,5 @@
   </table>
 </div>
 
-{{ $colleges->links() }}
+{{ $colleges->links('vendor.pagination.bootstrap-custom') }}
 @endsection

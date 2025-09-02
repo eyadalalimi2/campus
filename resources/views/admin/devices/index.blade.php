@@ -56,5 +56,5 @@
 </table>
 </div>
 
-{{ $devices->links() }}
+{{ $devices->links('vendor.pagination.bootstrap-custom') }}
 @endsection
