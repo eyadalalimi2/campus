@@ -4,7 +4,7 @@
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-3">
   <h4 class="mb-0">لوحة البيانات</h4>
-  <div class="d-flex gap-2">
+  <div class="d-flex flex-wrap gap-2">
     <a href="{{ route('admin.users.create') }}" class="btn btn-primary btn-sm">
       <i class="bi bi-person-plus"></i> إضافة طالب
     </a>
@@ -20,25 +20,20 @@
   </div>
 </div>
 
-{{-- ======================= --}}
-{{--   KPIs (Gradient Cards) --}}
-{{-- ======================= --}}
+{{-- ========= --}}
+{{--  KPIs     --}}
+{{-- ========= --}}
 <style>
-  .kpi-card {
-    border: 0; border-radius: 1rem; color: #fff; overflow: hidden;
-    position: relative; box-shadow: 0 8px 18px rgba(0,0,0,.08);
-  }
-  .kpi-card .icon-wrap {
-    position: absolute; inset-inline-end: 12px; inset-block-start: 12px;
-    font-size: 2rem; opacity: .25;
-  }
-  .kpi-card .value { font-size: 2rem; font-weight: 800; line-height: 1; }
-  .kpi-card .muted { opacity: .9; font-size: .875rem; }
-  .grad-uni { background: linear-gradient(135deg,#5b7fff,#1aa1ff); }
-  .grad-col { background: linear-gradient(135deg,#ff7a6e,#ffb86c); }
-  .grad-maj { background: linear-gradient(135deg,#8e54e9,#4776e6); }
-  .grad-doc { background: linear-gradient(135deg,#00c6ff,#0072ff); }
-  .grad-std { background: linear-gradient(135deg,#00b09b,#96c93d); }
+  .kpi-card{border:0;border-radius:1rem;color:#fff;overflow:hidden;position:relative;box-shadow:0 8px 18px rgba(0,0,0,.08)}
+  .kpi-card .icon-wrap{position:absolute;inset-inline-end:12px;inset-block-start:12px;font-size:2rem;opacity:.25}
+  .kpi-card .value{font-size:2rem;font-weight:800;line-height:1}
+  .kpi-card .muted{opacity:.9;font-size:.875rem}
+  .grad-uni{background:linear-gradient(135deg,#5b7fff,#1aa1ff)}
+  .grad-col{background:linear-gradient(135deg,#ff7a6e,#ffb86c)}
+  .grad-maj{background:linear-gradient(135deg,#8e54e9,#4776e6)}
+  .grad-doc{background:linear-gradient(135deg,#00c6ff,#0072ff)}
+  .grad-std{background:linear-gradient(135deg,#00b09b,#96c93d)}
+  .card-soft{box-shadow:0 6px 16px rgba(0,0,0,.06)}
 </style>
 
 <div class="row g-3">
@@ -115,13 +110,12 @@
   </div>
 </div>
 
-
-{{-- ===================== --}}
-{{--    Notifications      --}}
-{{-- ===================== --}}
+{{-- =============== --}}
+{{-- Notifications  --}}
+{{-- =============== --}}
 <div class="row g-3 mt-1">
   <div class="col-12">
-    <div class="card shadow-sm">
+    <div class="card card-soft">
       <div class="card-header bg-white d-flex align-items-center justify-content-between">
         <strong>الإشعارات والتنبيهات</strong>
         <span class="small text-muted">فحص سلامة البيانات</span>
@@ -185,51 +179,65 @@
   </div>
 </div>
 
-{{-- ================ --}}
-{{--      Charts      --}}
-{{-- ================ --}}
+{{-- ========== --}}
+{{--  Charts   --}}
+{{-- ========== --}}
 <div class="row g-3 mt-1">
   <div class="col-lg-6">
-    <div class="card shadow-sm p-3 h-100">
-      <div class="d-flex justify-content-between">
-        <h6 class="mb-3">توزيع الطلاب على الجامعات (Top 10)</h6>
+    <div class="card card-soft p-3 h-100">
+      <div class="d-flex justify-content-between align-items-center">
+        <h6 class="mb-0">توزيع الطلاب على الجامعات (Top 10)</h6>
+        <i class="bi bi-bar-chart-line"></i>
       </div>
       <canvas id="chartStudentsPerUni" height="180"></canvas>
     </div>
   </div>
   <div class="col-lg-6">
-    <div class="card shadow-sm p-3 h-100">
-      <h6 class="mb-3">نمو عدد الطلاب (آخر 12 شهرًا)</h6>
+    <div class="card card-soft p-3 h-100">
+      <div class="d-flex justify-content-between align-items-center">
+        <h6 class="mb-0">نمو عدد الطلاب (آخر 12 شهرًا)</h6>
+        <i class="bi bi-graph-up"></i>
+      </div>
       <canvas id="chartStudentsMonthly" height="180"></canvas>
     </div>
   </div>
 </div>
 
-{{-- Pie Charts --}}
+{{-- ========= --}}
+{{--  Pies     --}}
+{{-- ========= --}}
 <div class="row g-3 mt-1">
   <div class="col-lg-6">
-    <div class="card shadow-sm p-3 h-100 text-center">
-      <h6 class="mb-3">توزيع الطلاب حسب الحالة</h6>
+    <div class="card shadow-lg border-0 rounded-3 p-3 h-100 text-center"
+         style="background: linear-gradient(135deg, #f1f5ff, #ffffff);">
+      <h6 class="fw-bold mb-3 text-primary">
+        <i class="bi bi-pie-chart-fill me-1"></i> توزيع الطلاب حسب الحالة
+      </h6>
       <div class="d-flex justify-content-center">
-        <canvas id="pieStudentsStatus" style="max-width: 280px; max-height: 280px;"></canvas>
+        {{-- حجم صغير احترافي --}}
+        <canvas id="pieStudentsStatus" style="max-width: 220px; max-height: 220px;"></canvas>
       </div>
     </div>
   </div>
+
   <div class="col-lg-6">
-    <div class="card shadow-sm p-3 h-100 text-center">
-      <h6 class="mb-3">توزيع الطلاب حسب الجنس</h6>
+    <div class="card shadow-lg border-0 rounded-3 p-3 h-100 text-center"
+         style="background: linear-gradient(135deg, #fef6f6, #ffffff);">
+      <h6 class="fw-bold mb-3 text-danger">
+        <i class="bi bi-people-fill me-1"></i> توزيع الطلاب حسب الجنس
+      </h6>
       <div class="d-flex justify-content-center">
-        <canvas id="pieStudentsGender" style="max-width: 280px; max-height: 280px;"></canvas>
+        {{-- حجم صغير احترافي --}}
+        <canvas id="pieStudentsGender" style="max-width: 220px; max-height: 220px;"></canvas>
       </div>
     </div>
   </div>
 </div>
 
-
 {{-- Latest Activity --}}
 <div class="row g-3 mt-1">
   <div class="col-lg-6">
-    <div class="card shadow-sm">
+    <div class="card card-soft">
       <div class="card-header bg-white"><strong>أحدث الطلاب</strong></div>
       <div class="table-responsive">
         <table class="table table-sm mb-0 align-middle">
@@ -253,7 +261,7 @@
     </div>
   </div>
   <div class="col-lg-6">
-    <div class="card shadow-sm">
+    <div class="card card-soft">
       <div class="card-header bg-white"><strong>أحدث المحتوى</strong></div>
       <div class="table-responsive">
         <table class="table table-sm mb-0 align-middle">
@@ -284,7 +292,7 @@
 </div>
 
 {{-- ملخص سريع للجامعات --}}
-<div class="card shadow-sm mt-3">
+<div class="card card-soft mt-3">
   <div class="card-header bg-white"><strong>ملخص سريع للجامعات</strong></div>
   <div class="table-responsive">
     <table class="table table-sm mb-0 align-middle">
@@ -312,13 +320,12 @@
     </table>
   </div>
 </div>
-
 @endsection
 
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script>
-  // --- العموديات: الطلاب لكل جامعة
+  // --- عمودي: الطلاب لكل جامعة
   const uniLabels = @json($studentsPerUniversity->pluck('uname')->map(fn($n)=>$n ?: '—'));
   const uniData   = @json($studentsPerUniversity->pluck('c'));
 
@@ -328,7 +335,7 @@
     options: { responsive: true, scales: { y: { beginAtZero: true } } }
   });
 
-  // --- الخطّي: نمو الطلاب شهريًا
+  // --- خطّي: نمو الطلاب شهريًا
   const monthlyLabels = @json($studentsMonthly->pluck('ym'));
   const monthlyData   = @json($studentsMonthly->pluck('c'));
 
@@ -338,24 +345,49 @@
     options: { responsive: true, scales: { y: { beginAtZero: true } } }
   });
 
-  // --- Pie: الحالة
-  const statusLabels = ['مفعل','موقوف','خريج'];
-  const statusData   = [@json($pieStatus['active']), @json($pieStatus['suspended']), @json($pieStatus['graduated'])];
-
-  new Chart(document.getElementById('pieStudentsStatus'), {
+ // --- Pie: الحالة
+const statusData = [@json($pieStatus['active']), @json($pieStatus['suspended']), @json($pieStatus['graduated'])];
+new Chart(document.getElementById('pieStudentsStatus').getContext('2d'), {
     type: 'pie',
-    data: { labels: statusLabels, datasets: [{ data: statusData }] },
-    options: { responsive: true }
-  });
+    data: {
+        labels: ['مفعل','موقوف','خريج'],
+        datasets: [{
+            data: statusData,
+            backgroundColor: ['#4CAF50', '#FF9800', '#2196F3'], // ✅ ألوان واضحة
+            borderColor: '#fff',
+            borderWidth: 2,
+            hoverOffset: 8
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { position: 'bottom', labels: { font: { size: 13 } } }
+        }
+    }
+});
 
-  // --- Pie: الجنس
-  const genderLabels = ['ذكور','إناث'];
-  const genderData   = [@json($pieGender['male']), @json($pieGender['female'])];
-
-  new Chart(document.getElementById('pieStudentsGender'), {
+// --- Pie: الجنس
+const genderData = [@json($pieGender['male']), @json($pieGender['female'])];
+new Chart(document.getElementById('pieStudentsGender').getContext('2d'), {
     type: 'pie',
-    data: { labels: genderLabels, datasets: [{ data: genderData }] },
-    options: { responsive: true }
-  });
+    data: {
+        labels: ['ذكور','إناث'],
+        datasets: [{
+            data: genderData,
+            backgroundColor: ['#2196F3', '#E91E63'], // ✅ الأزرق للذكور والوردي للإناث
+            borderColor: '#fff',
+            borderWidth: 2,
+            hoverOffset: 8
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { position: 'bottom', labels: { font: { size: 13 } } }
+        }
+    }
+});
+
 </script>
 @endpush
