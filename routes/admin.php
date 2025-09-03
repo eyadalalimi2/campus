@@ -14,7 +14,8 @@ use App\Http\Controllers\Admin\MaterialController;
 use App\Http\Controllers\Admin\DeviceController;
 use App\Http\Controllers\Admin\AssetController;
 use App\Http\Controllers\Admin\UserController;
-
+use App\Http\Controllers\Admin\BlogController;
+use App\Http\Controllers\Admin\SubscriptionController;
 /*
 |--------------------------------------------------------------------------
 | Admin Routes (prefix=admin, name=admin.) via RouteServiceProvider
@@ -43,6 +44,9 @@ Route::middleware('auth:admin')->group(function () {
     Route::resource('materials',    MaterialController::class)->except(['show']);
     Route::resource('devices',      DeviceController::class)->except(['show']);
     Route::resource('assets',       AssetController::class)->except(['show']);
+    Route::resource('blogs',        BlogController::class)->except(['show']);
+    Route::resource('subscriptions', SubscriptionController::class)->except(['show']);
+
 
     // الثيمات + الاستيراد
     Route::get('/themes',                   [ThemeController::class, 'index'])->name('themes.index');

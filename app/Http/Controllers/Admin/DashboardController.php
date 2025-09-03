@@ -13,13 +13,25 @@ use App\Models\Material;
 use App\Models\Device;
 use App\Models\Content;
 use App\Models\Asset;
-
+use App\Models\Blog;
+use App\Models\Subscription;
 use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
     public function index()
     {
+        // ——— المدونات (حقيقي)
+        $blogTotal     = Blog::count();
+        $blogPublished = Blog::where('status', 'published')->count();
+        $blogDraft     = Blog::where('status', 'draft')->count();
+        $blogArchived  = Blog::where('status', 'archived')->count();
+
+        // ——— الاشتراكات (حقيقي)
+        $subTotal  = Subscription::count();
+        $subActive = Subscription::where('status', 'active')->count();
+        $subOther  = $subTotal - $subActive; // (expired + canceled)
+
         // ——— KPIs: جامعات/كليات/تخصصات
         $uniTotal    = University::count();
         $uniActive   = University::where('is_active', 1)->count();
@@ -208,7 +220,15 @@ class DashboardController extends Controller
             'majNoDoctorsCount',
             'inactiveUniversities',
             'materialsWithoutContent',
-            'majorsWithoutDoctors'
+            'majorsWithoutDoctors',
+            //المدونات والاشتراكات
+            'blogTotal',
+            'blogPublished',
+            'blogDraft',
+            'blogArchived',
+            'subTotal',
+            'subActive',
+            'subOther'
         ));
     }
 }

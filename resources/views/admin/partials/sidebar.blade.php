@@ -103,23 +103,34 @@
             </a>
         </div>
         <div class="nav-item">
-      <a href="{{ route('admin.themes.index') }}"
-         class="nav-link {{ request()->is('admin/themes*') ? 'active' : '' }}">
-        <i class="bi bi-palette"></i>
-        إدارة الثيمات
-      </a>
-    </div>
+            <a href="{{ route('admin.themes.index') }}"
+                class="nav-link {{ request()->is('admin/themes*') ? 'active' : '' }}">
+                <i class="bi bi-palette"></i>
+                إدارة الثيمات
+            </a>
+        </div>
+        <div class="section-title mt-3">
+            <i class="bi bi-journal-richtext"></i> المدونة والاشتراكات
+        </div>
+        <div class="nav-item">
+            <a href="{{ route('admin.blogs.index') }}"
+                class="nav-link {{ request()->is('admin/blogs*') ? 'active' : '' }}">
+                <i class="bi bi-newspaper"></i> المدونات
+            </a>
+        </div>
+        <div class="nav-item">
+            <a href="{{ route('admin.subscriptions.index') }}"
+                class="nav-link {{ request()->is('admin/subscriptions*') ? 'active' : '' }}">
+                <i class="bi bi-credit-card-2-front"></i> الاشتراكات
+            </a>
+        </div>
+
 
         {{-- روابط للعرض فقط (غير مرتبطة بصفحات فعلية) --}}
         <div class="section-title mt-3">
             <i class="bi bi-eye"></i> ميزات مستقبلية
         </div>
-        <div class="nav-item">
-            <a href="javascript:void(0)" class="nav-link text-muted" title="عرض فقط" onclick="return false;">
-                <i class="bi bi-credit-card-2-front"></i>
-                إدارة الاشتراكات
-            </a>
-        </div>
+        
         <div class="nav-item">
             <a href="javascript:void(0)" class="nav-link text-muted" title="عرض فقط" onclick="return false;">
                 <i class="bi bi-sliders"></i>
@@ -138,11 +149,7 @@
                 مناهج الثانوية
             </a>
         </div>
-        <div class="nav-item">
-            <a href="javascript:void(0)" class="nav-link text-muted" title="عرض فقط" onclick="return false;">
-                <i class="bi bi-person-gear"></i>
-                المدونة
-            </a>
-        </div>
+
+
     </nav>
 </aside>
