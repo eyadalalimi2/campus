@@ -5,96 +5,194 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
   <h4 class="mb-0">لوحة البيانات</h4>
   <div class="d-flex gap-2">
-    <a href="{{ route('admin.users.create') }}" class="btn btn-primary btn-sm"><i class="bi bi-person-plus"></i> إضافة طالب</a>
-    <a href="{{ route('admin.contents.create') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-folder-plus"></i> إضافة محتوى</a>
-    <a href="{{ route('admin.import.index') }}" class="btn btn-outline-dark btn-sm"><i class="bi bi-upload"></i> الاستيراد</a>
+    <a href="{{ route('admin.users.create') }}" class="btn btn-primary btn-sm">
+      <i class="bi bi-person-plus"></i> إضافة طالب
+    </a>
+    <a href="{{ route('admin.doctors.create') }}" class="btn btn-outline-primary btn-sm">
+      <i class="bi bi-person-badge"></i> دكتور جديد
+    </a>
+    <a href="{{ route('admin.contents.create') }}" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-folder-plus"></i> إضافة محتوى
+    </a>
+    <a href="{{ route('admin.import.index') }}" class="btn btn-outline-dark btn-sm">
+      <i class="bi bi-upload"></i> الاستيراد
+    </a>
   </div>
 </div>
 
-{{-- KPIs --}}
+{{-- ======================= --}}
+{{--   KPIs (Gradient Cards) --}}
+{{-- ======================= --}}
+<style>
+  .kpi-card {
+    border: 0; border-radius: 1rem; color: #fff; overflow: hidden;
+    position: relative; box-shadow: 0 8px 18px rgba(0,0,0,.08);
+  }
+  .kpi-card .icon-wrap {
+    position: absolute; inset-inline-end: 12px; inset-block-start: 12px;
+    font-size: 2rem; opacity: .25;
+  }
+  .kpi-card .value { font-size: 2rem; font-weight: 800; line-height: 1; }
+  .kpi-card .muted { opacity: .9; font-size: .875rem; }
+  .grad-uni { background: linear-gradient(135deg,#5b7fff,#1aa1ff); }
+  .grad-col { background: linear-gradient(135deg,#ff7a6e,#ffb86c); }
+  .grad-maj { background: linear-gradient(135deg,#8e54e9,#4776e6); }
+  .grad-doc { background: linear-gradient(135deg,#00c6ff,#0072ff); }
+  .grad-std { background: linear-gradient(135deg,#00b09b,#96c93d); }
+</style>
+
 <div class="row g-3">
-  <div class="col-6 col-md-3">
-    <div class="card shadow-sm p-3 text-center h-100">
-      <div class="text-muted small">إجمالي الطلاب</div>
-      <div class="display-6 fw-bold text-primary">{{ number_format($totalStudents) }}</div>
-      <div class="small">
-        @if(!is_null($studentsDeltaPct))
-          @if($studentsDeltaPct >= 0)
-            <span class="text-success">+{{ $studentsDeltaPct }}% خلال 30 يوم</span>
-          @else
-            <span class="text-danger">{{ $studentsDeltaPct }}% خلال 30 يوم</span>
-          @endif
-        @else
-          <span class="text-muted">—</span>
-        @endif
+  {{-- الجامعات --}}
+  <div class="col-12 col-md-6 col-xl-3">
+    <div class="card kpi-card grad-uni p-3 h-100">
+      <div class="icon-wrap"><i class="bi bi-building-fill"></i></div>
+      <div class="muted">عدد الجامعات</div>
+      <div class="value">{{ number_format($uniTotal) }}</div>
+      <div class="d-flex gap-3 mt-2 small">
+        <span class="badge bg-light text-dark">مفعل: {{ number_format($uniActive) }}</span>
+        <span class="badge bg-dark">موقوف: {{ number_format($uniInactive) }}</span>
       </div>
+      <a class="stretched-link" href="{{ route('admin.universities.index') }}"></a>
     </div>
   </div>
-  <div class="col-6 col-md-3">
-    <div class="card shadow-sm p-3 text-center h-100">
-      <div class="text-muted small">الجامعات</div>
-      <div class="display-6 fw-bold">{{ number_format($totalUniversities) }}</div>
-      <a href="{{ route('admin.universities.index') }}" class="stretched-link"></a>
+  {{-- الكليات --}}
+  <div class="col-12 col-md-6 col-xl-3">
+    <div class="card kpi-card grad-col p-3 h-100">
+      <div class="icon-wrap"><i class="bi bi-bank2"></i></div>
+      <div class="muted">عدد الكليات</div>
+      <div class="value">{{ number_format($colTotal) }}</div>
+      <div class="d-flex gap-3 mt-2 small">
+        <span class="badge bg-light text-dark">مفعل: {{ number_format($colActive) }}</span>
+        <span class="badge bg-dark">موقوف: {{ number_format($colInactive) }}</span>
+      </div>
+      <a class="stretched-link" href="{{ route('admin.colleges.index') }}"></a>
     </div>
   </div>
-  <div class="col-6 col-md-3">
-    <div class="card shadow-sm p-3 text-center h-100">
-      <div class="text-muted small">الكليات</div>
-      <div class="display-6 fw-bold">{{ number_format($totalColleges) }}</div>
-      <a href="{{ route('admin.colleges.index') }}" class="stretched-link"></a>
+  {{-- التخصصات --}}
+  <div class="col-12 col-md-6 col-xl-3">
+    <div class="card kpi-card grad-maj p-3 h-100">
+      <div class="icon-wrap"><i class="bi bi-diagram-3-fill"></i></div>
+      <div class="muted">عدد الأقسام (التخصصات)</div>
+      <div class="value">{{ number_format($majTotal) }}</div>
+      <div class="d-flex gap-3 mt-2 small">
+        <span class="badge bg-light text-dark">مفعل: {{ number_format($majActive) }}</span>
+        <span class="badge bg-dark">موقوف: {{ number_format($majInactive) }}</span>
+      </div>
+      <a class="stretched-link" href="{{ route('admin.majors.index') }}"></a>
     </div>
   </div>
-  <div class="col-6 col-md-3">
-    <div class="card shadow-sm p-3 text-center h-100">
-      <div class="text-muted small">التخصصات</div>
-      <div class="display-6 fw-bold">{{ number_format($totalMajors) }}</div>
-      <a href="{{ route('admin.majors.index') }}" class="stretched-link"></a>
+  {{-- الدكاترة --}}
+  <div class="col-12 col-md-6 col-xl-3">
+    <div class="card kpi-card grad-doc p-3 h-100">
+      <div class="icon-wrap"><i class="bi bi-person-badge-fill"></i></div>
+      <div class="muted">عدد الدكاترة</div>
+      <div class="value">{{ number_format($docTotal) }}</div>
+      <div class="d-flex gap-3 mt-2 small">
+        <span class="badge bg-light text-dark">جامعي: {{ number_format($docUni) }}</span>
+        <span class="badge bg-dark">مستقل: {{ number_format($docInd) }}</span>
+      </div>
+      <a class="stretched-link" href="{{ route('admin.doctors.index') }}"></a>
     </div>
   </div>
 
-  <div class="col-6 col-md-3">
-    <div class="card shadow-sm p-3 text-center h-100">
-      <div class="text-muted small">المواد</div>
-      <div class="display-6 fw-bold">{{ number_format($totalMaterials) }}</div>
-      <div class="small text-muted">مفعل: {{ number_format($activeMaterials) }}</div>
-      <a href="{{ route('admin.materials.index') }}" class="stretched-link"></a>
-    </div>
-  </div>
-  <div class="col-6 col-md-3">
-    <div class="card shadow-sm p-3 text-center h-100">
-      <div class="text-muted small">الدكاترة</div>
-      <div class="display-6 fw-bold">{{ number_format($totalDoctors) }}</div>
-      <div class="small text-muted">مفعل: {{ number_format($activeDoctors) }}</div>
-      <a href="{{ route('admin.doctors.index') }}" class="stretched-link"></a>
-    </div>
-  </div>
-  <div class="col-6 col-md-3">
-    <div class="card shadow-sm p-3 text-center h-100">
-      <div class="text-muted small">الأجهزة/المهام</div>
-      <div class="display-6 fw-bold">{{ number_format($totalDevices) }}</div>
-      <div class="small text-muted">مفعل: {{ number_format($activeDevices) }}</div>
-      <a href="{{ route('admin.devices.index') }}" class="stretched-link"></a>
-    </div>
-  </div>
-  <div class="col-6 col-md-3">
-    <div class="card shadow-sm p-3 text-center h-100">
-      <div class="text-muted small">المحتوى التعليمي</div>
-      <div class="display-6 fw-bold">{{ number_format($totalContents) }}</div>
-      <div class="small text-muted">
-        ملفات: {{ $cntFile }} / فيديو: {{ $cntVideo }} / روابط: {{ $cntLink }}
+  {{-- الطلاب --}}
+  <div class="col-12">
+    <div class="card kpi-card grad-std p-3">
+      <div class="icon-wrap"><i class="bi bi-people-fill"></i></div>
+      <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
+        <div>
+          <div class="muted">عدد الطلاب</div>
+          <div class="value">{{ number_format($stdTotal) }}</div>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+          <span class="badge bg-light text-dark px-3 py-2">مفعلون: {{ number_format($stdActive) }}</span>
+          <span class="badge bg-dark px-3 py-2">موقوفون: {{ number_format($stdSuspended) }}</span>
+          <span class="badge bg-white text-dark px-3 py-2 border">خريجون: {{ number_format($stdGrad) }}</span>
+        </div>
       </div>
-      <a href="{{ route('admin.contents.index') }}" class="stretched-link"></a>
+      <a class="stretched-link" href="{{ route('admin.users.index') }}"></a>
     </div>
   </div>
 </div>
 
-{{-- Charts --}}
+
+{{-- ===================== --}}
+{{--    Notifications      --}}
+{{-- ===================== --}}
+<div class="row g-3 mt-1">
+  <div class="col-12">
+    <div class="card shadow-sm">
+      <div class="card-header bg-white d-flex align-items-center justify-content-between">
+        <strong>الإشعارات والتنبيهات</strong>
+        <span class="small text-muted">فحص سلامة البيانات</span>
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          {{-- جامعات غير مفعّلة --}}
+          <div class="col-md-4">
+            <div class="alert alert-warning mb-0">
+              <div class="d-flex justify-content-between align-items-center">
+                <div><i class="bi bi-exclamation-triangle-fill"></i> جامعات غير مفعلة</div>
+                <span class="badge bg-dark">{{ $inactiveUniCount }}</span>
+              </div>
+              @if($inactiveUniCount > 0)
+                <ul class="mt-2 mb-0 small">
+                  @foreach($inactiveUniversities as $n)<li>{{ $n }}</li>@endforeach
+                </ul>
+              @else
+                <div class="small text-muted mt-2">لا يوجد.</div>
+              @endif
+            </div>
+          </div>
+
+          {{-- مواد بلا محتوى --}}
+          <div class="col-md-4">
+            <div class="alert alert-info mb-0">
+              <div class="d-flex justify-content-between align-items-center">
+                <div><i class="bi bi-folder-x"></i> مواد بلا محتوى</div>
+                <span class="badge bg-dark">{{ $matNoContentCount }}</span>
+              </div>
+              @if($matNoContentCount > 0)
+                <ul class="mt-2 mb-0 small">
+                  @foreach($materialsWithoutContent as $n)<li>{{ $n }}</li>@endforeach
+                </ul>
+              @else
+                <div class="small text-muted mt-2">لا يوجد.</div>
+              @endif
+            </div>
+          </div>
+
+          {{-- أقسام بلا دكاترة --}}
+          <div class="col-md-4">
+            <div class="alert alert-secondary mb-0">
+              <div class="d-flex justify-content-between align-items-center">
+                <div><i class="bi bi-diagram-3"></i> أقسام بلا دكاترة</div>
+                <span class="badge bg-dark">{{ $majNoDoctorsCount }}</span>
+              </div>
+              @if($majNoDoctorsCount > 0)
+                <ul class="mt-2 mb-0 small">
+                  @foreach($majorsWithoutDoctors as $n)<li>{{ $n }}</li>@endforeach
+                </ul>
+              @else
+                <div class="small text-muted mt-2">لا يوجد.</div>
+              @endif
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{{-- ================ --}}
+{{--      Charts      --}}
+{{-- ================ --}}
 <div class="row g-3 mt-1">
   <div class="col-lg-6">
     <div class="card shadow-sm p-3 h-100">
       <div class="d-flex justify-content-between">
         <h6 class="mb-3">توزيع الطلاب على الجامعات (Top 10)</h6>
-        <span class="text-muted small">الذكور: {{ $maleCount }} / الإناث: {{ $femaleCount }}</span>
       </div>
       <canvas id="chartStudentsPerUni" height="180"></canvas>
     </div>
@@ -106,6 +204,27 @@
     </div>
   </div>
 </div>
+
+{{-- Pie Charts --}}
+<div class="row g-3 mt-1">
+  <div class="col-lg-6">
+    <div class="card shadow-sm p-3 h-100 text-center">
+      <h6 class="mb-3">توزيع الطلاب حسب الحالة</h6>
+      <div class="d-flex justify-content-center">
+        <canvas id="pieStudentsStatus" style="max-width: 280px; max-height: 280px;"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card shadow-sm p-3 h-100 text-center">
+      <h6 class="mb-3">توزيع الطلاب حسب الجنس</h6>
+      <div class="d-flex justify-content-center">
+        <canvas id="pieStudentsGender" style="max-width: 280px; max-height: 280px;"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
 
 {{-- Latest Activity --}}
 <div class="row g-3 mt-1">
@@ -164,7 +283,7 @@
   </div>
 </div>
 
-{{-- Universities Quick Summary --}}
+{{-- ملخص سريع للجامعات --}}
 <div class="card shadow-sm mt-3">
   <div class="card-header bg-white"><strong>ملخص سريع للجامعات</strong></div>
   <div class="table-responsive">
@@ -199,46 +318,44 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script>
-  // بيانات الرسم: الطلاب لكل جامعة (Top 10)
+  // --- العموديات: الطلاب لكل جامعة
   const uniLabels = @json($studentsPerUniversity->pluck('uname')->map(fn($n)=>$n ?: '—'));
   const uniData   = @json($studentsPerUniversity->pluck('c'));
 
   new Chart(document.getElementById('chartStudentsPerUni'), {
     type: 'bar',
-    data: {
-      labels: uniLabels,
-      datasets: [{
-        label: 'عدد الطلاب',
-        data: uniData,
-        borderWidth: 1
-      }]
-    },
-    options: {
-      responsive: true,
-      scales: { y: { beginAtZero: true } }
-    }
+    data: { labels: uniLabels, datasets: [{ label: 'عدد الطلاب', data: uniData, borderWidth: 1 }] },
+    options: { responsive: true, scales: { y: { beginAtZero: true } } }
   });
 
-  // بيانات الرسم: نمو الطلاب شهريًا
+  // --- الخطّي: نمو الطلاب شهريًا
   const monthlyLabels = @json($studentsMonthly->pluck('ym'));
   const monthlyData   = @json($studentsMonthly->pluck('c'));
 
   new Chart(document.getElementById('chartStudentsMonthly'), {
     type: 'line',
-    data: {
-      labels: monthlyLabels,
-      datasets: [{
-        label: 'طلاب جدد',
-        data: monthlyData,
-        tension: 0.3,
-        fill: false,
-        borderWidth: 2
-      }]
-    },
-    options: {
-      responsive: true,
-      scales: { y: { beginAtZero: true } }
-    }
+    data: { labels: monthlyLabels, datasets: [{ label: 'طلاب جدد', data: monthlyData, tension: 0.3, fill: false, borderWidth: 2 }] },
+    options: { responsive: true, scales: { y: { beginAtZero: true } } }
+  });
+
+  // --- Pie: الحالة
+  const statusLabels = ['مفعل','موقوف','خريج'];
+  const statusData   = [@json($pieStatus['active']), @json($pieStatus['suspended']), @json($pieStatus['graduated'])];
+
+  new Chart(document.getElementById('pieStudentsStatus'), {
+    type: 'pie',
+    data: { labels: statusLabels, datasets: [{ data: statusData }] },
+    options: { responsive: true }
+  });
+
+  // --- Pie: الجنس
+  const genderLabels = ['ذكور','إناث'];
+  const genderData   = [@json($pieGender['male']), @json($pieGender['female'])];
+
+  new Chart(document.getElementById('pieStudentsGender'), {
+    type: 'pie',
+    data: { labels: genderLabels, datasets: [{ data: genderData }] },
+    options: { responsive: true }
   });
 </script>
 @endpush

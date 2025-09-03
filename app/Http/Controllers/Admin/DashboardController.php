@@ -19,37 +19,44 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        // ——— المؤشرات العامة (KPIs)
-        $totalStudents     = User::count();
-        $totalUniversities = University::count();
-        $totalColleges     = College::count();
-        $totalMajors       = Major::count();
-        $totalMaterials    = Material::count();
-        $totalDoctors      = Doctor::count();
-        $totalDevices      = Device::count();
-        $totalContents     = Content::count();
+        // ——— KPIs: جامعات/كليات/تخصصات
+        $uniTotal    = University::count();
+        $uniActive   = University::where('is_active', 1)->count();
+        $uniInactive = $uniTotal - $uniActive;
 
-        // ——— تفصيل المحتوى حسب النوع
+        $colTotal    = College::count();
+        $colActive   = College::where('is_active', 1)->count();
+        $colInactive = $colTotal - $colActive;
+
+        $majTotal    = Major::count();
+        $majActive   = Major::where('is_active', 1)->count();
+        $majInactive = $majTotal - $majActive;
+
+        // ——— الدكاترة (جامعي/مستقل)
+        $docTotal  = Doctor::count();
+        $docUni    = Doctor::where('type', 'university')->count();
+        $docInd    = Doctor::where('type', 'independent')->count();
+
+        // ——— الطلاب (مفعل/موقوف/خريج)
+        $stdTotal     = User::count();
+        $stdActive    = User::where('status','active')->count();
+        $stdSuspended = User::where('status','suspended')->count();
+        $stdGrad      = User::where('status','graduated')->count();
+
+        // ——— المحتوى حسب النوع
         $contentsByType = Content::select('type', DB::raw('COUNT(*) as c'))
             ->groupBy('type')->pluck('c','type')->toArray();
         $cntFile  = $contentsByType['file']  ?? 0;
         $cntVideo = $contentsByType['video'] ?? 0;
         $cntLink  = $contentsByType['link']  ?? 0;
 
-        // ——— حالة التفعيل
-        $activeStudents  = User::where('status','active')->count();
-        $activeDoctors   = Doctor::where('is_active',1)->count();
+        // ——— حالة تفعيل عناصر أخرى
         $activeMaterials = Material::where('is_active',1)->count();
+        $activeDoctors   = Doctor::where('is_active',1)->count();
         $activeDevices   = Device::where('is_active',1)->count();
         $activeContents  = Content::where('is_active',1)->count();
 
-        // ——— الطلاب حسب الجنس
-        $genderAgg = User::select('gender', DB::raw('COUNT(*) as c'))
-            ->groupBy('gender')->pluck('c','gender')->toArray();
-        $maleCount   = $genderAgg['male']   ?? 0;
-        $femaleCount = $genderAgg['female'] ?? 0;
-
-        // ——— توزيع الطلاب على الجامعات (للرسم البياني)
+        // ——— توزيع الطلاب على الجامعات (Top 10)
         $studentsPerUniversity = User::select('universities.name as uname', DB::raw('COUNT(users.id) as c'))
             ->leftJoin('universities','universities.id','=','users.university_id')
             ->groupBy('universities.name')
@@ -68,12 +75,6 @@ class DashboardController extends Controller
             ->orderBy('ym')
             ->get();
 
-        // ——— المقارنة الشهرية (آخر 30 يومًا مقابل الـ 30 التي قبلها)
-        $now = Carbon::now();
-        $last30      = User::whereBetween('created_at', [$now->copy()->subDays(30), $now])->count();
-        $prev30      = User::whereBetween('created_at', [$now->copy()->subDays(60), $now->copy()->subDays(30)])->count();
-        $studentsDeltaPct = $prev30 > 0 ? round((($last30 - $prev30) / $prev30) * 100, 1) : null;
-
         // ——— أحدث السجلات
         $latestStudents = User::latest()->limit(5)->get(['id','name','student_number','university_id','created_at']);
         $latestDoctors  = Doctor::latest()->limit(5)->get(['id','name','university_id','created_at']);
@@ -82,15 +83,83 @@ class DashboardController extends Controller
         // ——— ملخص سريع للجامعات
         $universitiesQuick = University::orderBy('name')->get(['id','name']);
 
+        // ——— بيانات المخططات الدائرية (Pie)
+        $pieStatus = [
+            'active'    => $stdActive,
+            'suspended' => $stdSuspended,
+            'graduated' => $stdGrad,
+        ];
+        $genderAgg = User::select('gender', DB::raw('COUNT(*) as c'))
+            ->groupBy('gender')->pluck('c','gender')->toArray();
+        $pieGender = [
+            'male'   => $genderAgg['male']   ?? 0,
+            'female' => $genderAgg['female'] ?? 0,
+        ];
+
+        // ——— إشعارات (تنبيهات)
+        // جامعات غير مفعلة
+        $inactiveUniversities = University::where('is_active',0)
+            ->orderBy('name')->limit(5)->pluck('name');
+
+        // مواد بدون محتوى (لا يوجد أي Content يشير إلى material_id)
+        $materialsWithoutContent = Material::whereNotExists(function($q){
+                $q->select(DB::raw(1))
+                  ->from('contents')
+                  ->whereColumn('contents.material_id','materials.id');
+            })
+            ->orderBy('name')->limit(5)->pluck('name');
+
+        // أقسام (Majors) بلا دكاترة: لا علاقة في pivot ولا مباشرة في doctors.major_id
+        $majorsWithoutDoctors = Major::whereNotExists(function($q){
+                $q->select(DB::raw(1))
+                  ->from('doctor_major')
+                  ->whereColumn('doctor_major.major_id','majors.id');
+            })
+            ->whereNotExists(function($q){
+                $q->select(DB::raw(1))
+                  ->from('doctors')
+                  ->whereColumn('doctors.major_id','majors.id');
+            })
+            ->orderBy('name')->limit(5)->pluck('name');
+
+        // عدّادات للتنبيه
+        $inactiveUniCount     = University::where('is_active',0)->count();
+        $matNoContentCount    = Material::whereNotExists(function($q){
+                                    $q->select(DB::raw(1))
+                                      ->from('contents')
+                                      ->whereColumn('contents.material_id','materials.id');
+                               })->count();
+        $majNoDoctorsCount    = Major::whereNotExists(function($q){
+                                    $q->select(DB::raw(1))
+                                      ->from('doctor_major')
+                                      ->whereColumn('doctor_major.major_id','majors.id');
+                               })->whereNotExists(function($q){
+                                    $q->select(DB::raw(1))
+                                      ->from('doctors')
+                                      ->whereColumn('doctors.major_id','majors.id');
+                               })->count();
+
         return view('admin.dashboard', compact(
-            'totalStudents','totalUniversities','totalColleges','totalMajors',
-            'totalMaterials','totalDoctors','totalDevices','totalContents',
+            // KPIs مطوّرة
+            'uniTotal','uniActive','uniInactive',
+            'colTotal','colActive','colInactive',
+            'majTotal','majActive','majInactive',
+            'docTotal','docUni','docInd',
+            'stdTotal','stdActive','stdSuspended','stdGrad',
+
+            // إضافات سابقة
+            'studentsPerUniversity','studentsMonthly',
             'cntFile','cntVideo','cntLink',
-            'activeStudents','activeDoctors','activeMaterials','activeDevices','activeContents',
-            'maleCount','femaleCount',
-            'studentsPerUniversity','studentsMonthly','studentsDeltaPct',
+            'activeMaterials','activeDoctors','activeDevices','activeContents',
             'latestStudents','latestDoctors','latestContent',
-            'universitiesQuick'
+            'universitiesQuick',
+
+            // Pie Charts
+            'pieStatus','pieGender',
+
+            // Notifications
+            'inactiveUniCount','matNoContentCount','majNoDoctorsCount',
+            'inactiveUniversities','materialsWithoutContent','majorsWithoutDoctors'
         ));
     }
 }
