@@ -40,26 +40,37 @@ class DashboardController extends Controller
 
         // ——— الطلاب (مفعل/موقوف/خريج)
         $stdTotal     = User::count();
-        $stdActive    = User::where('status','active')->count();
-        $stdSuspended = User::where('status','suspended')->count();
-        $stdGrad      = User::where('status','graduated')->count();
+        $stdActive    = User::where('status', 'active')->count();
+        $stdSuspended = User::where('status', 'suspended')->count();
+        $stdGrad      = User::where('status', 'graduated')->count();
 
-        // ——— المحتوى حسب النوع
+        // ——— المواد
+        $matTotal    = Material::count();
+        $matActive   = Material::where('is_active', 1)->count();
+        $matInactive = $matTotal - $matActive;
+
+        // ——— الأجهزة
+        $devTotal    = Device::count();
+        $devActive   = Device::where('is_active', 1)->count();
+        $devInactive = $devTotal - $devActive;
+
+        // ——— المحتوى حسب النوع + الإجمالي
+        $contentTotal = Content::count();
         $contentsByType = Content::select('type', DB::raw('COUNT(*) as c'))
-            ->groupBy('type')->pluck('c','type')->toArray();
+            ->groupBy('type')->pluck('c', 'type')->toArray();
         $cntFile  = $contentsByType['file']  ?? 0;
         $cntVideo = $contentsByType['video'] ?? 0;
         $cntLink  = $contentsByType['link']  ?? 0;
 
-        // ——— حالة تفعيل عناصر أخرى
-        $activeMaterials = Material::where('is_active',1)->count();
-        $activeDoctors   = Doctor::where('is_active',1)->count();
-        $activeDevices   = Device::where('is_active',1)->count();
-        $activeContents  = Content::where('is_active',1)->count();
+        // ——— حالة تفعيل عناصر أخرى (إن كنت تحتاجها في أماكن أخرى)
+        $activeMaterials = $matActive;
+        $activeDoctors   = Doctor::where('is_active', 1)->count();
+        $activeDevices   = $devActive;
+        $activeContents  = Content::where('is_active', 1)->count();
 
         // ——— توزيع الطلاب على الجامعات (Top 10)
         $studentsPerUniversity = User::select('universities.name as uname', DB::raw('COUNT(users.id) as c'))
-            ->leftJoin('universities','universities.id','=','users.university_id')
+            ->leftJoin('universities', 'universities.id', '=', 'users.university_id')
             ->groupBy('universities.name')
             ->orderByDesc('c')
             ->limit(10)
@@ -68,21 +79,21 @@ class DashboardController extends Controller
         // ——— نمو الطلاب خلال آخر 12 شهرًا
         $start = Carbon::now()->startOfMonth()->subMonths(11);
         $studentsMonthly = User::select(
-                DB::raw("DATE_FORMAT(created_at, '%Y-%m') as ym"),
-                DB::raw('COUNT(*) as c')
-            )
-            ->where('created_at','>=',$start)
+            DB::raw("DATE_FORMAT(created_at, '%Y-%m') as ym"),
+            DB::raw('COUNT(*) as c')
+        )
+            ->where('created_at', '>=', $start)
             ->groupBy('ym')
             ->orderBy('ym')
             ->get();
 
         // ——— أحدث السجلات
-        $latestStudents = User::latest()->limit(5)->get(['id','name','student_number','university_id','created_at']);
-        $latestDoctors  = Doctor::latest()->limit(5)->get(['id','name','university_id','created_at']);
-        $latestContent  = Content::latest()->limit(5)->get(['id','title','type','university_id','created_at']);
+        $latestStudents = User::latest()->limit(5)->get(['id', 'name', 'student_number', 'university_id', 'created_at']);
+        $latestDoctors  = Doctor::latest()->limit(5)->get(['id', 'name', 'university_id', 'created_at']);
+        $latestContent  = Content::latest()->limit(5)->get(['id', 'title', 'type', 'university_id', 'created_at']);
 
         // ——— ملخص سريع للجامعات
-        $universitiesQuick = University::orderBy('name')->get(['id','name']);
+        $universitiesQuick = University::orderBy('name')->get(['id', 'name']);
 
         // ——— بيانات المخططات الدائرية (Pie)
         $pieStatus = [
@@ -91,76 +102,113 @@ class DashboardController extends Controller
             'graduated' => $stdGrad,
         ];
         $genderAgg = User::select('gender', DB::raw('COUNT(*) as c'))
-            ->groupBy('gender')->pluck('c','gender')->toArray();
+            ->groupBy('gender')->pluck('c', 'gender')->toArray();
         $pieGender = [
             'male'   => $genderAgg['male']   ?? 0,
             'female' => $genderAgg['female'] ?? 0,
         ];
 
         // ——— إشعارات (تنبيهات)
-        // جامعات غير مفعلة
-        $inactiveUniversities = University::where('is_active',0)
+        $inactiveUniversities = University::where('is_active', 0)
             ->orderBy('name')->limit(5)->pluck('name');
 
         // مواد بدون محتوى (لا يوجد أي Content يشير إلى material_id)
-        $materialsWithoutContent = Material::whereNotExists(function($q){
+        $materialsWithoutContent = Material::whereNotExists(function ($q) {
+            $q->select(DB::raw(1))
+                ->from('contents')
+                ->whereColumn('contents.material_id', 'materials.id');
+        })
+            ->orderBy('name')->limit(5)->pluck('name');
+
+        // أقسام بلا دكاترة (لا pivot ولا مباشرة)
+        $majorsWithoutDoctors = Major::whereNotExists(function ($q) {
+            $q->select(DB::raw(1))
+                ->from('doctor_major')
+                ->whereColumn('doctor_major.major_id', 'majors.id');
+        })
+            ->whereNotExists(function ($q) {
                 $q->select(DB::raw(1))
-                  ->from('contents')
-                  ->whereColumn('contents.material_id','materials.id');
+                    ->from('doctors')
+                    ->whereColumn('doctors.major_id', 'majors.id');
             })
             ->orderBy('name')->limit(5)->pluck('name');
 
-        // أقسام (Majors) بلا دكاترة: لا علاقة في pivot ولا مباشرة في doctors.major_id
-        $majorsWithoutDoctors = Major::whereNotExists(function($q){
-                $q->select(DB::raw(1))
-                  ->from('doctor_major')
-                  ->whereColumn('doctor_major.major_id','majors.id');
-            })
-            ->whereNotExists(function($q){
-                $q->select(DB::raw(1))
-                  ->from('doctors')
-                  ->whereColumn('doctors.major_id','majors.id');
-            })
-            ->orderBy('name')->limit(5)->pluck('name');
-
-        // عدّادات للتنبيه
-        $inactiveUniCount     = University::where('is_active',0)->count();
-        $matNoContentCount    = Material::whereNotExists(function($q){
-                                    $q->select(DB::raw(1))
-                                      ->from('contents')
-                                      ->whereColumn('contents.material_id','materials.id');
-                               })->count();
-        $majNoDoctorsCount    = Major::whereNotExists(function($q){
-                                    $q->select(DB::raw(1))
-                                      ->from('doctor_major')
-                                      ->whereColumn('doctor_major.major_id','majors.id');
-                               })->whereNotExists(function($q){
-                                    $q->select(DB::raw(1))
-                                      ->from('doctors')
-                                      ->whereColumn('doctors.major_id','majors.id');
-                               })->count();
+        $inactiveUniCount  = $inactiveUniversities->count();
+        $matNoContentCount = Material::whereNotExists(function ($q) {
+            $q->select(DB::raw(1))
+                ->from('contents')
+                ->whereColumn('contents.material_id', 'materials.id');
+        })->count();
+        $majNoDoctorsCount = Major::whereNotExists(function ($q) {
+            $q->select(DB::raw(1))
+                ->from('doctor_major')
+                ->whereColumn('doctor_major.major_id', 'majors.id');
+        })->whereNotExists(function ($q) {
+            $q->select(DB::raw(1))
+                ->from('doctors')
+                ->whereColumn('doctors.major_id', 'majors.id');
+        })->count();
 
         return view('admin.dashboard', compact(
-            // KPIs مطوّرة
-            'uniTotal','uniActive','uniInactive',
-            'colTotal','colActive','colInactive',
-            'majTotal','majActive','majInactive',
-            'docTotal','docUni','docInd',
-            'stdTotal','stdActive','stdSuspended','stdGrad',
+            // جامعات/كليات/تخصصات
+            'uniTotal',
+            'uniActive',
+            'uniInactive',
+            'colTotal',
+            'colActive',
+            'colInactive',
+            'majTotal',
+            'majActive',
+            'majInactive',
 
-            // إضافات سابقة
-            'studentsPerUniversity','studentsMonthly',
-            'cntFile','cntVideo','cntLink',
-            'activeMaterials','activeDoctors','activeDevices','activeContents',
-            'latestStudents','latestDoctors','latestContent',
+            // الدكاترة
+            'docTotal',
+            'docUni',
+            'docInd',
+
+            // الطلاب
+            'stdTotal',
+            'stdActive',
+            'stdSuspended',
+            'stdGrad',
+
+            // المواد / الأجهزة
+            'matTotal',
+            'matActive',
+            'matInactive',
+            'devTotal',
+            'devActive',
+            'devInactive',
+
+            // المحتوى
+            'contentTotal',
+            'cntFile',
+            'cntVideo',
+            'cntLink',
+
+            // إضافات أخرى
+            'activeMaterials',
+            'activeDoctors',
+            'activeDevices',
+            'activeContents',
+            'studentsPerUniversity',
+            'studentsMonthly',
+            'latestStudents',
+            'latestDoctors',
+            'latestContent',
             'universitiesQuick',
 
-            // Pie Charts
-            'pieStatus','pieGender',
+            // Pie
+            'pieStatus',
+            'pieGender',
 
             // Notifications
-            'inactiveUniCount','matNoContentCount','majNoDoctorsCount',
-            'inactiveUniversities','materialsWithoutContent','majorsWithoutDoctors'
+            'inactiveUniCount',
+            'matNoContentCount',
+            'majNoDoctorsCount',
+            'inactiveUniversities',
+            'materialsWithoutContent',
+            'majorsWithoutDoctors'
         ));
     }
 }

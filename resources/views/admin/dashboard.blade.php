@@ -28,12 +28,21 @@
   .kpi-card .icon-wrap{position:absolute;inset-inline-end:12px;inset-block-start:12px;font-size:2rem;opacity:.25}
   .kpi-card .value{font-size:2rem;font-weight:800;line-height:1}
   .kpi-card .muted{opacity:.9;font-size:.875rem}
+  .card-soft{box-shadow:0 6px 16px rgba(0,0,0,.06)}
+
+  /* تدرّجات البطاقات الأولى */
   .grad-uni{background:linear-gradient(135deg,#5b7fff,#1aa1ff)}
   .grad-col{background:linear-gradient(135deg,#ff7a6e,#ffb86c)}
   .grad-maj{background:linear-gradient(135deg,#8e54e9,#4776e6)}
   .grad-doc{background:linear-gradient(135deg,#00c6ff,#0072ff)}
   .grad-std{background:linear-gradient(135deg,#00b09b,#96c93d)}
-  .card-soft{box-shadow:0 6px 16px rgba(0,0,0,.06)}
+
+  /* تدرّجات البطاقات الإضافية (ألوان مغايرة) */
+  .grad-mat{background:linear-gradient(135deg,#6a11cb,#2575fc)}
+  .grad-dev{background:linear-gradient(135deg,#ff512f,#dd2476)}
+  .grad-cnt{background:linear-gradient(135deg,#11998e,#38ef7d)}
+  .grad-sub{background:linear-gradient(135deg,#f7971e,#ffd200)}
+  .grad-blog{background:linear-gradient(135deg,#c31432,#240b36)}
 </style>
 
 <div class="row g-3">
@@ -106,6 +115,65 @@
         </div>
       </div>
       <a class="stretched-link" href="{{ route('admin.users.index') }}"></a>
+    </div>
+  </div>
+</div>
+
+{{-- ========================== --}}
+{{-- بطاقات إضافية تحت السابقة --}}
+{{-- ========================== --}}
+<div class="row g-3 mt-1">
+  {{-- المواد --}}
+  <div class="col-12 col-md-6 col-xl-3">
+    <div class="card kpi-card grad-mat p-3 h-100">
+      <div class="icon-wrap"><i class="bi bi-journal-text"></i></div>
+      <div class="muted">عدد المواد</div>
+      <div class="value">{{ number_format($matTotal) }}</div>
+      <div class="d-flex gap-3 mt-2 small">
+        <span class="badge bg-light text-dark">مفعل: {{ number_format($matActive) }}</span>
+        <span class="badge bg-dark">موقوف: {{ number_format($matInactive) }}</span>
+      </div>
+      <a class="stretched-link" href="{{ route('admin.materials.index') }}"></a>
+    </div>
+  </div>
+  {{-- الأجهزة --}}
+  <div class="col-12 col-md-6 col-xl-3">
+    <div class="card kpi-card grad-dev p-3 h-100">
+      <div class="icon-wrap"><i class="bi bi-cpu"></i></div>
+      <div class="muted">عدد الأجهزة</div>
+      <div class="value">{{ number_format($devTotal) }}</div>
+      <div class="d-flex gap-3 mt-2 small">
+        <span class="badge bg-light text-dark">مفعل: {{ number_format($devActive) }}</span>
+        <span class="badge bg-dark">موقوف: {{ number_format($devInactive) }}</span>
+      </div>
+      <a class="stretched-link" href="{{ route('admin.devices.index') }}"></a>
+    </div>
+  </div>
+  {{-- المحتوى التعليمي --}}
+  <div class="col-12 col-md-6 col-xl-3">
+    <div class="card kpi-card grad-cnt p-3 h-100">
+      <div class="icon-wrap"><i class="bi bi-folder"></i></div>
+      <div class="muted">المحتوى التعليمي</div>
+      <div class="value">{{ number_format($contentTotal) }}</div>
+      <div class="d-flex flex-wrap gap-2 mt-2 small">
+        <span class="badge bg-light text-dark">فيديو: {{ number_format($cntVideo) }}</span>
+        <span class="badge bg-dark">ملفات: {{ number_format($cntFile) }}</span>
+        <span class="badge bg-white text-dark border">روابط: {{ number_format($cntLink) }}</span>
+      </div>
+      <a class="stretched-link" href="{{ route('admin.contents.index') }}"></a>
+    </div>
+  </div>
+  {{-- الاشتراكات (وهمي) --}}
+  <div class="col-12 col-md-6 col-xl-3">
+    <div class="card kpi-card grad-sub p-3 h-100">
+      <div class="icon-wrap"><i class="bi bi-credit-card-2-front-fill"></i></div>
+      <div class="muted">الاشتراكات</div>
+      <div class="value">41</div>
+      <div class="d-flex gap-3 mt-2 small">
+        <span class="badge bg-light text-dark">مشتركون: 30</span>
+        <span class="badge bg-dark">غير مشتركين: 11</span>
+      </div>
+      <a class="stretched-link" href="#"></a>
     </div>
   </div>
 </div>
@@ -214,7 +282,6 @@
         <i class="bi bi-pie-chart-fill me-1"></i> توزيع الطلاب حسب الحالة
       </h6>
       <div class="d-flex justify-content-center">
-        {{-- حجم صغير احترافي --}}
         <canvas id="pieStudentsStatus" style="max-width: 220px; max-height: 220px;"></canvas>
       </div>
     </div>
@@ -227,7 +294,6 @@
         <i class="bi bi-people-fill me-1"></i> توزيع الطلاب حسب الجنس
       </h6>
       <div class="d-flex justify-content-center">
-        {{-- حجم صغير احترافي --}}
         <canvas id="pieStudentsGender" style="max-width: 220px; max-height: 220px;"></canvas>
       </div>
     </div>
@@ -291,33 +357,66 @@
   </div>
 </div>
 
-{{-- ملخص سريع للجامعات --}}
-<div class="card card-soft mt-3">
-  <div class="card-header bg-white"><strong>ملخص سريع للجامعات</strong></div>
-  <div class="table-responsive">
-    <table class="table table-sm mb-0 align-middle">
-      <thead class="table-light">
-        <tr><th>الجامعة</th><th>الطلاب</th><th>الكليات</th><th>المواد</th></tr>
-      </thead>
-      <tbody>
-        @forelse($universitiesQuick as $u)
-          <tr>
-            <td class="fw-semibold">{{ $u->name }}</td>
-            <td class="text-muted">
-              {{ number_format(\App\Models\User::where('university_id',$u->id)->count()) }}
-            </td>
-            <td class="text-muted">
-              {{ number_format(\App\Models\College::where('university_id',$u->id)->count()) }}
-            </td>
-            <td class="text-muted">
-              {{ number_format(\App\Models\Material::where('university_id',$u->id)->count()) }}
-            </td>
-          </tr>
-        @empty
-          <tr><td colspan="4" class="text-center text-muted">—</td></tr>
-        @endforelse
-      </tbody>
-    </table>
+{{-- ملخص سريع + أحدث المدونات (وهمي) --}}
+<div class="row g-3 mt-3">
+  <div class="col-lg-7">
+    <div class="card card-soft h-100">
+      <div class="card-header bg-white"><strong>ملخص سريع للجامعات</strong></div>
+      <div class="table-responsive">
+        <table class="table table-sm mb-0 align-middle">
+          <thead class="table-light">
+            <tr><th>الجامعة</th><th>الطلاب</th><th>الكليات</th><th>المواد</th></tr>
+          </thead>
+          <tbody>
+            @forelse($universitiesQuick as $u)
+              <tr>
+                <td class="fw-semibold">{{ $u->name }}</td>
+                <td class="text-muted">
+                  {{ number_format(\App\Models\User::where('university_id',$u->id)->count()) }}
+                </td>
+                <td class="text-muted">
+                  {{ number_format(\App\Models\College::where('university_id',$u->id)->count()) }}
+                </td>
+                <td class="text-muted">
+                  {{ number_format(\App\Models\Material::where('university_id',$u->id)->count()) }}
+                </td>
+              </tr>
+            @empty
+              <tr><td colspan="4" class="text-center text-muted">—</td></tr>
+            @endforelse
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="card card-soft h-100">
+      <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <strong>أحدث المدونات</strong>
+        <span class="badge bg-light text-dark">وهمي مؤقتًا</span>
+      </div>
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item d-flex justify-content-between align-items-start">
+          <div class="ms-2 me-auto">
+            <div class="fw-semibold"><i class="bi bi-journal-text me-1"></i> إطلاق نسخة المنصة 1.0</div>
+            <div class="small text-muted">تحسينات على الأداء ولوحات التقارير</div>
+          </div>
+          <span class="badge bg-primary rounded-pill">جديد</span>
+        </li>
+        <li class="list-group-item">
+          <div class="fw-semibold"><i class="bi bi-journal-text me-1"></i> تكامل المحتوى مع يوتيوب</div>
+          <div class="small text-muted">شرح عملية الربط وسياسات الجودة</div>
+        </li>
+        <li class="list-group-item">
+          <div class="fw-semibold"><i class="bi bi-journal-text me-1"></i> أفضل ممارسات إدارة المواد</div>
+          <div class="small text-muted">هيكلة المستويات والفصول ومؤشرات التفعيل</div>
+        </li>
+      </ul>
+      <div class="card-footer bg-white text-end">
+        <a href="#" class="btn btn-sm btn-outline-secondary">عرض الكل</a>
+      </div>
+    </div>
   </div>
 </div>
 @endsection
@@ -345,49 +444,44 @@
     options: { responsive: true, scales: { y: { beginAtZero: true } } }
   });
 
- // --- Pie: الحالة
-const statusData = [@json($pieStatus['active']), @json($pieStatus['suspended']), @json($pieStatus['graduated'])];
-new Chart(document.getElementById('pieStudentsStatus').getContext('2d'), {
-    type: 'pie',
-    data: {
-        labels: ['مفعل','موقوف','خريج'],
-        datasets: [{
-            data: statusData,
-            backgroundColor: ['#4CAF50', '#FF9800', '#2196F3'], // ✅ ألوان واضحة
-            borderColor: '#fff',
-            borderWidth: 2,
-            hoverOffset: 8
-        }]
-    },
-    options: {
-        responsive: true,
-        plugins: {
-            legend: { position: 'bottom', labels: { font: { size: 13 } } }
-        }
-    }
-});
+  // --- Pie: الحالة
+  const statusData = [@json($pieStatus['active']), @json($pieStatus['suspended']), @json($pieStatus['graduated'])];
+  new Chart(document.getElementById('pieStudentsStatus').getContext('2d'), {
+      type: 'pie',
+      data: {
+          labels: ['مفعل','موقوف','خريج'],
+          datasets: [{
+              data: statusData,
+              backgroundColor: ['#4CAF50', '#FF9800', '#2196F3'],
+              borderColor: '#fff',
+              borderWidth: 2,
+              hoverOffset: 8
+          }]
+      },
+      options: {
+          responsive: true,
+          plugins: { legend: { position: 'bottom', labels: { font: { size: 13 } } } }
+      }
+  });
 
-// --- Pie: الجنس
-const genderData = [@json($pieGender['male']), @json($pieGender['female'])];
-new Chart(document.getElementById('pieStudentsGender').getContext('2d'), {
-    type: 'pie',
-    data: {
-        labels: ['ذكور','إناث'],
-        datasets: [{
-            data: genderData,
-            backgroundColor: ['#2196F3', '#E91E63'], // ✅ الأزرق للذكور والوردي للإناث
-            borderColor: '#fff',
-            borderWidth: 2,
-            hoverOffset: 8
-        }]
-    },
-    options: {
-        responsive: true,
-        plugins: {
-            legend: { position: 'bottom', labels: { font: { size: 13 } } }
-        }
-    }
-});
-
+  // --- Pie: الجنس
+  const genderData = [@json($pieGender['male']), @json($pieGender['female'])];
+  new Chart(document.getElementById('pieStudentsGender').getContext('2d'), {
+      type: 'pie',
+      data: {
+          labels: ['ذكور','إناث'],
+          datasets: [{
+              data: genderData,
+              backgroundColor: ['#2196F3', '#E91E63'],
+              borderColor: '#fff',
+              borderWidth: 2,
+              hoverOffset: 8
+          }]
+      },
+      options: {
+          responsive: true,
+          plugins: { legend: { position: 'bottom', labels: { font: { size: 13 } } } }
+      }
+  });
 </script>
 @endpush
