@@ -1,226 +1,244 @@
 @extends('admin.layouts.app')
-
-@section('title','لوحة التحكم')
+@section('title','لوحة البيانات')
 
 @section('content')
-@php
-  // بيانات افتراضية في حال لم تُمرر من الكنترولر
-  $kpis = $kpis ?? [
-      ['title' => 'إجمالي الطلاب',      'value' => 12450, 'delta' => '+4.2%',  'icon' => 'users'],
-      ['title' => 'المقررات النشطة',     'value' => 320,   'delta' => '+1.3%',  'icon' => 'book-open'],
-      ['title' => 'هيئة التدريس',        'value' => 540,   'delta' => '-0.8%',  'icon' => 'briefcase'],
-      ['title' => 'الإيرادات الشهرية',    'value' => 48720, 'delta' => '+12.6%', 'icon' => 'credit-card'],
-  ];
-
-  $months = ['ينا','فبر','مار','أبر','ماي','يون','يول','أغس','سبت','أكت','نوف','ديس'];
-
-  $revenueSeries = $revenueSeries ?? [
-      'labels' => $months,
-      'data'   => [21000,22500,24800,26000,27800,30000,32200,34500,36800,41000,45500,48720],
-  ];
-  $usersSeries = $usersSeries ?? [
-      'labels' => $months,
-      'data'   => [820,860,910,950,990,1030,1080,1120,1180,1250,1310,1390],
-  ];
-  $deptDistribution = $deptDistribution ?? [
-      'labels' => ['علوم الحاسب', 'هندسة', 'إدارة', 'آداب', 'علوم'],
-      'data'   => [35,25,15,12,13],
-  ];
-  $recentEnrollments = $recentEnrollments ?? [
-      ['student' => 'سارة أحمد', 'course' => 'CS101 - مقدمة برمجة',  'status' => 'enrolled',  'date' => '2025-08-29'],
-      ['student' => 'محمد علي',  'course' => 'MG210 - مبادئ الإدارة','status' => 'completed', 'date' => '2025-08-28'],
-      ['student' => 'أحمد سعيد', 'course' => 'EN150 - كتابة أكاديمية','status' => 'dropped',  'date' => '2025-08-27'],
-      ['student' => 'ليان خالد', 'course' => 'EE201 - دوائر كهربائية','status' => 'enrolled',  'date' => '2025-08-26'],
-      ['student' => 'رنا منصور', 'course' => 'CS240 - هياكل بيانات',  'status' => 'enrolled',  'date' => '2025-08-25'],
-  ];
-  $notifications = $notifications ?? [
-      ['type' => 'warning', 'text' => 'نسبة الانسحاب زادت 3% هذا الأسبوع.'],
-      ['type' => 'info',    'text' => 'تذكير: تسجيل الفصل القادم يبدأ 10 سبتمبر.'],
-      ['type' => 'success', 'text' => 'اكتملت معالجة نتائج الفصل السابق.'],
-  ];
-  $tasks = $tasks ?? [
-      ['title' => 'مراجعة مقررات قسم علوم الحاسب', 'done' => false],
-      ['title' => 'اعتماد خطة التدريب لأعضاء هيئة التدريس', 'done' => true],
-      ['title' => 'تحديث سياسة الحد الأدنى للساعات', 'done' => false],
-  ];
-@endphp
-
 <div class="d-flex justify-content-between align-items-center mb-3">
-  <h4 class="mb-0">نظرة عامة</h4>
-  <div class="text-muted small">تاريخ اليوم: {{ now()->format('Y-m-d') }}</div>
+  <h4 class="mb-0">لوحة البيانات</h4>
+  <div class="d-flex gap-2">
+    <a href="{{ route('admin.users.create') }}" class="btn btn-primary btn-sm"><i class="bi bi-person-plus"></i> إضافة طالب</a>
+    <a href="{{ route('admin.contents.create') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-folder-plus"></i> إضافة محتوى</a>
+    <a href="{{ route('admin.import.index') }}" class="btn btn-outline-dark btn-sm"><i class="bi bi-upload"></i> الاستيراد</a>
+  </div>
 </div>
 
 {{-- KPIs --}}
-<div class="row g-3 mb-4">
-  @foreach ($kpis as $kpi)
-    @php $isUp = str_starts_with($kpi['delta'], '+'); @endphp
-    <div class="col-12 col-sm-6 col-xl-3">
-      <div class="card card-kpi border-0 shadow-sm">
-        <div class="card-body">
-          <div class="d-flex align-items-center gap-3">
-            <div class="p-3 rounded-circle bg-light">
-              <i data-feather="{{ $kpi['icon'] }}"></i>
-            </div>
-            <div class="flex-grow-1">
-              <div class="text-muted small">{{ $kpi['title'] }}</div>
-              <div class="fs-4 fw-bold">
-                @if($kpi['title'] === 'الإيرادات الشهرية')
-                  ${{ number_format($kpi['value']) }}
-                @else
-                  {{ number_format($kpi['value']) }}
-                @endif
-              </div>
-              <div class="delta {{ $isUp ? 'up' : 'down' }} small">{{ $kpi['delta'] }}</div>
-            </div>
-          </div>
-        </div>
+<div class="row g-3">
+  <div class="col-6 col-md-3">
+    <div class="card shadow-sm p-3 text-center h-100">
+      <div class="text-muted small">إجمالي الطلاب</div>
+      <div class="display-6 fw-bold text-primary">{{ number_format($totalStudents) }}</div>
+      <div class="small">
+        @if(!is_null($studentsDeltaPct))
+          @if($studentsDeltaPct >= 0)
+            <span class="text-success">+{{ $studentsDeltaPct }}% خلال 30 يوم</span>
+          @else
+            <span class="text-danger">{{ $studentsDeltaPct }}% خلال 30 يوم</span>
+          @endif
+        @else
+          <span class="text-muted">—</span>
+        @endif
       </div>
     </div>
-  @endforeach
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card shadow-sm p-3 text-center h-100">
+      <div class="text-muted small">الجامعات</div>
+      <div class="display-6 fw-bold">{{ number_format($totalUniversities) }}</div>
+      <a href="{{ route('admin.universities.index') }}" class="stretched-link"></a>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card shadow-sm p-3 text-center h-100">
+      <div class="text-muted small">الكليات</div>
+      <div class="display-6 fw-bold">{{ number_format($totalColleges) }}</div>
+      <a href="{{ route('admin.colleges.index') }}" class="stretched-link"></a>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card shadow-sm p-3 text-center h-100">
+      <div class="text-muted small">التخصصات</div>
+      <div class="display-6 fw-bold">{{ number_format($totalMajors) }}</div>
+      <a href="{{ route('admin.majors.index') }}" class="stretched-link"></a>
+    </div>
+  </div>
+
+  <div class="col-6 col-md-3">
+    <div class="card shadow-sm p-3 text-center h-100">
+      <div class="text-muted small">المواد</div>
+      <div class="display-6 fw-bold">{{ number_format($totalMaterials) }}</div>
+      <div class="small text-muted">مفعل: {{ number_format($activeMaterials) }}</div>
+      <a href="{{ route('admin.materials.index') }}" class="stretched-link"></a>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card shadow-sm p-3 text-center h-100">
+      <div class="text-muted small">الدكاترة</div>
+      <div class="display-6 fw-bold">{{ number_format($totalDoctors) }}</div>
+      <div class="small text-muted">مفعل: {{ number_format($activeDoctors) }}</div>
+      <a href="{{ route('admin.doctors.index') }}" class="stretched-link"></a>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card shadow-sm p-3 text-center h-100">
+      <div class="text-muted small">الأجهزة/المهام</div>
+      <div class="display-6 fw-bold">{{ number_format($totalDevices) }}</div>
+      <div class="small text-muted">مفعل: {{ number_format($activeDevices) }}</div>
+      <a href="{{ route('admin.devices.index') }}" class="stretched-link"></a>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="card shadow-sm p-3 text-center h-100">
+      <div class="text-muted small">المحتوى التعليمي</div>
+      <div class="display-6 fw-bold">{{ number_format($totalContents) }}</div>
+      <div class="small text-muted">
+        ملفات: {{ $cntFile }} / فيديو: {{ $cntVideo }} / روابط: {{ $cntLink }}
+      </div>
+      <a href="{{ route('admin.contents.index') }}" class="stretched-link"></a>
+    </div>
+  </div>
 </div>
 
 {{-- Charts --}}
-<div class="row g-3 mb-4">
-  <div class="col-lg-8">
-    <div class="card border-0 shadow-sm">
-      <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-          <h6 class="mb-0">الإيرادات الشهرية (آخر 12 شهر)</h6>
-          <span class="text-muted small">USD</span>
-        </div>
-        <canvas id="revenueChart" height="110"></canvas>
+<div class="row g-3 mt-1">
+  <div class="col-lg-6">
+    <div class="card shadow-sm p-3 h-100">
+      <div class="d-flex justify-content-between">
+        <h6 class="mb-3">توزيع الطلاب على الجامعات (Top 10)</h6>
+        <span class="text-muted small">الذكور: {{ $maleCount }} / الإناث: {{ $femaleCount }}</span>
       </div>
+      <canvas id="chartStudentsPerUni" height="180"></canvas>
     </div>
   </div>
-  <div class="col-lg-4">
-    <div class="card border-0 shadow-sm mb-3">
-      <div class="card-body">
-        <h6 class="mb-3">توزيع الأقسام</h6>
-        <canvas id="deptChart" height="180"></canvas>
-      </div>
-    </div>
-    <div class="card border-0 shadow-sm">
-      <div class="card-body">
-        <h6 class="mb-3">نمو المستخدمين</h6>
-        <canvas id="usersChart" height="140"></canvas>
-      </div>
+  <div class="col-lg-6">
+    <div class="card shadow-sm p-3 h-100">
+      <h6 class="mb-3">نمو عدد الطلاب (آخر 12 شهرًا)</h6>
+      <canvas id="chartStudentsMonthly" height="180"></canvas>
     </div>
   </div>
 </div>
 
-{{-- Table + Side widgets --}}
-<div class="row g-3">
-  <div class="col-lg-8">
-    <div class="card border-0 shadow-sm">
-      <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-          <h6 class="mb-0">أحدث عمليات التسجيل</h6>
-          <a href="#" class="small">عرض الكل</a>
-        </div>
-        <div class="table-responsive">
-          <table class="table align-middle mb-0">
-            <thead class="table-light">
+{{-- Latest Activity --}}
+<div class="row g-3 mt-1">
+  <div class="col-lg-6">
+    <div class="card shadow-sm">
+      <div class="card-header bg-white"><strong>أحدث الطلاب</strong></div>
+      <div class="table-responsive">
+        <table class="table table-sm mb-0 align-middle">
+          <thead class="table-light">
+            <tr><th>الاسم</th><th>الرقم الأكاديمي</th><th>الجامعة</th><th>التاريخ</th></tr>
+          </thead>
+          <tbody>
+            @forelse($latestStudents as $s)
               <tr>
-                <th>الطالب</th>
-                <th>المقرر</th>
-                <th>الحالة</th>
-                <th class="text-center">التاريخ</th>
+                <td>{{ $s->name ?? '—' }}</td>
+                <td class="text-muted">{{ $s->student_number ?? '—' }}</td>
+                <td class="small text-muted">{{ optional($s->university)->name ?? '—' }}</td>
+                <td class="small text-muted">{{ $s->created_at?->format('Y-m-d') }}</td>
               </tr>
-            </thead>
-            <tbody>
-              @foreach ($recentEnrollments as $row)
-                <tr>
-                  <td>{{ $row['student'] }}</td>
-                  <td>{{ $row['course'] }}</td>
-                  <td>
-                    <span class="badge status-badge {{ $row['status'] }}">{{ $row['status'] }}</span>
-                  </td>
-                  <td class="text-center text-muted">{{ $row['date'] }}</td>
-                </tr>
-              @endforeach
-            </tbody>
-          </table>
-        </div>
+            @empty
+              <tr><td colspan="4" class="text-center text-muted">—</td></tr>
+            @endforelse
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
-
-  <div class="col-lg-4">
-    <div class="card border-0 shadow-sm mb-3">
-      <div class="card-body">
-        <h6 class="mb-3">التنبيهات</h6>
-        <ul class="list-group list-group-flush">
-          @foreach ($notifications as $n)
-            <li class="list-group-item d-flex align-items-center gap-2">
-              @if($n['type']==='warning')
-                <span class="badge text-bg-warning">تنبيه</span>
-              @elseif($n['type']==='success')
-                <span class="badge text-bg-success">نجاح</span>
-              @else
-                <span class="badge text-bg-info">معلومة</span>
-              @endif
-              <span>{{ $n['text'] }}</span>
-            </li>
-          @endforeach
-        </ul>
-      </div>
-    </div>
-
-    <div class="card border-0 shadow-sm">
-      <div class="card-body">
-        <h6 class="mb-3">المهام</h6>
-        <ul class="list-group list-group-flush">
-          @foreach ($tasks as $t)
-            <li class="list-group-item d-flex align-items-center justify-content-between">
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" {{ $t['done'] ? 'checked' : '' }} disabled>
-                <label class="form-check-label">{{ $t['title'] }}</label>
-              </div>
-              <span class="badge {{ $t['done'] ? 'text-bg-success' : 'text-bg-secondary' }}">
-                {{ $t['done'] ? 'مكتمل' : 'قيد التنفيذ' }}
-              </span>
-            </li>
-          @endforeach
-        </ul>
+  <div class="col-lg-6">
+    <div class="card shadow-sm">
+      <div class="card-header bg-white"><strong>أحدث المحتوى</strong></div>
+      <div class="table-responsive">
+        <table class="table table-sm mb-0 align-middle">
+          <thead class="table-light">
+            <tr><th>العنوان</th><th>النوع</th><th>الجامعة</th><th>التاريخ</th></tr>
+          </thead>
+          <tbody>
+            @forelse($latestContent as $c)
+              <tr>
+                <td>{{ $c->title }}</td>
+                <td class="small">
+                  @if($c->type==='file') <span class="badge bg-secondary">ملف</span>
+                  @elseif($c->type==='video') <span class="badge bg-info text-dark">فيديو</span>
+                  @else <span class="badge bg-light text-dark">رابط</span>
+                  @endif
+                </td>
+                <td class="small text-muted">{{ optional($c->university)->name ?? '—' }}</td>
+                <td class="small text-muted">{{ $c->created_at?->format('Y-m-d') }}</td>
+              </tr>
+            @empty
+              <tr><td colspan="4" class="text-center text-muted">—</td></tr>
+            @endforelse
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
 </div>
+
+{{-- Universities Quick Summary --}}
+<div class="card shadow-sm mt-3">
+  <div class="card-header bg-white"><strong>ملخص سريع للجامعات</strong></div>
+  <div class="table-responsive">
+    <table class="table table-sm mb-0 align-middle">
+      <thead class="table-light">
+        <tr><th>الجامعة</th><th>الطلاب</th><th>الكليات</th><th>المواد</th></tr>
+      </thead>
+      <tbody>
+        @forelse($universitiesQuick as $u)
+          <tr>
+            <td class="fw-semibold">{{ $u->name }}</td>
+            <td class="text-muted">
+              {{ number_format(\App\Models\User::where('university_id',$u->id)->count()) }}
+            </td>
+            <td class="text-muted">
+              {{ number_format(\App\Models\College::where('university_id',$u->id)->count()) }}
+            </td>
+            <td class="text-muted">
+              {{ number_format(\App\Models\Material::where('university_id',$u->id)->count()) }}
+            </td>
+          </tr>
+        @empty
+          <tr><td colspan="4" class="text-center text-muted">—</td></tr>
+        @endforelse
+      </tbody>
+    </table>
+  </div>
+</div>
+
 @endsection
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script>
-  const revenueLabels = @json($revenueSeries['labels']);
-  const revenueData   = @json($revenueSeries['data']);
+  // بيانات الرسم: الطلاب لكل جامعة (Top 10)
+  const uniLabels = @json($studentsPerUniversity->pluck('uname')->map(fn($n)=>$n ?: '—'));
+  const uniData   = @json($studentsPerUniversity->pluck('c'));
 
-  const usersLabels = @json($usersSeries['labels']);
-  const usersData   = @json($usersSeries['data']);
+  new Chart(document.getElementById('chartStudentsPerUni'), {
+    type: 'bar',
+    data: {
+      labels: uniLabels,
+      datasets: [{
+        label: 'عدد الطلاب',
+        data: uniData,
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: { y: { beginAtZero: true } }
+    }
+  });
 
-  const deptLabels = @json($deptDistribution['labels']);
-  const deptData   = @json($deptDistribution['data']);
+  // بيانات الرسم: نمو الطلاب شهريًا
+  const monthlyLabels = @json($studentsMonthly->pluck('ym'));
+  const monthlyData   = @json($studentsMonthly->pluck('c'));
 
-  // Revenue (Line)
-  new Chart(document.getElementById('revenueChart'), {
+  new Chart(document.getElementById('chartStudentsMonthly'), {
     type: 'line',
     data: {
-      labels: revenueLabels,
-      datasets: [{ label: 'الإيرادات', data: revenueData, tension: 0.35, fill: true }]
+      labels: monthlyLabels,
+      datasets: [{
+        label: 'طلاب جدد',
+        data: monthlyData,
+        tension: 0.3,
+        fill: false,
+        borderWidth: 2
+      }]
     },
-    options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: false } } }
-  });
-
-  // Departments (Doughnut)
-  new Chart(document.getElementById('deptChart'), {
-    type: 'doughnut',
-    data: { labels: deptLabels, datasets: [{ data: deptData }] },
-    options: { plugins: { legend: { position: 'bottom' } } }
-  });
-
-  // Users growth (Bar)
-  new Chart(document.getElementById('usersChart'), {
-    type: 'bar',
-    data: { labels: usersLabels, datasets: [{ label: 'مستخدمون', data: usersData }] },
-    options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+    options: {
+      responsive: true,
+      scales: { y: { beginAtZero: true } }
+    }
   });
 </script>
 @endpush
