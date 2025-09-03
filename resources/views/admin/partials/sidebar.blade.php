@@ -149,6 +149,12 @@
                 مناهج الثانوية
             </a>
         </div>
+        <div class="nav-item">
+            <a href="javascript:void(0)" class="nav-link text-muted" title="عرض فقط" onclick="return false;">
+                <i class="bi bi-person-gear"></i>
+                إدارة التقارير
+            </a>
+        </div>
 
 
     </nav>
