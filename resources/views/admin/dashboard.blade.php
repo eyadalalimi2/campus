@@ -431,59 +431,45 @@
             </div>
         </div>
 
-        {{-- أحدث المدونات (وهمية حالياً) --}}
-        <div class="col-lg-6">
-            <div class="card card-soft h-100">
-                <div class="card-header bg-white"><strong>أحدث المدونات</strong></div>
-                <div class="table-responsive">
-                    <table class="table table-sm mb-0 align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th>العنوان</th>
-                                <th>الكاتب</th>
-                                <th>الحالة</th>
-                                <th>التاريخ</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>أحدث اتجاهات التعليم في اليمن</td>
-                                <td class="text-muted">فريق التحرير</td>
-                                <td><span class="badge bg-success">منشورة</span></td>
-                                <td class="small text-muted">2025-09-01</td>
-                            </tr>
-                            <tr>
-                                <td>تأثير التحول الرقمي على الجامعات</td>
-                                <td class="text-muted">د. أحمد القحطاني</td>
-                                <td><span class="badge bg-success">منشورة</span></td>
-                                <td class="small text-muted">2025-08-27</td>
-                            </tr>
-                            <tr>
-                                <td>تطوير المناهج التعليمية الجامعية</td>
-                                <td class="text-muted">فريق التحرير</td>
-                                <td><span class="badge bg-secondary">مسودة</span></td>
-                                <td class="small text-muted">2025-08-25</td>
-                            </tr>
-                            <tr>
-                                <td>أهمية البحث العلمي في الجامعات اليمنية</td>
-                                <td class="text-muted">د. سارة العدني</td>
-                                <td><span class="badge bg-success">منشورة</span></td>
-                                <td class="small text-muted">2025-08-20</td>
-                            </tr>
-                            <tr>
-                                <td>تعزيز الابتكار في التعليم الجامعي</td>
-                                <td class="text-muted">فريق التحرير</td>
-                                <td><span class="badge bg-danger">محذوفة</span></td>
-                                <td class="small text-muted">2025-08-15</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="card-footer bg-white text-end">
-                    <a href="#" class="btn btn-sm btn-outline-secondary">عرض الكل</a>
-                </div>
-            </div>
-        </div>
+       {{-- أحدث المدونات (بيانات حقيقية) --}}
+<div class="col-lg-6">
+  <div class="card card-soft h-100">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+      <strong>أحدث المدونات</strong>
+      <a href="{{ route('admin.blogs.index') }}" class="btn btn-sm btn-outline-secondary">عرض الكل</a>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-sm mb-0 align-middle">
+        <thead class="table-light">
+          <tr><th>العنوان</th><th>الكاتب</th><th>الحالة</th><th>التاريخ</th></tr>
+        </thead>
+        <tbody>
+          @forelse($latestBlogs as $b)
+            <tr>
+              <td class="fw-semibold">{{ $b->title }}</td>
+              <td class="text-muted">{{ $b->doctor?->name ?? 'فريق التحرير' }}</td>
+              <td>
+                @switch($b->status)
+                  @case('published') <span class="badge bg-success">منشورة</span> @break
+                  @case('draft')     <span class="badge bg-secondary">مسودة</span>  @break
+                  @case('archived')  <span class="badge bg-dark">مؤرشفة</span>      @break
+                  @default           <span class="badge bg-light text-dark">{{ $b->status }}</span>
+                @endswitch
+              </td>
+              <td class="small text-muted">
+                {{ ($b->published_at ?? $b->created_at)?->format('Y-m-d') }}
+              </td>
+            </tr>
+          @empty
+            <tr><td colspan="4" class="text-center text-muted">لا توجد تدوينات بعد.</td></tr>
+          @endforelse
+        </tbody>
+      </table>
+    </div>
+   
+  </div>
+</div>
+
     </div>
     </div>
 

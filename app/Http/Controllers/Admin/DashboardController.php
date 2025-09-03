@@ -21,6 +21,11 @@ class DashboardController extends Controller
 {
     public function index()
     {
+        // أحدث المدونات
+        $latestBlogs = Blog::with('doctor')
+            ->orderByRaw('COALESCE(published_at, created_at) DESC')
+            ->limit(5)
+            ->get(['id', 'title', 'status', 'doctor_id', 'published_at', 'created_at']);
         // ——— المدونات (حقيقي)
         $blogTotal     = Blog::count();
         $blogPublished = Blog::where('status', 'published')->count();
@@ -228,7 +233,8 @@ class DashboardController extends Controller
             'blogArchived',
             'subTotal',
             'subActive',
-            'subOther'
+            'subOther',
+            'latestBlogs'
         ));
     }
 }
