@@ -36,13 +36,39 @@
             </select>
         </div>
         <div class="col-md-2">
-            <select name="country_id" class="form-select" onchange="this.form.submit()">
-                <option value="">— الدولة —</option>
-                @foreach ($majors as $m)
-                    <option value="{{ $m->id }}" @selected(request('major_id') == $m->id)>{{ $m->name }}</option>
+            <select name="country" class="form-select" onchange="this.form.submit()">
+                <option value="">— كل الدول —</option>
+                @php
+                    $arabCountries = [
+                        'اليمن',
+                        'السعودية',
+                        'الإمارات',
+                        'قطر',
+                        'الكويت',
+                        'البحرين',
+                        'عُمان',
+                        'مصر',
+                        'الأردن',
+                        'فلسطين',
+                        'سوريا',
+                        'لبنان',
+                        'العراق',
+                        'الجزائر',
+                        'المغرب',
+                        'تونس',
+                        'ليبيا',
+                        'السودان',
+                        'موريتانيا',
+                    ];
+                @endphp
+                @foreach ($arabCountries as $country)
+                    <option value="{{ $country }}" @selected(request('country') == $country)>
+                        {{ $country }}
+                    </option>
                 @endforeach
             </select>
         </div>
+
         <div class="col-md-1">
             <input type="number" name="level" class="form-control" value="{{ request('level') }}" placeholder="مستوى">
         </div>
@@ -129,10 +155,8 @@
                             @endif
                         </td>
                         <td class="text-center">
-                            <a href="{{ route('admin.users.show', $u) }}"
-                                class="btn btn-sm btn-outline-secondary">عرض</a>
-                            <a href="{{ route('admin.users.edit', $u) }}"
-                                class="btn btn-sm btn-outline-primary">تعديل</a>
+                            <a href="{{ route('admin.users.show', $u) }}" class="btn btn-sm btn-outline-secondary">عرض</a>
+                            <a href="{{ route('admin.users.edit', $u) }}" class="btn btn-sm btn-outline-primary">تعديل</a>
                             <form action="{{ route('admin.users.destroy', $u) }}" method="POST" class="d-inline">
                                 @csrf @method('DELETE')
                                 <button class="btn btn-sm btn-outline-danger"
