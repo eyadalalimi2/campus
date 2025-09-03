@@ -1,32 +1,48 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Site\StudentAuthController;
+use App\Http\Controllers\Site\StudentDashboardController;
+use App\Http\Controllers\Site\StudentVerificationController;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "web" middleware group. Make something great!
-*/
 
-Route::get('/', function () {
-    return view('welcome');
-});
 Route::get('/', function () {
     return view('site.home');
 })->name('site.home');
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+// ضيوف (دخول/تسجيل/نسيت كلمة المرور + صفحة إعادة التعيين بالـ token)
+Route::middleware('guest')->group(function () {
+    Route::get('/login',  [StudentAuthController::class, 'showLogin'])->name('login');
+    Route::post('/login', [StudentAuthController::class, 'login'])->name('login.post');
 
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get('/register',  [StudentAuthController::class, 'showRegister'])->name('register');
+    Route::post('/register', [StudentAuthController::class, 'register'])->name('register.post');
+
+    Route::get('/password/forgot', [StudentAuthController::class, 'showForgot'])->name('password.request');
+    Route::post('/password/email',  [StudentAuthController::class, 'sendResetLink'])->name('password.email');
+
+    // صفحة إعادة التعيين عبر الرابط (token)
+    Route::get('/password/reset/{token}', [StudentAuthController::class, 'showReset'])->name('password.reset');
+    Route::post('/password/reset',          [StudentAuthController::class, 'reset'])->name('password.update');
 });
 
-require __DIR__.'/auth.php';
+// خروج
+Route::post('/logout', [StudentAuthController::class, 'logout'])->middleware('auth')->name('logout');
+
+// التحقّق بالبريد (Email Verification)
+Route::prefix('email')->middleware('auth')->group(function () {
+    // صفحة إشعار “تحقّق من بريدك”
+    Route::get('/verify', [StudentVerificationController::class, 'notice'])->name('verification.notice');
+
+    // رابط التفعيل الموقّع
+    Route::get('/verify/{id}/{hash}', [StudentVerificationController::class, 'verify'])
+        ->middleware('signed')->name('verification.verify');
+
+    // إعادة إرسال رسالة التفعيل
+    Route::post('/verification-notification', [StudentVerificationController::class, 'resend'])
+        ->middleware('throttle:6,1')->name('verification.send');
+});
+
+// لوحة تحكم الطالب — تتطلب بريدًا مفعّلًا
+Route::prefix('student')->middleware(['auth','verified'])->group(function () {
+    Route::get('/dashboard', [StudentDashboardController::class, 'index'])->name('student.dashboard');
+});
