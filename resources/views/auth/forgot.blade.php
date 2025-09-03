@@ -8,6 +8,9 @@
 @if($errors->any())
   <div class="alert alert-danger small">{{ $errors->first() }}</div>
 @endif
+{{-- الشعار --}}
+        <img src="{{ asset('storage/images/icon.png') }}" alt="شعار المناهج الأكاديمية"
+             class="d-block mx-auto mb-3" style="height:150px;width:auto;">
 
 <form method="POST" action="{{ route('password.email') }}" class="vstack gap-3">
   @csrf

@@ -5,7 +5,9 @@
 @if (session('status'))
   <div class="alert alert-success small">{{ session('status') }}</div>
 @endif
-
+{{-- الشعار --}}
+        <img src="{{ asset('storage/images/icon.png') }}" alt="شعار المناهج الأكاديمية"
+             class="d-block mx-auto mb-3" style="height:150px;width:auto;">
 <div class="text-center mb-3">
   <h5 class="fw-bold">رجاءً فعّل بريدك الإلكتروني</h5>
   <p class="text-muted small mb-0">
