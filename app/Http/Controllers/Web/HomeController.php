@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Web;
 
 use Illuminate\View\View;
 
-class HomeController extends Controller
+class HomeController extends \App\Http\Controllers\Controller
 {
     public function index(): View
     {
