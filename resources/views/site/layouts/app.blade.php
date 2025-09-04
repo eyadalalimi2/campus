@@ -37,7 +37,7 @@
     <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
         <div class="container">
             <a class="navbar-brand d-flex align-items-center gap-2" href="{{ route('site.home') }}">
-                <img src="{{ asset(ltrim($themeVars['logoPath'],'/')) }}" alt="Logo" style="height:40px">
+                 <img src="{{ Storage::url('images/logo.png') }}" alt="Logo" style="height:40px">
                 <link rel="icon" href="{{ asset(ltrim($themeVars['faviconPath'],'/')) }}">
                 <span class="fw-bold">{{ $currentUniversity->name ?? 'المنهج الاكاديمي' }}</span>
             </a>
