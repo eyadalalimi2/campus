@@ -54,7 +54,7 @@ class AppServiceProvider extends ServiceProvider
             $defaults = [
                 'primary'    => '#0d6efd',
                 'secondary'  => '#6c757d',
-                'logoPath'   => '/storage/images/default-logo.png',
+                'logoPath'   => '/storage/images/icon.png',
                 'faviconPath' => '/storage/images/default-favicon.ico',
                 'mode'       => 'auto',
             ];
