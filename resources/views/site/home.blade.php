@@ -31,7 +31,6 @@
 
         <div class="d-flex align-items-center gap-2 mb-3">
           <img src="{{ $themeVars['logoUrl'] ?? asset('storage/images/icon.png') }}" alt="Logo" style="height:44px;object-fit:contain">
-          <img src="{{ asset(ltrim($themeVars['logoPath'],'/')) }}" alt="Logo" style="height:44px">
           <span class="badge" style="background: {{ $s }}; color:#fff">{{ $currentUniversity->name ?? 'بوابة الجامعات' }}</span>
         </div>
 
