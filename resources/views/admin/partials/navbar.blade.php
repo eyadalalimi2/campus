@@ -57,7 +57,7 @@
                                 حساب المشرف
                             </li>
                             <li>
-                                <a class="dropdown-item" href="{{ route('profile.edit') }}">
+                                <a class="dropdown-item" href="javascript:void(0)">
                                     <i class="bi bi-person-gear me-2"></i> الملف الشخصي
                                 </a>
                             </li>
