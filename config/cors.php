@@ -2,19 +2,6 @@
 
 return [
 
-    /*
-    |--------------------------------------------------------------------------
-    | Cross-Origin Resource Sharing (CORS) Configuration
-    |--------------------------------------------------------------------------
-    |
-    | Here you may configure your settings for cross-origin resource sharing
-    | or "CORS". This determines what cross-origin operations may execute
-    | in web browsers. You are free to adjust these settings as needed.
-    |
-    | To learn more: https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
-    |
-    */
-
     'paths' => ['api/*', 'sanctum/csrf-cookie'],
 
     'allowed_methods' => ['*'],
@@ -25,10 +12,13 @@ return [
 
     'allowed_headers' => ['*'],
 
-    'exposed_headers' => [],
+    // كشف بعض الرؤوس للعميل (مفيد للتعامل مع المعدّل والترقيم)
+    'exposed_headers' => ['Authorization', 'X-RateLimit-Limit', 'X-RateLimit-Remaining', 'Retry-After'],
 
-    'max_age' => 0,
+    // تخزين نتيجة الـ preflight في المتصفح (لا يؤثر على تطبيق أندرويد)
+    'max_age' => 3600,
 
+    // لواجهة Android عبر Bearer لا نحتاج كوكيز stateful
     'supports_credentials' => false,
 
 ];
