@@ -24,7 +24,7 @@ class AcademicCalendarController extends Controller
     public function store(AcademicCalendarRequest $request)
     {
         AcademicCalendar::create($request->validated());
-        return redirect()->route('admin.academic_calendars.index')->with('success','تم إنشاء التقويم بنجاح.');
+        return redirect()->route('admin.academic-calendars.index')->with('success','تم إنشاء التقويم بنجاح.');
     }
 
     public function edit(AcademicCalendar $academic_calendar)
@@ -36,12 +36,12 @@ class AcademicCalendarController extends Controller
     public function update(AcademicCalendarRequest $request, AcademicCalendar $academic_calendar)
     {
         $academic_calendar->update($request->validated());
-        return redirect()->route('admin.academic_calendars.index')->with('success','تم تحديث التقويم بنجاح.');
+        return redirect()->route('admin.academic-calendars.index')->with('success','تم تحديث التقويم بنجاح.');
     }
 
     public function destroy(AcademicCalendar $academic_calendar)
     {
         $academic_calendar->delete();
-        return redirect()->route('admin.academic_calendars.index')->with('success','تم حذف التقويم بنجاح.');
+        return redirect()->route('admin.academic-calendars.index')->with('success','تم حذف التقويم بنجاح.');
     }
 }

@@ -24,7 +24,7 @@ class AcademicTermController extends Controller
     public function store(AcademicTermRequest $request)
     {
         AcademicTerm::create($request->validated());
-        return redirect()->route('admin.academic_terms.index')->with('success','تم إضافة الفصل بنجاح.');
+        return redirect()->route('admin.academic-terms.index')->with('success','تم إضافة الفصل بنجاح.');
     }
 
     public function edit(AcademicTerm $academic_term)
@@ -36,12 +36,12 @@ class AcademicTermController extends Controller
     public function update(AcademicTermRequest $request, AcademicTerm $academic_term)
     {
         $academic_term->update($request->validated());
-        return redirect()->route('admin.academic_terms.index')->with('success','تم تحديث الفصل بنجاح.');
+        return redirect()->route('admin.academic-terms.index')->with('success','تم تحديث الفصل بنجاح.');
     }
 
     public function destroy(AcademicTerm $academic_term)
     {
         $academic_term->delete();
-        return redirect()->route('admin.academic_terms.index')->with('success','تم حذف الفصل بنجاح.');
+        return redirect()->route('admin.academic-terms.index')->with('success','تم حذف الفصل بنجاح.');
     }
 }

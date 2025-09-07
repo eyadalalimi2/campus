@@ -30,6 +30,6 @@
             @endforeach
         </tbody>
     </table>
-    {{ $disciplines->links() }}
+    {{ $disciplines->links('vendor.pagination.bootstrap-custom') }}
 </div>
 @endsection

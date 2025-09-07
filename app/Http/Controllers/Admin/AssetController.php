@@ -20,7 +20,13 @@ class AssetController extends Controller
             ->latest()
             ->paginate(15);
 
-        return view('admin.assets.index', compact('assets'));
+        $disciplines = Discipline::orderBy('name')->get();
+        $programs    = Program::orderBy('name')->get();
+        $materials   = Material::orderBy('name')->get();
+        $devices     = Device::orderBy('name')->get();
+        $doctors     = Doctor::orderBy('name')->get();
+
+        return view('admin.assets.index', compact('assets', 'disciplines', 'programs', 'materials', 'devices', 'doctors'));
     }
 
     public function create()

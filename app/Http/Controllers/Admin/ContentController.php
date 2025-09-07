@@ -21,7 +21,12 @@ class ContentController extends Controller
             ->latest()
             ->paginate(15);
 
-        return view('admin.contents.index', compact('contents'));
+        $universities = University::orderBy('name')->get();
+        $colleges     = College::orderBy('name')->get();
+        $majors       = Major::orderBy('name')->get();
+        $doctors      = Doctor::orderBy('name')->get();
+
+        return view('admin.contents.index', compact('contents', 'universities', 'colleges', 'majors', 'doctors'));
     }
 
     public function create()

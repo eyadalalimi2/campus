@@ -3,7 +3,7 @@
 @section('content')
 <div class="container">
     <h1>الفصول الأكاديمية</h1>
-    <a href="{{ route('admin.academic_terms.create') }}" class="btn btn-primary mb-3">إضافة فصل جديد</a>
+    <a href="{{ route('admin.academic-terms.create') }}" class="btn btn-primary mb-3">إضافة فصل جديد</a>
     <table class="table table-bordered">
         <thead>
             <tr>
@@ -28,8 +28,8 @@
                 <td>{{ $term->ends_on->format('Y-m-d') }}</td>
                 <td>{{ $term->is_active ? 'نعم' : 'لا' }}</td>
                 <td>
-                    <a href="{{ route('admin.academic_terms.edit',$term) }}" class="btn btn-sm btn-warning">تعديل</a>
-                    <form action="{{ route('admin.academic_terms.destroy',$term) }}" method="POST" class="d-inline-block" onsubmit="return confirm('هل أنت متأكد من الحذف؟');">
+                    <a href="{{ route('admin.academic-terms.edit',$term) }}" class="btn btn-sm btn-warning">تعديل</a>
+                    <form action="{{ route('admin.academic-terms.destroy',$term) }}" method="POST" class="d-inline-block" onsubmit="return confirm('هل أنت متأكد من الحذف؟');">
                         @csrf @method('DELETE')
                         <button class="btn btn-sm btn-danger">حذف</button>
                     </form>
@@ -38,6 +38,6 @@
             @endforeach
         </tbody>
     </table>
-    {{ $terms->links() }}
+    {{ $terms->links('vendor.pagination.bootstrap-custom') }}
 </div>
 @endsection
