@@ -7,12 +7,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class College extends Model
+class Program extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'university_id',
+        'discipline_id',
         'name',
         'is_active',
     ];
@@ -21,13 +21,13 @@ class College extends Model
         'is_active' => 'boolean',
     ];
 
-    public function university(): BelongsTo
+    public function discipline(): BelongsTo
     {
-        return $this->belongsTo(University::class);
+        return $this->belongsTo(Discipline::class);
     }
 
-    public function majors(): HasMany
+    public function assets(): HasMany
     {
-        return $this->hasMany(Major::class);
+        return $this->hasMany(Asset::class);
     }
 }

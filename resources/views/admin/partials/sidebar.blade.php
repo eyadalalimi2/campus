@@ -79,6 +79,7 @@
                 <i class="bi bi-people"></i> إدارة الطلاب
             </a>
         </div>
+
         {{-- إدارة المحتوى --}}
         <div class="section-title mt-3">
             <i class="bi bi-folder2-open"></i> إدارة المحتوى
@@ -91,7 +92,7 @@
             </a>
         </div>
 
-        {{-- إدارة الاستيراد --}}
+        {{-- إدارة الاستيراد والثيمات --}}
         <div class="section-title mt-3">
             <i class="bi bi-cloud-arrow-up-fill"></i> إدارة الاستيراد
         </div>
@@ -109,6 +110,8 @@
                 إدارة الثيمات
             </a>
         </div>
+
+        {{-- المدونة والاشتراكات --}}
         <div class="section-title mt-3">
             <i class="bi bi-journal-richtext"></i> المدونة والاشتراكات
         </div>
@@ -125,12 +128,40 @@
             </a>
         </div>
 
+        {{-- الإدارة الأكاديمية --}}
+        <div class="section-title mt-3">
+            <i class="bi bi-mortarboard"></i> الإدارة الأكاديمية
+        </div>
+        <div class="nav-item">
+            <a href="{{ route('admin.countries.index') }}" class="nav-link {{ request()->is('admin/countries*') ? 'active' : '' }}">
+                <i class="bi bi-globe2"></i> إدارة الدول
+            </a>
+        </div>
+        <div class="nav-item">
+            <a href="{{ route('admin.disciplines.index') }}" class="nav-link {{ request()->is('admin/disciplines*') ? 'active' : '' }}">
+                <i class="bi bi-bookmark"></i> المجالات
+            </a>
+        </div>
+        <div class="nav-item">
+            <a href="{{ route('admin.programs.index') }}" class="nav-link {{ request()->is('admin/programs*') ? 'active' : '' }}">
+                <i class="bi bi-collection"></i> البرامج
+            </a>
+        </div>
+        <div class="nav-item">
+            <a href="{{ route('admin.academic-calendars.index') }}" class="nav-link {{ request()->is('admin/academic-calendars*') ? 'active' : '' }}">
+                <i class="bi bi-calendar4-week"></i> التقويم الأكاديمي
+            </a>
+        </div>
+        <div class="nav-item">
+            <a href="{{ route('admin.academic-terms.index') }}" class="nav-link {{ request()->is('admin/academic-terms*') ? 'active' : '' }}">
+                <i class="bi bi-calendar"></i> الفصول الأكاديمية
+            </a>
+        </div>
 
-        {{-- روابط للعرض فقط (غير مرتبطة بصفحات فعلية) --}}
+        {{-- ميزات مستقبلية (روابط غير مفعلة حالياً) --}}
         <div class="section-title mt-3">
             <i class="bi bi-eye"></i> ميزات مستقبلية
         </div>
-        
         <div class="nav-item">
             <a href="javascript:void(0)" class="nav-link text-muted" title="عرض فقط" onclick="return false;">
                 <i class="bi bi-sliders"></i>
@@ -155,7 +186,6 @@
                 إدارة التقارير
             </a>
         </div>
-
 
     </nav>
 </aside>

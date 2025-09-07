@@ -186,6 +186,65 @@
             </div>
         </div>
     </div>
+    {{-- صف جديد لبطاقات المجالات والبرامج والتقويمات والفصول --}}
+<div class="row g-3 mt-1">
+    {{-- المجالات --}}
+    <div class="col-12 col-md-6 col-xl-3">
+        <div class="card kpi-card grad-disc p-3 h-100">
+            <div class="icon-wrap"><i class="bi bi-bookmark-fill"></i></div>
+            <div class="muted">عدد المجالات</div>
+            <div class="value">{{ number_format($discTotal) }}</div>
+            <div class="d-flex gap-3 mt-2 small">
+                <span class="badge bg-light text-dark">مفعل: {{ number_format($discActive) }}</span>
+                <span class="badge bg-dark">موقوف: {{ number_format($discInactive) }}</span>
+            </div>
+            <a class="stretched-link" href="{{ route('admin.disciplines.index') }}"></a>
+        </div>
+    </div>
+
+    {{-- البرامج --}}
+    <div class="col-12 col-md-6 col-xl-3">
+        <div class="card kpi-card grad-prog p-3 h-100">
+            <div class="icon-wrap"><i class="bi bi-collection-fill"></i></div>
+            <div class="muted">عدد البرامج</div>
+            <div class="value">{{ number_format($progTotal) }}</div>
+            <div class="d-flex gap-3 mt-2 small">
+                <span class="badge bg-light text-dark">مفعل: {{ number_format($progActive) }}</span>
+                <span class="badge bg-dark">موقوف: {{ number_format($progInactive) }}</span>
+            </div>
+            <a class="stretched-link" href="{{ route('admin.programs.index') }}"></a>
+        </div>
+    </div>
+
+    {{-- التقاويم الأكاديمية --}}
+    <div class="col-12 col-md-6 col-xl-3">
+        <div class="card kpi-card grad-cal p-3 h-100">
+            <div class="icon-wrap"><i class="bi bi-calendar3"></i></div>
+            <div class="muted">التقاويم الأكاديمية</div>
+            <div class="value">{{ number_format($calTotal) }}</div>
+            <div class="d-flex gap-3 mt-2 small">
+                <span class="badge bg-light text-dark">نشطة: {{ number_format($calActive) }}</span>
+                <span class="badge bg-dark">موقوفة: {{ number_format($calInactive) }}</span>
+            </div>
+            <a class="stretched-link" href="{{ route('admin.academic-calendars.index') }}"></a>
+        </div>
+    </div>
+
+    {{-- الفصول الأكاديمية --}}
+    <div class="col-12 col-md-6 col-xl-3">
+        <div class="card kpi-card grad-term p-3 h-100">
+            <div class="icon-wrap"><i class="bi bi-calendar-event-fill"></i></div>
+            <div class="muted">الفصول الأكاديمية</div>
+            <div class="value">{{ number_format($termTotal) }}</div>
+            <div class="d-flex gap-3 mt-2 small">
+                <span class="badge bg-light text-dark">نشطة: {{ number_format($termActive) }}</span>
+                <span class="badge bg-dark">موقوفة: {{ number_format($termInactive) }}</span>
+            </div>
+            <a class="stretched-link" href="{{ route('admin.academic-terms.index') }}"></a>
+        </div>
+    </div>
+</div>
+
 
     {{-- =============== --}}
     {{-- Notifications  --}}
@@ -505,4 +564,150 @@
 ], JSON_UNESCAPED_UNICODE) !!}
 </script>
     <script src="{{ asset('js/dashboard.js') }}"></script>
+@endpush
+@php $isEdit = isset($asset); @endphp
+<div class="row g-3">
+  <div class="col-md-3">
+    <label class="form-label">الفئة</label>
+    @php $cat = old('category',$asset->category ?? 'file'); @endphp
+    <select name="category" id="category" class="form-select" onchange="toggleCategory()" required>
+      <option value="youtube"       @selected($cat==='youtube')>يوتيوب</option>
+      <option value="file"          @selected($cat==='file')>ملف</option>
+      <option value="reference"     @selected($cat==='reference')>مرجع</option>
+      <option value="question_bank" @selected($cat==='question_bank')>بنك أسئلة</option>
+      <option value="curriculum"    @selected($cat==='curriculum')>منهج</option>
+      <option value="book"          @selected($cat==='book')>كتاب</option>
+    </select>
+  </div>
+  <div class="col-md-6">
+    <label class="form-label">العنوان</label>
+    <input type="text" name="title" class="form-control" required value="{{ old('title',$asset->title ?? '') }}">
+  </div>
+  <div class="col-md-3 d-flex align-items-end">
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" name="is_active" value="1" id="is_active" {{ old('is_active',$asset->is_active ?? true) ? 'checked':'' }}>
+      <label class="form-check-label" for="is_active">مفعل</label>
+    </div>
+  </div>
+
+  <div class="col-12">
+    <label class="form-label">الوصف (اختياري)</label>
+    <textarea name="description" class="form-control" rows="3">{{ old('description',$asset->description ?? '') }}</textarea>
+  </div>
+
+  {{-- جديد: اختيار المجال (discipline) --}}
+  <div class="col-md-4">
+    <label class="form-label">المجال (اختياري)</label>
+    <select name="discipline_id" id="discipline_id" class="form-select">
+      <option value="">— اختر —</option>
+      @foreach(\App\Models\Discipline::orderBy('name')->get() as $disc)
+        <option value="{{ $disc->id }}" @selected(old('discipline_id',$asset->discipline_id ?? '') == $disc->id)>{{ $disc->name }}</option>
+      @endforeach
+    </select>
+  </div>
+
+  {{-- جديد: اختيار البرنامج (program) --}}
+  <div class="col-md-4">
+    <label class="form-label">البرنامج (اختياري)</label>
+    <select name="program_id" id="program_id" class="form-select">
+      <option value="">— اختر —</option>
+      @foreach(\App\Models\Program::with('discipline')->orderBy('name')->get() as $prog)
+        <option value="{{ $prog->id }}" data-discipline="{{ $prog->discipline_id }}"
+            @selected(old('program_id',$asset->program_id ?? '') == $prog->id)>
+            {{ $prog->name }} ({{ $prog->discipline?->name }})
+        </option>
+      @endforeach
+    </select>
+  </div>
+
+  {{-- جديد: اختيار حالة النشر --}}
+  <div class="col-md-4">
+    <label class="form-label">حالة النشر</label>
+    @php $statusVal = old('status',$asset->status ?? 'draft'); @endphp
+    <select name="status" id="status" class="form-select" required>
+      <option value="draft"      @selected($statusVal==='draft')>مسودة</option>
+      <option value="in_review"  @selected($statusVal==='in_review')>قيد المراجعة</option>
+      <option value="published"  @selected($statusVal==='published')>منشور</option>
+      <option value="archived"   @selected($statusVal==='archived')>مؤرشف</option>
+    </select>
+  </div>
+
+  <div class="col-md-4">
+    <label class="form-label">المادة</label>
+    <select name="material_id" id="material_id" class="form-select" required>
+      <option value="">— اختر —</option>
+      @foreach(\App\Models\Material::orderBy('name')->get() as $m)
+        <option value="{{ $m->id }}" @selected(old('material_id',$asset->material_id ?? '')==$m->id)>{{ $m->name }}</option>
+      @endforeach
+    </select>
+  </div>
+  <div class="col-md-4">
+    <label class="form-label">الجهاز/المهمة (اختياري)</label>
+    <select name="device_id" id="device_id" class="form-select">
+      <option value="">— اختر —</option>
+      @foreach(\App\Models\Device::with('material')->orderBy('name')->get() as $d)
+        <option value="{{ $d->id }}" data-material="{{ $d->material_id }}"
+            @selected(old('device_id',$asset->device_id ?? '')==$d->id)>
+          {{ $d->name }} ({{ $d->material->name }})
+        </option>
+      @endforeach
+    </select>
+  </div>
+  <div class="col-md-4">
+    <label class="form-label">الدكتور (اختياري)</label>
+    <select name="doctor_id" class="form-select">
+      <option value="">— بدون —</option>
+      @foreach(\App\Models\Doctor::orderBy('name')->get() as $doc)
+        <option value="{{ $doc->id }}" @selected(old('doctor_id',$asset->doctor_id ?? '')==$doc->id)>{{ $doc->name }}</option>
+      @endforeach
+    </select>
+  </div>
+
+  <!-- YouTube -->
+  <div class="col-md-6 cat-youtube">
+    <label class="form-label">رابط الفيديو (YouTube)</label>
+    <input type="url" name="video_url" class="form-control" value="{{ old('video_url',$asset->video_url ?? '') }}">
+  </div>
+
+  <!-- ملف -->
+  <div class="col-md-6 cat-file">
+    <label class="form-label">ملف</label>
+    <input type="file" name="file" class="form-control"
+        @if(!$isEdit || ($isEdit && $asset->category==='file' && !$asset->file_path)) required @endif>
+    @if(!empty($asset?->file_url))
+      <div class="form-text"><a href="{{ $asset->file_url }}" target="_blank" download>تنزيل الملف الحالي</a></div>
+    @endif
+  </div>
+
+  <!-- مرجع/بنك أسئلة/منهج/كتاب -->
+  <div class="col-md-6 cat-link">
+    <label class="form-label">رابط خارجي (اختياري)</label>
+    <input type="url" name="external_url" class="form-control" value="{{ old('external_url',$asset->external_url ?? '') }}">
+    <div class="form-text">يمكن تركه فارغًا ورفع ملف بدلًا عنه.</div>
+  </div>
+</div>
+
+@push('scripts')
+<script>
+function toggleCategory(){
+  const c = document.getElementById('category').value;
+  document.querySelectorAll('.cat-youtube').forEach(el=>el.style.display = (c==='youtube' ? '' : 'none'));
+  document.querySelectorAll('.cat-file').forEach(el=>el.style.display    = (c==='file'    ? '' : 'none'));
+  document.querySelectorAll('.cat-link').forEach(el=>el.style.display    = (['reference','question_bank','curriculum','book'].includes(c) ? '' : 'none'));
+}
+function filterDevicesByMaterial(){
+  const mat = document.getElementById('material_id').value;
+  document.querySelectorAll('#device_id option[data-material]').forEach(o=>o.hidden = (mat && o.dataset.material !== mat));
+}
+function filterProgramsByDiscipline(){
+  const disc = document.getElementById('discipline_id').value;
+  document.querySelectorAll('#program_id option[data-discipline]').forEach(o => o.hidden = (disc && o.dataset.discipline !== disc));
+}
+document.getElementById('category').addEventListener('change', toggleCategory);
+document.getElementById('material_id').addEventListener('change', filterDevicesByMaterial);
+document.getElementById('discipline_id').addEventListener('change', filterProgramsByDiscipline);
+toggleCategory();
+filterDevicesByMaterial();
+filterProgramsByDiscipline();
+</script>
 @endpush

@@ -3,29 +3,62 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Doctor extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
-        'name','type','university_id','college_id','major_id',
-        'degree','degree_year','phone','photo_path','is_active'
+        'name',
+        'email',
+        'password',
+        'type',        // university | independent
+        'university_id',
+        'college_id',
+        'major_id',
+        'degree',
+        'degree_year',
+        'phone',
+        'photo_path',
+        'is_active',
     ];
 
     protected $casts = [
-        'is_active'   => 'boolean',
+        'is_active' => 'boolean',
         'degree_year' => 'integer',
     ];
 
-    // روابط الجامعي
-    public function university() { return $this->belongsTo(University::class); }
-    public function college()    { return $this->belongsTo(College::class); }
-    public function major()      { return $this->belongsTo(Major::class); }
+    public function university(): BelongsTo
+    {
+        return $this->belongsTo(University::class);
+    }
 
-    // روابط المستقل: تخصصات متعددة
-    public function majors() { return $this->belongsToMany(Major::class, 'doctor_major'); }
+    public function college(): BelongsTo
+    {
+        return $this->belongsTo(College::class);
+    }
 
-    // صورة
-    public function getPhotoUrlAttribute() {
+    public function major(): BelongsTo
+    {
+        return $this->belongsTo(Major::class);
+    }
+
+    /**
+     * التخصصات الإضافية للمدرس عبر جدول pivot doctor_major.
+     */
+    public function majors(): BelongsToMany
+    {
+        return $this->belongsToMany(Major::class, 'doctor_major');
+    }
+
+    /**
+     * رابط الصورة للعرض.
+     */
+    public function getPhotoUrlAttribute(): ?string
+    {
         return $this->photo_path ? asset('storage/'.$this->photo_path) : null;
     }
 }

@@ -7,31 +7,31 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-class Device extends Model
+class AcademicTerm extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'material_id',
+        'calendar_id',
         'name',
-        'description',
+        'starts_on',
+        'ends_on',
         'is_active',
     ];
 
     protected $casts = [
+        'starts_on' => 'date',
+        'ends_on' => 'date',
         'is_active' => 'boolean',
     ];
 
-    public function material(): BelongsTo
+    public function calendar(): BelongsTo
     {
-        return $this->belongsTo(Material::class);
+        return $this->belongsTo(AcademicCalendar::class, 'calendar_id');
     }
 
-    /**
-     * المحتوى الخاص المرتبط بهذا الجهاز عبر جدول content_device.
-     */
-    public function contents(): BelongsToMany
+    public function materials(): BelongsToMany
     {
-        return $this->belongsToMany(Content::class, 'content_device');
+        return $this->belongsToMany(Material::class, 'material_term', 'term_id', 'material_id');
     }
 }

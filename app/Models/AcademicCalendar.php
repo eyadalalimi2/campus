@@ -7,17 +7,21 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class College extends Model
+class AcademicCalendar extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'university_id',
-        'name',
+        'year_label',
+        'starts_on',
+        'ends_on',
         'is_active',
     ];
 
     protected $casts = [
+        'starts_on' => 'date',
+        'ends_on' => 'date',
         'is_active' => 'boolean',
     ];
 
@@ -26,8 +30,8 @@ class College extends Model
         return $this->belongsTo(University::class);
     }
 
-    public function majors(): HasMany
+    public function terms(): HasMany
     {
-        return $this->hasMany(Major::class);
+        return $this->hasMany(AcademicTerm::class, 'calendar_id');
     }
 }

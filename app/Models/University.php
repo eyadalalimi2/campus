@@ -3,33 +3,53 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class University extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
-        'name','address','phone','logo_path','is_active',
-        'primary_color','secondary_color','theme_mode',
+        'name',
+        'address',
+        'country_id',
+        'phone',
+        'logo_path',
+        'primary_color',
+        'secondary_color',
+        'theme_mode',
+        'is_active',
+        'use_default_theme',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'use_default_theme' => 'boolean',
     ];
 
-    public function colleges(){ return $this->hasMany(College::class); }
-
-    public function getLogoUrlAttribute(): ?string
+    /**
+     * الدولة التي تنتمي إليها الجامعة.
+     */
+    public function country(): BelongsTo
     {
-        return $this->logo_path ? Storage::url($this->logo_path) : asset('images/logo.png');
+        return $this->belongsTo(Country::class);
     }
 
-    public function getThemeAttribute(): array
+    /**
+     * الكليات التابعة للجامعة.
+     */
+    public function colleges(): HasMany
     {
-        return [
-            'primary'   => $this->primary_color ?: '#0d6efd',
-            'secondary' => $this->secondary_color ?: '#6c757d',
-            'mode'      => $this->theme_mode ?: 'auto',
-            'logo'      => $this->logo_url,
-        ];
+        return $this->hasMany(College::class);
+    }
+
+    /**
+     * التقويم الأكاديمي الخاص بالجامعة.
+     */
+    public function academicCalendars(): HasMany
+    {
+        return $this->hasMany(AcademicCalendar::class);
     }
 }

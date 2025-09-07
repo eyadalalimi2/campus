@@ -3,12 +3,17 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Major extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
-        'name',
         'college_id',
+        'name',
         'is_active',
     ];
 
@@ -16,8 +21,18 @@ class Major extends Model
         'is_active' => 'boolean',
     ];
 
-    public function college()
+    public function college(): BelongsTo
     {
         return $this->belongsTo(College::class);
+    }
+
+    public function doctors(): HasMany
+    {
+        return $this->hasMany(Doctor::class);
+    }
+
+    public function materials(): HasMany
+    {
+        return $this->hasMany(Material::class);
     }
 }

@@ -3,53 +3,67 @@
 namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-class User extends Authenticatable implements MustVerifyEmail
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+class User extends Authenticatable
 {
-     use HasApiTokens, Notifiable;
-    
+    use HasApiTokens, HasFactory, Notifiable;
+
     protected $fillable = [
+        'student_number',
         'name',
         'email',
-        'password',
-        'student_number',
         'phone',
+        'country_id',
         'profile_photo_path',
         'university_id',
         'college_id',
         'major_id',
         'level',
         'gender',
-        'country',
         'status',
+        'password',
     ];
 
-    protected $hidden = ['password', 'remember_token'];
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
 
     protected $casts = [
-        'level'     => 'integer',
+        'email_verified_at' => 'datetime',
+        'level' => 'integer',
     ];
 
-    // علاقات
-    public function university()
+    public function country(): BelongsTo
+    {
+        return $this->belongsTo(Country::class);
+    }
+
+    public function university(): BelongsTo
     {
         return $this->belongsTo(University::class);
     }
-    public function college()
+
+    public function college(): BelongsTo
     {
         return $this->belongsTo(College::class);
     }
-    public function major()
+
+    public function major(): BelongsTo
     {
         return $this->belongsTo(Major::class);
     }
 
-    // رابط صورة البروفايل
-    public function getProfilePhotoUrlAttribute(): ?string
+    /**
+     * اشتراكات الطالب (إن وجدت).
+     */
+    public function subscriptions(): HasMany
     {
-        return $this->profile_photo_path ? asset('storage/' . $this->profile_photo_path) : null;
+        return $this->hasMany(Subscription::class);
     }
 }

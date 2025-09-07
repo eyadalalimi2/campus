@@ -16,6 +16,12 @@ use App\Http\Controllers\Admin\AssetController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\BlogController;
 use App\Http\Controllers\Admin\SubscriptionController;
+use App\Http\Controllers\Admin\DisciplineController;
+use App\Http\Controllers\Admin\ProgramController;
+use App\Http\Controllers\Admin\AcademicCalendarController;
+use App\Http\Controllers\Admin\AcademicTermController;
+use App\Http\Controllers\Admin\CountryController;
+
 /*
 |--------------------------------------------------------------------------
 | Admin Routes (prefix=admin, name=admin.) via RouteServiceProvider
@@ -29,31 +35,37 @@ Route::middleware('guest:admin')->group(function () {
 });
 
 // منطقة الإدارة (محميّة)
-// منطقة الإدارة (محميّة)
 Route::middleware('auth:admin')->group(function () {
+
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('/logout', [AdminAuthController::class, 'logout'])->name('logout');
 
-    // CRUD
-    Route::resource('users', UserController::class);  
-    Route::resource('contents',     ContentController::class)->except(['show']);
-    Route::resource('universities', UniversityController::class)->except(['show']);
-    Route::resource('colleges',     CollegeController::class)->except(['show']);
-    Route::resource('majors',       MajorController::class)->except(['show']);
-    Route::resource('doctors',      DoctorController::class)->except(['show']);
-    Route::resource('materials',    MaterialController::class)->except(['show']);
-    Route::resource('devices',      DeviceController::class)->except(['show']);
-    Route::resource('assets',       AssetController::class)->except(['show']);
-    Route::resource('blogs',        BlogController::class)->except(['show']);
+    // CRUD الموارد الرئيسية
+    Route::resource('users',         UserController::class);
+    Route::resource('contents',      ContentController::class)->except(['show']);
+    Route::resource('universities',  UniversityController::class)->except(['show']);
+    Route::resource('colleges',      CollegeController::class)->except(['show']);
+    Route::resource('majors',        MajorController::class)->except(['show']);
+    Route::resource('doctors',       DoctorController::class)->except(['show']);
+    Route::resource('materials',     MaterialController::class)->except(['show']);
+    Route::resource('devices',       DeviceController::class)->except(['show']);
+    Route::resource('assets',        AssetController::class)->except(['show']);
+    Route::resource('blogs',         BlogController::class)->except(['show']);
     Route::resource('subscriptions', SubscriptionController::class)->except(['show']);
 
+    // الموارد الجديدة: الدول والمجالات والبرامج والتقويمات والفصول
+    Route::resource('countries',         CountryController::class)->except(['show']);
+    Route::resource('disciplines',       DisciplineController::class)->except(['show']);
+    Route::resource('programs',          ProgramController::class)->except(['show']);
+    Route::resource('academic-calendars', AcademicCalendarController::class)->except(['show']);
+    Route::resource('academic-terms',    AcademicTermController::class)->except(['show']);
 
     // الثيمات + الاستيراد
     Route::get('/themes',                   [ThemeController::class, 'index'])->name('themes.index');
     Route::get('/themes/{university}/edit', [ThemeController::class, 'edit'])->name('themes.edit');
     Route::put('/themes/{university}',      [ThemeController::class, 'update'])->name('themes.update');
 
-    Route::get('/import',                   [ImportController::class, 'index'])->name('import.index');
-    Route::post('/import/run',              [ImportController::class, 'run'])->name('import.run');
-    Route::get('/import/sample/{type}',     [ImportController::class, 'sample'])->name('import.sample');
+    Route::get('/import',               [ImportController::class, 'index'])->name('import.index');
+    Route::post('/import/run',          [ImportController::class, 'run'])->name('import.run');
+    Route::get('/import/sample/{type}', [ImportController::class, 'sample'])->name('import.sample');
 });

@@ -16,11 +16,36 @@ use App\Models\Asset;
 use App\Models\Blog;
 use App\Models\Subscription;
 use Carbon\Carbon;
+use App\Models\Discipline;
+use App\Models\Program;
+use App\Models\AcademicCalendar;
+use App\Models\AcademicTerm;
+
 
 class DashboardController extends Controller
 {
     public function index()
     {
+        // ——— المجالات
+        $discTotal    = Discipline::count();
+        $discActive   = Discipline::where('is_active', 1)->count();
+        $discInactive = $discTotal - $discActive;
+
+        // ——— البرامج
+        $progTotal    = Program::count();
+        $progActive   = Program::where('is_active', 1)->count();
+        $progInactive = $progTotal - $progActive;
+
+        // ——— التقاويم الأكاديمية
+        $calTotal     = AcademicCalendar::count();
+        $calActive    = AcademicCalendar::where('is_active', 1)->count();
+        $calInactive  = $calTotal - $calActive;
+
+        // ——— الفصول الأكاديمية
+        $termTotal    = AcademicTerm::count();
+        $termActive   = AcademicTerm::where('is_active', 1)->count();
+        $termInactive = $termTotal - $termActive;
+
         // أحدث المدونات
         $latestBlogs = Blog::with('doctor')
             ->orderByRaw('COALESCE(published_at, created_at) DESC')
@@ -234,7 +259,20 @@ class DashboardController extends Controller
             'subTotal',
             'subActive',
             'subOther',
-            'latestBlogs'
+            'latestBlogs',
+            'discTotal',
+    'discActive',
+    'discInactive',
+    'progTotal',
+    'progActive',
+    'progInactive',
+    'calTotal',
+    'calActive',
+    'calInactive',
+    'termTotal',
+    'termActive',
+    'termInactive',
+    
         ));
     }
 }

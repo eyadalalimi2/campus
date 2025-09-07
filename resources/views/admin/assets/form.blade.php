@@ -28,6 +28,43 @@
     <textarea name="description" class="form-control" rows="3">{{ old('description',$asset->description ?? '') }}</textarea>
   </div>
 
+  {{-- جديد: اختيار المجال (discipline) --}}
+  <div class="col-md-4">
+    <label class="form-label">المجال (اختياري)</label>
+    <select name="discipline_id" id="discipline_id" class="form-select">
+      <option value="">— اختر —</option>
+      @foreach(\App\Models\Discipline::orderBy('name')->get() as $disc)
+        <option value="{{ $disc->id }}" @selected(old('discipline_id',$asset->discipline_id ?? '') == $disc->id)>{{ $disc->name }}</option>
+      @endforeach
+    </select>
+  </div>
+
+  {{-- جديد: اختيار البرنامج (program) --}}
+  <div class="col-md-4">
+    <label class="form-label">البرنامج (اختياري)</label>
+    <select name="program_id" id="program_id" class="form-select">
+      <option value="">— اختر —</option>
+      @foreach(\App\Models\Program::with('discipline')->orderBy('name')->get() as $prog)
+        <option value="{{ $prog->id }}" data-discipline="{{ $prog->discipline_id }}"
+            @selected(old('program_id',$asset->program_id ?? '') == $prog->id)>
+            {{ $prog->name }} ({{ $prog->discipline?->name }})
+        </option>
+      @endforeach
+    </select>
+  </div>
+
+  {{-- جديد: اختيار حالة النشر --}}
+  <div class="col-md-4">
+    <label class="form-label">حالة النشر</label>
+    @php $statusVal = old('status',$asset->status ?? 'draft'); @endphp
+    <select name="status" id="status" class="form-select" required>
+      <option value="draft"      @selected($statusVal==='draft')>مسودة</option>
+      <option value="in_review"  @selected($statusVal==='in_review')>قيد المراجعة</option>
+      <option value="published"  @selected($statusVal==='published')>منشور</option>
+      <option value="archived"   @selected($statusVal==='archived')>مؤرشف</option>
+    </select>
+  </div>
+
   <div class="col-md-4">
     <label class="form-label">المادة</label>
     <select name="material_id" id="material_id" class="form-select" required>
@@ -42,7 +79,8 @@
     <select name="device_id" id="device_id" class="form-select">
       <option value="">— اختر —</option>
       @foreach(\App\Models\Device::with('material')->orderBy('name')->get() as $d)
-        <option value="{{ $d->id }}" @selected(old('device_id',$asset->device_id ?? '')==$d->id) data-material="{{ $d->material_id }}">
+        <option value="{{ $d->id }}" data-material="{{ $d->material_id }}"
+            @selected(old('device_id',$asset->device_id ?? '')==$d->id)>
           {{ $d->name }} ({{ $d->material->name }})
         </option>
       @endforeach
@@ -67,7 +105,8 @@
   <!-- ملف -->
   <div class="col-md-6 cat-file">
     <label class="form-label">ملف</label>
-    <input type="file" name="file" class="form-control" @if(!$isEdit || ($isEdit && $asset->category==='file' && !$asset->file_path)) required @endif>
+    <input type="file" name="file" class="form-control"
+        @if(!$isEdit || ($isEdit && $asset->category==='file' && !$asset->file_path)) required @endif>
     @if(!empty($asset?->file_url))
       <div class="form-text"><a href="{{ $asset->file_url }}" target="_blank" download>تنزيل الملف الحالي</a></div>
     @endif
@@ -93,8 +132,15 @@ function filterDevicesByMaterial(){
   const mat = document.getElementById('material_id').value;
   document.querySelectorAll('#device_id option[data-material]').forEach(o=>o.hidden = (mat && o.dataset.material !== mat));
 }
+function filterProgramsByDiscipline(){
+  const disc = document.getElementById('discipline_id').value;
+  document.querySelectorAll('#program_id option[data-discipline]').forEach(o => o.hidden = (disc && o.dataset.discipline !== disc));
+}
 document.getElementById('category').addEventListener('change', toggleCategory);
 document.getElementById('material_id').addEventListener('change', filterDevicesByMaterial);
-toggleCategory(); filterDevicesByMaterial();
+document.getElementById('discipline_id').addEventListener('change', filterProgramsByDiscipline);
+toggleCategory();
+filterDevicesByMaterial();
+filterProgramsByDiscipline();
 </script>
 @endpush
