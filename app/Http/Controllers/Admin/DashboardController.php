@@ -4,44 +4,45 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
-use App\Models\User;
-use App\Models\University;
-use App\Models\College;
-use App\Models\Major;
-use App\Models\Doctor;
-use App\Models\Material;
-use App\Models\Device;
-use App\Models\Content;
-use App\Models\Asset;
-use App\Models\Blog;
-use App\Models\Subscription;
 use Carbon\Carbon;
-use App\Models\Discipline;
-use App\Models\Program;
-use App\Models\AcademicCalendar;
-use App\Models\AcademicTerm;
-
+use App\Models\{
+    User,
+    University,
+    College,
+    Major,
+    Doctor,
+    Material,
+    Device,
+    Content,
+    Asset,
+    Blog,
+    Subscription,
+    Discipline,
+    Program,
+    AcademicCalendar,
+    AcademicTerm
+};
 
 class DashboardController extends Controller
 {
     public function index()
     {
-        // ——— المجالات
+        // المجالات
         $discTotal    = Discipline::count();
         $discActive   = Discipline::where('is_active', 1)->count();
         $discInactive = $discTotal - $discActive;
 
-        // ——— البرامج
+        // البرامج
         $progTotal    = Program::count();
         $progActive   = Program::where('is_active', 1)->count();
         $progInactive = $progTotal - $progActive;
 
-        // ——— التقاويم الأكاديمية
+        // التقاويم الأكاديمية
         $calTotal     = AcademicCalendar::count();
         $calActive    = AcademicCalendar::where('is_active', 1)->count();
         $calInactive  = $calTotal - $calActive;
 
-        // ——— الفصول الأكاديمية
+        // الفصول الأكاديمية
         $termTotal    = AcademicTerm::count();
         $termActive   = AcademicTerm::where('is_active', 1)->count();
         $termInactive = $termTotal - $termActive;
@@ -51,74 +52,76 @@ class DashboardController extends Controller
             ->orderByRaw('COALESCE(published_at, created_at) DESC')
             ->limit(5)
             ->get(['id', 'title', 'status', 'doctor_id', 'published_at', 'created_at']);
-        // ——— المدونات (حقيقي)
+
+        // إحصاءات المدونات
         $blogTotal     = Blog::count();
         $blogPublished = Blog::where('status', 'published')->count();
         $blogDraft     = Blog::where('status', 'draft')->count();
         $blogArchived  = Blog::where('status', 'archived')->count();
 
-        // ——— الاشتراكات (حقيقي)
+        // الاشتراكات
         $subTotal  = Subscription::count();
         $subActive = Subscription::where('status', 'active')->count();
-        $subOther  = $subTotal - $subActive; // (expired + canceled)
+        $subOther  = $subTotal - $subActive; // expired + canceled
 
-        // ——— KPIs: جامعات/كليات/تخصصات
+        // الجامعات
         $uniTotal    = University::count();
         $uniActive   = University::where('is_active', 1)->count();
         $uniInactive = $uniTotal - $uniActive;
 
+        // الكليات
         $colTotal    = College::count();
         $colActive   = College::where('is_active', 1)->count();
         $colInactive = $colTotal - $colActive;
 
+        // التخصصات
         $majTotal    = Major::count();
         $majActive   = Major::where('is_active', 1)->count();
         $majInactive = $majTotal - $majActive;
 
-        // ——— الدكاترة (جامعي/مستقل)
+        // الدكاترة
         $docTotal  = Doctor::count();
         $docUni    = Doctor::where('type', 'university')->count();
         $docInd    = Doctor::where('type', 'independent')->count();
 
-        // ——— الطلاب (مفعل/موقوف/خريج)
+        // الطلاب
         $stdTotal     = User::count();
         $stdActive    = User::where('status', 'active')->count();
         $stdSuspended = User::where('status', 'suspended')->count();
         $stdGrad      = User::where('status', 'graduated')->count();
 
-        // ——— المواد
+        // المواد
         $matTotal    = Material::count();
         $matActive   = Material::where('is_active', 1)->count();
         $matInactive = $matTotal - $matActive;
 
-        // ——— الأجهزة
+        // الأجهزة
         $devTotal    = Device::count();
         $devActive   = Device::where('is_active', 1)->count();
         $devInactive = $devTotal - $devActive;
 
-        // ——— المحتوى حسب النوع + الإجمالي
-        $contentTotal = Content::count();
+        // المحتوى حسب النوع
+        $contentTotal   = Content::count();
         $contentsByType = Content::select('type', DB::raw('COUNT(*) as c'))
             ->groupBy('type')->pluck('c', 'type')->toArray();
         $cntFile  = $contentsByType['file']  ?? 0;
         $cntVideo = $contentsByType['video'] ?? 0;
         $cntLink  = $contentsByType['link']  ?? 0;
 
-        // ——— حالة تفعيل عناصر أخرى (إن كنت تحتاجها في أماكن أخرى)
+        // تفعيل العناصر الأخرى
         $activeMaterials = $matActive;
         $activeDoctors   = Doctor::where('is_active', 1)->count();
         $activeDevices   = $devActive;
         $activeContents  = Content::where('is_active', 1)->count();
 
-        // ——— توزيع الطلاب على الجامعات (Top 10)
+        // توزيع الطلاب على الجامعات (Top 10)
         $studentsPerUniversity = User::select('universities.name as uname', DB::raw('COUNT(users.id) as c'))
             ->leftJoin('universities', 'universities.id', '=', 'users.university_id')
             ->groupBy('universities.name')
             ->orderByDesc('c')
-            ->limit(10)
-            ->get();
+            ->limit(10)->get();
 
-        // ——— نمو الطلاب خلال آخر 12 شهرًا
+        // نمو الطلاب خلال آخر 12 شهرًا
         $start = Carbon::now()->startOfMonth()->subMonths(11);
         $studentsMonthly = User::select(
             DB::raw("DATE_FORMAT(created_at, '%Y-%m') as ym"),
@@ -129,15 +132,15 @@ class DashboardController extends Controller
             ->orderBy('ym')
             ->get();
 
-        // ——— أحدث السجلات
+        // أحدث السجلات
         $latestStudents = User::latest()->limit(5)->get(['id', 'name', 'student_number', 'university_id', 'created_at']);
         $latestDoctors  = Doctor::latest()->limit(5)->get(['id', 'name', 'university_id', 'created_at']);
         $latestContent  = Content::latest()->limit(5)->get(['id', 'title', 'type', 'university_id', 'created_at']);
 
-        // ——— ملخص سريع للجامعات
+        // ملخص سريع للجامعات
         $universitiesQuick = University::orderBy('name')->get(['id', 'name']);
 
-        // ——— بيانات المخططات الدائرية (Pie)
+        // بيانات المخططات الدائرية (Pie)
         $pieStatus = [
             'active'    => $stdActive,
             'suspended' => $stdSuspended,
@@ -150,11 +153,10 @@ class DashboardController extends Controller
             'female' => $genderAgg['female'] ?? 0,
         ];
 
-        // ——— إشعارات (تنبيهات)
+        // تنبيهات
         $inactiveUniversities = University::where('is_active', 0)
             ->orderBy('name')->limit(5)->pluck('name');
 
-        // مواد بدون محتوى (لا يوجد أي Content يشير إلى material_id)
         $materialsWithoutContent = Material::whereNotExists(function ($q) {
             $q->select(DB::raw(1))
                 ->from('contents')
@@ -162,7 +164,6 @@ class DashboardController extends Controller
         })
             ->orderBy('name')->limit(5)->pluck('name');
 
-        // أقسام بلا دكاترة (لا pivot ولا مباشرة)
         $majorsWithoutDoctors = Major::whereNotExists(function ($q) {
             $q->select(DB::raw(1))
                 ->from('doctor_major')
@@ -192,7 +193,7 @@ class DashboardController extends Controller
         })->count();
 
         return view('admin.dashboard', compact(
-            // جامعات/كليات/تخصصات
+            // جامعات / كليات / تخصصات
             'uniTotal',
             'uniActive',
             'uniInactive',
@@ -203,7 +204,7 @@ class DashboardController extends Controller
             'majActive',
             'majInactive',
 
-            // الدكاترة
+            // دكاترة
             'docTotal',
             'docUni',
             'docInd',
@@ -228,7 +229,7 @@ class DashboardController extends Controller
             'cntVideo',
             'cntLink',
 
-            // إضافات أخرى
+            // إضافات
             'activeMaterials',
             'activeDoctors',
             'activeDevices',
@@ -240,18 +241,19 @@ class DashboardController extends Controller
             'latestContent',
             'universitiesQuick',
 
-            // Pie
+            // Pie data
             'pieStatus',
             'pieGender',
 
-            // Notifications
+            // تنبيهات
             'inactiveUniCount',
             'matNoContentCount',
             'majNoDoctorsCount',
             'inactiveUniversities',
             'materialsWithoutContent',
             'majorsWithoutDoctors',
-            //المدونات والاشتراكات
+
+            // المدونات والاشتراكات
             'blogTotal',
             'blogPublished',
             'blogDraft',
@@ -260,19 +262,20 @@ class DashboardController extends Controller
             'subActive',
             'subOther',
             'latestBlogs',
+
+            // المجالات / البرامج / التقاويم / الفصول
             'discTotal',
-    'discActive',
-    'discInactive',
-    'progTotal',
-    'progActive',
-    'progInactive',
-    'calTotal',
-    'calActive',
-    'calInactive',
-    'termTotal',
-    'termActive',
-    'termInactive',
-    
+            'discActive',
+            'discInactive',
+            'progTotal',
+            'progActive',
+            'progInactive',
+            'calTotal',
+            'calActive',
+            'calInactive',
+            'termTotal',
+            'termActive',
+            'termInactive'
         ));
     }
 }
