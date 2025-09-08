@@ -100,16 +100,21 @@ Route::middleware('auth:admin')->group(function () {
 
     Route::post('activation-code-batches/{batch}/disable', [\App\Http\Controllers\Admin\ActivationCodeBatchesController::class, 'disable'])
         ->name('activation_code_batches.disable');
+    // 1) ضع هذين المسارين أولاً
+    Route::get(
+        'activation-codes/redeem-form',
+        [\App\Http\Controllers\Admin\ActivationCodesController::class, 'redeemForm']
+    )->name('activation_codes.redeem_form');
 
+    Route::post(
+        'activation-codes/redeem',
+        [\App\Http\Controllers\Admin\ActivationCodesController::class, 'redeem']
+    )->name('activation_codes.redeem');
+
+    // 2) ثم عرّف الـresource بدون show
     Route::resource('activation-codes', \App\Http\Controllers\Admin\ActivationCodesController::class)
+        ->except(['show'])
         ->names('activation_codes');
-
-    Route::get('activation-codes/redeem-form', [\App\Http\Controllers\Admin\ActivationCodesController::class, 'redeemForm'])
-        ->name('activation_codes.redeem_form');
-
-    Route::post('activation-codes/redeem', [\App\Http\Controllers\Admin\ActivationCodesController::class, 'redeem'])
-        ->name('activation_codes.redeem');
-
 
     /*
      |-----------------------------
