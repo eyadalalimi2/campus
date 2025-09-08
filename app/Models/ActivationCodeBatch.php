@@ -41,13 +41,33 @@ class ActivationCodeBatch extends Model
         return $this->hasMany(ActivationCode::class, 'batch_id');
     }
 
+    public function plan()
+    {
+        return $this->belongsTo(Plan::class, 'plan_id');
+    }
+
+    public function university()
+    {
+        return $this->belongsTo(University::class, 'university_id');
+    }
+
+    public function college()
+    {
+        return $this->belongsTo(College::class, 'college_id');
+    }
+    
+    public function major()
+    {
+        return $this->belongsTo(Major::class, 'major_id');
+    }
+
     // وسم الحالة بالعربي للعرض
     public function getStatusLabelAttribute(): string
     {
         return match ($this->status) {
             'draft'    => 'مسودة',
-            'active'   => 'مفعّلة',
-            'disabled' => 'موقوفة',
+            'active'   => 'نشطة',
+            'disabled' => 'مُعطّلة',
             'archived' => 'مؤرشفة',
             default    => $this->status,
         };

@@ -20,6 +20,7 @@ class ActivationCodeBatchesController extends Controller
     public function index(Request $r)
     {
         $q = ActivationCodeBatch::query()
+            ->with(['plan', 'university', 'college', 'major'])  // ← مهم
             ->withCount('activationCodes')
             ->orderByDesc('id');
 
@@ -33,7 +34,6 @@ class ActivationCodeBatchesController extends Controller
 
         $plans        = Plan::orderBy('name')->get();
         $universities = University::orderBy('name')->get();
-
         return view('admin.activation_codes.batches.index', compact('batches', 'plans', 'universities'));
     }
 
@@ -110,12 +110,13 @@ class ActivationCodeBatchesController extends Controller
 
     public function show(ActivationCodeBatch $activation_code_batch)
     {
-        $batch = $activation_code_batch->loadCount('activationCodes');
-
+        $batch = $activation_code_batch
+            ->load(['plan', 'university', 'college', 'major'])
+            ->loadCount('activationCodes');
         // لو عندك علاقة على الموديل تقدر تستخدمها، وإلا هذا آمن:
-        $codes = ActivationCode::where('batch_id', $batch->id)
-            ->orderBy('id')
-            ->paginate(25);
+        $codes = ActivationCode::with(['university', 'college', 'major'])
+            ->where('batch_id', $batch->id)
+            ->orderBy('id')->paginate(25);
 
         return view('admin.activation_codes.batches.show', compact('batch', 'codes'));
     }
