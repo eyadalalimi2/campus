@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ActivationCodeBatch extends Model
 {
@@ -30,25 +29,27 @@ class ActivationCodeBatch extends Model
     ];
 
     protected $casts = [
-        'plan_id'             => 'integer',
-        'university_id'       => 'integer',
-        'college_id'          => 'integer',
-        'major_id'            => 'integer',
-        'quantity'            => 'integer',
-        'duration_days'       => 'integer',
-        'starts_on'           => 'date',
-        'valid_from'          => 'datetime',
-        'valid_until'         => 'datetime',
-        'code_length'         => 'integer',
-        'created_by_admin_id' => 'integer',
+        'quantity'       => 'integer',
+        'duration_days'  => 'integer',
+        'starts_on'      => 'date',
+        'valid_from'     => 'datetime',
+        'valid_until'    => 'datetime',
     ];
 
-    public function plan(): BelongsTo { return $this->belongsTo(Plan::class, 'plan_id'); }
-    public function createdBy(): BelongsTo { return $this->belongsTo(Admin::class, 'created_by_admin_id'); }
-    public function activationCodes(): HasMany { return $this->hasMany(ActivationCode::class, 'batch_id'); }
-
-    public function getDisplayNameAttribute(): string
+    public function activationCodes(): HasMany
     {
-        return $this->name ?: ('دفعة #' . $this->id);
+        return $this->hasMany(ActivationCode::class, 'batch_id');
+    }
+
+    // وسم الحالة بالعربي للعرض
+    public function getStatusLabelAttribute(): string
+    {
+        return match ($this->status) {
+            'draft'    => 'مسودة',
+            'active'   => 'مفعّلة',
+            'disabled' => 'موقوفة',
+            'archived' => 'مؤرشفة',
+            default    => $this->status,
+        };
     }
 }
