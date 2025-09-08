@@ -4,16 +4,16 @@ namespace App\Http\Requests\Admin;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use App\Models\AcademicCalendar;
 
 class AcademicTermRequest extends FormRequest
 {
     /**
-     * السماح بتنفيذ الطلب (ضع سياساتك إن لزم).
+     * السماح بتنفيذ الطلب للأدمن.
      */
     public function authorize(): bool
     {
-        // عدّل التفويض حسب سياساتك (Gate/Policy). الإرجاع true لتبسيط الاستخدام.
-        return true;
+        return auth('admin')->check();
     }
 
     /**
@@ -22,109 +22,106 @@ class AcademicTermRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge([
-            'name'              => is_string($this->name) ? trim($this->name) : $this->name,
-            'code'              => is_string($this->code) ? trim($this->code) : $this->code,
-            'status'            => is_string($this->status) ? strtolower(trim($this->status)) : $this->status,
-            'is_active'         => filter_var($this->is_active, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE),
-            'academic_year_id'  => $this->academic_year_id ?: null,
+            'calendar_id' => $this->input('calendar_id'),
+            'name'        => is_string($this->input('name')) ? strtolower(trim($this->input('name'))) : $this->input('name'),
+            'is_active'   => $this->boolean('is_active'),
         ]);
     }
 
     /**
-     * قواعد التحقق.
+     * قواعد التحقق بناءً على بنية الجدول:
+     * academic_terms: calendar_id, name(enum: first|second|summer), starts_on, ends_on, is_active
      */
     public function rules(): array
     {
-        // يدعم التحديث عبر بارامتر route: academic_term أو id (رقم أو نموذج).
+        // دعم التحديث عند وجود Route Model Binding: academic_term
         $routeModelOrId = $this->route('academic_term') ?? $this->route('id');
         $currentId = is_object($routeModelOrId) ? ($routeModelOrId->id ?? null) : $routeModelOrId;
 
-        // جدول الفصول الأكاديمية المتوقع
-        $table = 'academic_terms';
+        return [
+            'calendar_id' => ['required', 'integer', 'exists:academic_calendars,id'],
 
-        $nameUnique = Rule::unique($table, 'name')->where(function ($q) {
-            // في حال لديك soft deletes
-            if (schema()->hasColumn('academic_terms', 'deleted_at')) {
-                $q->whereNull('deleted_at');
-            }
-            return $q;
-        })->ignore($currentId);
+            // الاسم ضمن القيم المسموحة + فريد داخل نفس التقويم
+            'name' => [
+                'required',
+                Rule::in(['first', 'second', 'summer']),
+                Rule::unique('academic_terms', 'name')
+                    ->where(fn ($q) => $q->where('calendar_id', (int) $this->input('calendar_id')))
+                    ->ignore($currentId),
+            ],
 
-        $codeUnique = Rule::unique($table, 'code')->where(function ($q) {
-            if (schema()->hasColumn('academic_terms', 'deleted_at')) {
-                $q->whereNull('deleted_at');
-            }
-            return $q;
-        })->ignore($currentId);
+            'starts_on' => ['required', 'date'],
+            'ends_on'   => ['required', 'date', 'after_or_equal:starts_on'],
 
-        // حالات الحالة (عدّل القائمة لملاءمة نطاق عملك)
-        $statusIn = Rule::in(['planned', 'active', 'completed', 'archived']);
-
-        $common = [
-            'name'              => ['required', 'string', 'min:2', 'max:100', $nameUnique],
-            'code'              => ['required', 'string', 'min:2', 'max:20', $codeUnique],
-            'academic_year_id'  => ['nullable', 'integer', 'exists:academic_years,id'],
-            'start_date'        => ['required', 'date'],
-            'end_date'          => ['required', 'date', 'after_or_equal:start_date'],
-            'status'            => ['required', 'string', $statusIn],
-            'is_active'         => ['nullable', 'boolean'],
-            'description'       => ['nullable', 'string', 'max:1000'],
+            'is_active' => ['nullable', 'boolean'],
         ];
-
-        return $common;
     }
 
     /**
-     * رسائل الأخطاء المخصصة.
+     * تحققات إضافية بعد قواعد Laravel الأساسية:
+     * - نطاق التواريخ داخل نطاق التقويم الأكاديمي المحدد.
+     */
+    public function withValidator($validator): void
+    {
+        $validator->after(function ($validator) {
+            $calId = (int) $this->input('calendar_id');
+            $start = $this->input('starts_on');
+            $end   = $this->input('ends_on');
+
+            if (!$calId || !$start || !$end) {
+                return;
+            }
+
+            $calendar = AcademicCalendar::find($calId);
+            if (!$calendar) {
+                return;
+            }
+
+            // تأكد أن فترة الفصل ضمن فترة التقويم
+            if ($calendar->starts_on && strtotime($start) < strtotime($calendar->starts_on)) {
+                $validator->errors()->add('starts_on', 'تاريخ بداية الفصل يجب أن يكون بعد أو يساوي بداية التقويم الأكاديمي.');
+            }
+            if ($calendar->ends_on && strtotime($end) > strtotime($calendar->ends_on)) {
+                $validator->errors()->add('ends_on', 'تاريخ نهاية الفصل يجب أن يكون قبل أو يساوي نهاية التقويم الأكاديمي.');
+            }
+        });
+    }
+
+    /**
+     * الرسائل المخصصة.
      */
     public function messages(): array
     {
         return [
-            'name.required'         => 'اسم الفصل مطلوب.',
-            'name.min'              => 'اسم الفصل قصير جداً.',
-            'name.max'              => 'اسم الفصل طويل أكثر من اللازم.',
-            'name.unique'           => 'اسم الفصل مستخدم مسبقاً.',
+            'calendar_id.required' => 'يرجى اختيار التقويم الأكاديمي.',
+            'calendar_id.exists'   => 'التقويم الأكاديمي المحدد غير موجود.',
 
-            'code.required'         => 'الرمز التعريفي مطلوب.',
-            'code.min'              => 'الرمز قصير جداً.',
-            'code.max'              => 'الرمز طويل أكثر من اللازم.',
-            'code.unique'           => 'الرمز التعريفي مستخدم مسبقاً.',
+            'name.required'        => 'اسم الفصل مطلوب.',
+            'name.in'              => 'اسم الفصل يجب أن يكون أحد القيم: الأول/الثاني/الصيفي.',
+            'name.unique'          => 'هذا الفصل موجود مسبقًا لنفس التقويم الأكاديمي.',
 
-            'academic_year_id.integer' => 'معرّف السنة يجب أن يكون رقماً.',
-            'academic_year_id.exists'  => 'السنة الأكاديمية غير موجودة.',
+            'starts_on.required'   => 'تاريخ بداية الفصل مطلوب.',
+            'starts_on.date'       => 'تاريخ بداية الفصل غير صالح.',
 
-            'start_date.required'   => 'تاريخ البداية مطلوب.',
-            'start_date.date'       => 'تاريخ البداية غير صالح.',
+            'ends_on.required'     => 'تاريخ نهاية الفصل مطلوب.',
+            'ends_on.date'         => 'تاريخ نهاية الفصل غير صالح.',
+            'ends_on.after_or_equal' => 'تاريخ النهاية يجب أن يكون بعد أو يساوي تاريخ البداية.',
 
-            'end_date.required'     => 'تاريخ النهاية مطلوب.',
-            'end_date.date'         => 'تاريخ النهاية غير صالح.',
-            'end_date.after_or_equal' => 'تاريخ النهاية يجب أن يكون بعد أو يساوي تاريخ البداية.',
-
-            'status.required'       => 'حالة الفصل مطلوبة.',
-            'status.in'             => 'قيمة الحالة غير مدعومة. القيم المسموحة: planned, active, completed, archived.',
-
-            'is_active.boolean'     => 'حقل التفعيل يجب أن يكون قيمة منطقية.',
-            'description.max'       => 'الوصف تجاوز الحد الأقصى للطول.',
+            'is_active.boolean'    => 'قيمة التفعيل غير صحيحة.',
         ];
     }
 
     /**
-     * أسماء الحقول الودية لرسائل الأخطاء.
+     * أسماء الحقول الودية.
      */
     public function attributes(): array
     {
         return [
-            'name'             => 'اسم الفصل',
-            'code'             => 'الرمز التعريفي',
-            'academic_year_id' => 'السنة الأكاديمية',
-            'start_date'       => 'تاريخ البداية',
-            'end_date'         => 'تاريخ النهاية',
-            'status'           => 'الحالة',
-            'is_active'        => 'مفعل',
-            'description'      => 'الوصف',
+            'calendar_id' => 'التقويم الأكاديمي',
+            'name'        => 'اسم الفصل',
+            'starts_on'   => 'تاريخ البداية',
+            'ends_on'     => 'تاريخ النهاية',
+            'is_active'   => 'مفعل',
         ];
     }
 }
-
-/**
- * دالة مساعده للتحقق من الأعمدة بأ*

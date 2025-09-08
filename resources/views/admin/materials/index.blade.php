@@ -18,7 +18,7 @@
     <select name="university_id" class="form-select" onchange="this.form.submit()">
       <option value="">الجامعة</option>
       @foreach($universities as $u)
-      <option value="{{ $u->id }}" @selected(request('university_id')==$u->id)>{{ $u->name }}</option>
+        <option value="{{ $u->id }}" @selected(request('university_id')==$u->id)>{{ $u->name }}</option>
       @endforeach
     </select>
   </div>
@@ -26,7 +26,7 @@
     <select name="college_id" class="form-select" onchange="this.form.submit()">
       <option value="">الكلية</option>
       @foreach($colleges as $c)
-      <option value="{{ $c->id }}" @selected(request('college_id')==$c->id)>{{ $c->name }}</option>
+        <option value="{{ $c->id }}" @selected(request('college_id')==$c->id)>{{ $c->name }}</option>
       @endforeach
     </select>
   </div>
@@ -34,21 +34,27 @@
     <select name="major_id" class="form-select" onchange="this.form.submit()">
       <option value="">التخصص</option>
       @foreach($majors as $m)
-      <option value="{{ $m->id }}" @selected(request('major_id')==$m->id)>{{ $m->name }}</option>
+        <option value="{{ $m->id }}" @selected(request('major_id')==$m->id)>{{ $m->name }}</option>
       @endforeach
     </select>
   </div>
   <div class="col-md-2">
     <input type="number" name="level" class="form-control" value="{{ request('level') }}" placeholder="المستوى">
   </div>
+
+  {{-- جديد: فلتر الفصل الأكاديمي عبر term_id --}}
   <div class="col-md-2">
-    <select name="term" class="form-select" onchange="this.form.submit()">
-      <option value="">الفترة</option>
-      <option value="first"  @selected(request('term')==='first')>الأول</option>
-      <option value="second" @selected(request('term')==='second')>الثاني</option>
-      <option value="summer" @selected(request('term')==='summer')>الصيفي</option>
+    <select name="term_id" class="form-select" onchange="this.form.submit()">
+      <option value="">الفصل الأكاديمي</option>
+      @foreach($terms as $t)
+        <option value="{{ $t->id }}" @selected(request('term_id')==$t->id)">
+          {{ $t->calendar?->year_label }} -
+          {{ ['first'=>'الأول','second'=>'الثاني','summer'=>'الصيفي'][$t->name] ?? $t->name }}
+        </option>
+      @endforeach
     </select>
   </div>
+
   <div class="col-md-3">
     <input type="text" name="q" class="form-control" value="{{ request('q') }}" placeholder="بحث بالاسم">
   </div>
@@ -64,7 +70,7 @@
       <th>الاسم</th>
       <th>النطاق</th>
       <th>الجامعة/الكلية/التخصص</th>
-      <th>المستوى/الفترة</th>
+      <th>المستوى/الفصول</th>
       <th>الحالة</th>
       <th class="text-center">إجراءات</th>
     </tr>
@@ -81,11 +87,21 @@
           @if($m->major)   / {{ $m->major->name }} @endif
         @else — @endif
       </td>
-      <td>{{ $m->level ?: '—' }} / {{ $m->term ? ['first'=>'الأول','second'=>'الثاني','summer'=>'الصيفي'][$m->term] : '—' }}</td>
+      <td class="small">
+        {{ $m->level ?: '—' }} /
+        @php
+          $labels = $m->terms->map(function($t){
+            $nm = ['first'=>'الأول','second'=>'الثاني','summer'=>'الصيفي'][$t->name] ?? $t->name;
+            return trim(($t->calendar?->year_label ? $t->calendar->year_label.' ' : '').$nm);
+          })->implode(', ');
+        @endphp
+        {!! $labels ?: '—' !!}
+      </td>
       <td>{!! $m->is_active ? '<span class="badge bg-success">مفعل</span>' : '<span class="badge bg-secondary">موقوف</span>' !!}</td>
       <td class="text-center">
         <a href="{{ route('admin.materials.edit',$m) }}" class="btn btn-sm btn-outline-primary">تعديل</a>
-        <form action="{{ route('admin.materials.destroy',$m) }}" method="POST" class="d-inline">@csrf @method('DELETE')
+        <form action="{{ route('admin.materials.destroy',$m) }}" method="POST" class="d-inline">
+          @csrf @method('DELETE')
           <button class="btn btn-sm btn-outline-danger" onclick="return confirm('حذف المادة؟')">حذف</button>
         </form>
       </td>
@@ -96,5 +112,6 @@
   </tbody>
 </table>
 </div>
+
 {{ $materials->links('vendor.pagination.bootstrap-custom') }}
 @endsection

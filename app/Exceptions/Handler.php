@@ -12,6 +12,8 @@ use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Str;
 
 class Handler extends ExceptionHandler
 {

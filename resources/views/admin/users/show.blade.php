@@ -15,14 +15,15 @@
     <div class="card h-100">
       <div class="card-body text-center">
         @php
-          $photoUrl = $user->profile_photo_path ? asset('storage/'.$user->profile_photo_path) : 'https://via.placeholder.com/160x160?text=Profile';
+          $photoUrl = $user->profile_photo_url
+            ?? ($user->profile_photo_path ? asset('storage/'.$user->profile_photo_path) : 'https://via.placeholder.com/160x160?text=Profile');
         @endphp
         <img src="{{ $photoUrl }}" class="rounded-circle mb-3" style="width:160px;height:160px;object-fit:cover" alt="Profile">
         <h5 class="mb-1">{{ $user->name }}</h5>
         <div class="text-muted small">{{ $user->phone ?: '—' }}</div>
         <div class="text-muted small">{{ $user->email }}</div>
         <div class="mt-2">
-          <span class="badge bg-secondary">{{ $user->country ?: '—' }}</span>
+          <span class="badge bg-secondary">{{ $user->country?->name_ar ?? '—' }}</span>
         </div>
       </div>
     </div>
@@ -50,7 +51,7 @@
           <div class="col-md-6">
             <div class="text-muted small">الحالة</div>
             <div class="fw-semibold">
-              @if($user->status === 'active') <span class="badge bg-success">منتظم</span>
+              @if($user->status === 'active') <span class="badge bg-success">نشط</span>
               @elseif($user->status === 'suspended') <span class="badge bg-warning text-dark">موقوف</span>
               @elseif($user->status === 'graduated') <span class="badge bg-info text-dark">متخرج</span>
               @else <span class="badge bg-secondary">غير محدد</span>

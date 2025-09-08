@@ -6,11 +6,12 @@
         <a href="{{ route('admin.users.create') }}" class="btn btn-primary"><i class="bi bi-plus"></i> طالب جديد</a>
     </div>
 
-    <form class="row g-2 mb-3">
+    <form class="row g-2 mb-3" method="GET">
         <div class="col-md-3">
             <input type="text" name="q" class="form-control" value="{{ request('q') }}"
-                placeholder="بحث: الاسم/الإيميل/الرقم الأكاديمي">
+                placeholder="بحث: الاسم/الإيميل/الرقم الأكاديمي/الهاتف">
         </div>
+
         <div class="col-md-2">
             <select name="university_id" class="form-select" onchange="this.form.submit()">
                 <option value="">— الجامعة —</option>
@@ -19,6 +20,7 @@
                 @endforeach
             </select>
         </div>
+
         <div class="col-md-2">
             <select name="college_id" class="form-select" onchange="this.form.submit()">
                 <option value="">— الكلية —</option>
@@ -27,6 +29,7 @@
                 @endforeach
             </select>
         </div>
+
         <div class="col-md-2">
             <select name="major_id" class="form-select" onchange="this.form.submit()">
                 <option value="">— التخصص —</option>
@@ -35,35 +38,14 @@
                 @endforeach
             </select>
         </div>
+
+        {{-- ✅ فلترة بالدولة من جدول countries --}}
         <div class="col-md-2">
-            <select name="country" class="form-select" onchange="this.form.submit()">
+            <select name="country_id" class="form-select" onchange="this.form.submit()">
                 <option value="">— كل الدول —</option>
-                @php
-                    $arabCountries = [
-                        'اليمن',
-                        'السعودية',
-                        'الإمارات',
-                        'قطر',
-                        'الكويت',
-                        'البحرين',
-                        'عُمان',
-                        'مصر',
-                        'الأردن',
-                        'فلسطين',
-                        'سوريا',
-                        'لبنان',
-                        'العراق',
-                        'الجزائر',
-                        'المغرب',
-                        'تونس',
-                        'ليبيا',
-                        'السودان',
-                        'موريتانيا',
-                    ];
-                @endphp
-                @foreach ($arabCountries as $country)
-                    <option value="{{ $country }}" @selected(request('country') == $country)>
-                        {{ $country }}
+                @foreach ($countries as $country)
+                    <option value="{{ $country->id }}" @selected(request('country_id') == $country->id)>
+                        {{ $country->name_ar }} @if($country->iso2) ({{ $country->iso2 }}) @endif
                     </option>
                 @endforeach
             </select>
@@ -72,6 +54,7 @@
         <div class="col-md-1">
             <input type="number" name="level" class="form-control" value="{{ request('level') }}" placeholder="مستوى">
         </div>
+
         <div class="col-md-2">
             <select name="gender" class="form-select" onchange="this.form.submit()">
                 <option value="">— الجنس —</option>
@@ -79,6 +62,7 @@
                 <option value="female" @selected(request('gender') === 'female')>أنثى</option>
             </select>
         </div>
+
         <div class="col-md-2">
             <select name="status" class="form-select" onchange="this.form.submit()">
                 <option value="">— الحالة —</option>
@@ -87,6 +71,7 @@
                 <option value="graduated" @selected(request('status') === 'graduated')>متخرج</option>
             </select>
         </div>
+
         <div class="col-md-2">
             <button class="btn btn-outline-secondary w-100">بحث</button>
         </div>
@@ -114,27 +99,27 @@
                         <td>
                             @if ($u->profile_photo_url)
                                 <img src="{{ $u->profile_photo_url }}" class="rounded-circle"
-                                    style="width:40px;height:40px;object-fit:cover">
+                                     style="width:40px;height:40px;object-fit:cover" alt="avatar">
                             @else
                                 <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center"
-                                    style="width:40px;height:40px;">
+                                     style="width:40px;height:40px;">
                                     <i class="bi bi-person text-muted"></i>
                                 </div>
                             @endif
                         </td>
+
                         <td class="fw-semibold">{{ $u->name }}</td>
                         <td>{{ $u->phone ?: '—' }}</td>
                         <td>{{ $u->student_number ?: '—' }}</td>
+
                         <td class="small text-muted">
-                            {{ $u->university->name ?? '—' }}
-                            @if ($u->college)
-                                / {{ $u->college->name }}
-                            @endif
-                            @if ($u->major)
-                                / {{ $u->major->name }}
-                            @endif
+                            {{ optional($u->university)->name ?? '—' }}
+                            @if ($u->college) / {{ $u->college->name }} @endif
+                            @if ($u->major)   / {{ $u->major->name }}   @endif
                         </td>
+
                         <td>{{ $u->level ?: '—' }}</td>
+
                         <td>
                             @if ($u->gender === 'male')
                                 ذكر
@@ -144,7 +129,10 @@
                                 —
                             @endif
                         </td>
-                        <td>{{ $u->country ?: '—' }}</td>
+
+                        {{-- ✅ عرض الدولة من العلاقة --}}
+                        <td>{{ optional($u->country)->name_ar ?? '—' }}</td>
+
                         <td>
                             @if ($u->status === 'active')
                                 <span class="badge bg-success">نشط</span>
@@ -154,20 +142,21 @@
                                 <span class="badge bg-secondary">متخرج</span>
                             @endif
                         </td>
+
                         <td class="text-center">
                             <a href="{{ route('admin.users.show', $u) }}" class="btn btn-sm btn-outline-secondary">عرض</a>
                             <a href="{{ route('admin.users.edit', $u) }}" class="btn btn-sm btn-outline-primary">تعديل</a>
                             <form action="{{ route('admin.users.destroy', $u) }}" method="POST" class="d-inline">
                                 @csrf @method('DELETE')
                                 <button class="btn btn-sm btn-outline-danger"
-                                    onclick="return confirm('حذف الطالب؟')">حذف</button>
+                                        onclick="return confirm('حذف الطالب؟')">حذف</button>
                             </form>
                         </td>
-
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="9" class="text-center text-muted">لا توجد بيانات.</td>
+                        {{-- ✅ عدد الأعمدة 10 --}}
+                        <td colspan="10" class="text-center text-muted">لا توجد بيانات.</td>
                     </tr>
                 @endforelse
             </tbody>

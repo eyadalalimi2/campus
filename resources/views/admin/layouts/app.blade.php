@@ -127,12 +127,13 @@
 
 <body>
     @include('admin.partials.navbar')
-
     <div class="container-fluid my-4">
         <div class="row g-4">
             <aside class="col-lg-2 d-none d-lg-block">
                 @include('admin.partials.sidebar')
             </aside>
+
+            @include('admin.partials.flash')
             <main class="col-lg-10">
                 @yield('content')
             </main>

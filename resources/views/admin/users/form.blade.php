@@ -8,14 +8,12 @@
 
     <div class="col-md-6">
         <label class="form-label">البريد الإلكتروني</label>
-        <input type="email" name="email" class="form-control" required
-            value="{{ old('email', $user->email ?? '') }}">
+        <input type="email" name="email" class="form-control" required value="{{ old('email', $user->email ?? '') }}">
     </div>
 
     <div class="col-md-4">
         <label class="form-label">الرقم الأكاديمي</label>
-        <input type="text" name="student_number" class="form-control"
-            value="{{ old('student_number', $user->student_number ?? '') }}">
+        <input type="text" name="student_number" class="form-control" value="{{ old('student_number', $user->student_number ?? '') }}">
     </div>
 
     <div class="col-md-4">
@@ -27,10 +25,11 @@
         <label class="form-label">الصورة الشخصية (اختياري)</label>
         <input type="file" name="profile_photo" class="form-control" accept=".jpg,.jpeg,.png,.webp">
         @if (!empty($user?->profile_photo_url))
-            <img src="{{ $user->profile_photo_url }}" class="mt-2 rounded" style="height:48px">
+            <img src="{{ $user->profile_photo_url }}" class="mt-2 rounded" style="height:48px" alt="avatar">
         @endif
     </div>
 
+    {{-- الجامعة / الكلية / التخصص --}}
     <div class="col-md-4">
         <label class="form-label">الجامعة</label>
         <select name="university_id" id="university_id" class="form-select">
@@ -46,8 +45,9 @@
         <select name="college_id" id="college_id" class="form-select">
             <option value="">— اختر —</option>
             @foreach ($colleges as $c)
-                <option value="{{ $c->id }}" @selected(old('college_id', $user->college_id ?? '') == $c->id)
-                    data-university="{{ $c->university_id }}">
+                <option value="{{ $c->id }}"
+                        data-university="{{ $c->university_id }}"
+                        @selected(old('college_id', $user->college_id ?? '') == $c->id)>
                     {{ $c->name }} ({{ $c->university?->name }})
                 </option>
             @endforeach
@@ -59,7 +59,9 @@
         <select name="major_id" id="major_id" class="form-select">
             <option value="">— اختر —</option>
             @foreach ($majors as $m)
-                <option value="{{ $m->id }}" @selected(old('major_id', $user->major_id ?? '') == $m->id) data-college="{{ $m->college_id }}">
+                <option value="{{ $m->id }}"
+                        data-college="{{ $m->college_id }}"
+                        @selected(old('major_id', $user->major_id ?? '') == $m->id)>
                     {{ $m->name }} ({{ $m->college?->name }})
                 </option>
             @endforeach
@@ -68,8 +70,7 @@
 
     <div class="col-md-3">
         <label class="form-label">المستوى</label>
-        <input type="number" name="level" class="form-control" min="1" max="20"
-            value="{{ old('level', $user->level ?? '') }}">
+        <input type="number" name="level" class="form-control" min="1" max="20" value="{{ old('level', $user->level ?? '') }}">
     </div>
 
     <div class="col-md-3">
@@ -82,6 +83,21 @@
         </select>
     </div>
 
+    {{-- ✅ الدولة من جدول countries باستخدام country_id --}}
+    <div class="col-md-3">
+        <label class="form-label">الدولة</label>
+        <select name="country_id" class="form-select" required>
+            <option value="">— اختر —</option>
+            @foreach ($countries as $country)
+                <option value="{{ $country->id }}"
+                        @selected(old('country_id', $user->country_id ?? 1) == $country->id)>
+                    {{ $country->name_ar }} @if($country->iso2) ({{ $country->iso2 }}) @endif
+                </option>
+            @endforeach
+        </select>
+        <div class="form-text">اختر الدولة (يُحفظ المعرف من جدول الدول).</div>
+    </div>
+
     <div class="col-md-3">
         <label class="form-label">الحالة</label>
         @php $st = old('status', $user->status ?? 'active'); @endphp
@@ -91,25 +107,6 @@
             <option value="graduated" @selected($st === 'graduated')>متخرج</option>
         </select>
     </div>
-    <div class="col-md-4">
-  <label class="form-label">الدولة</label>
-  @php
-    $arabCountries = [
-      'اليمن','السعودية','الإمارات','عُمان','قطر','البحرين','الكويت',
-      'العراق','الأردن','لبنان','سوريا','فلسطين','مصر','السودان',
-      'ليبيا','تونس','الجزائر','المغرب','موريتانيا','الصومال','جيبوتي','جزر القمر'
-    ];
-    // الافتراضي "اليمن" إن لم توجد قيمة محفوظة ولم يُرسل old()
-    $selectedCountry = old('country', $user->country ?? 'اليمن');
-  @endphp
-  <select name="country" class="form-select">
-    @foreach($arabCountries as $c)
-      <option value="{{ $c }}" @selected($selectedCountry === $c)>{{ $c }}</option>
-    @endforeach
-  </select>
-</div>
-
-
 
     <div class="col-md-6">
         <label class="form-label">كلمة المرور {{ $isEdit ? '(اتركها فارغة إن لم ترد تغييرها)' : '' }}</label>
@@ -119,28 +116,29 @@
 </div>
 
 @push('scripts')
-    <script>
-        function filterCollegesByUniversity() {
-            const uniId = document.getElementById('university_id').value;
-            document.querySelectorAll('#college_id option[data-university]').forEach(o => {
-                o.hidden = (uniId && o.dataset.university !== uniId);
-            });
-        }
-
-        function filterMajorsByCollege() {
-            const colId = document.getElementById('college_id').value;
-            document.querySelectorAll('#major_id option[data-college]').forEach(o => {
-                o.hidden = (colId && o.dataset.college !== colId);
-            });
-        }
-        document.getElementById('university_id').addEventListener('change', function() {
-            filterCollegesByUniversity();
-            filterMajorsByCollege();
-        });
-        document.getElementById('college_id').addEventListener('change', filterMajorsByCollege);
-
-        // تهيئة أولية
-        filterCollegesByUniversity();
-        filterMajorsByCollege();
-    </script>
+<script>
+function filterCollegesByUniversity() {
+    const uniId = document.getElementById('university_id').value;
+    document.querySelectorAll('#college_id option[data-university]').forEach(o => {
+        const show = !uniId || (o.dataset.university === uniId);
+        o.hidden = !show;
+        if(!show && o.selected) o.selected = false;
+    });
+}
+function filterMajorsByCollege() {
+    const colId = document.getElementById('college_id').value;
+    document.querySelectorAll('#major_id option[data-college]').forEach(o => {
+        const show = !colId || (o.dataset.college === colId);
+        o.hidden = !show;
+        if(!show && o.selected) o.selected = false;
+    });
+}
+// init + listeners
+document.getElementById('university_id').addEventListener('change', function(){
+    filterCollegesByUniversity();
+    filterMajorsByCollege();
+});
+document.getElementById('college_id').addEventListener('change', filterMajorsByCollege);
+filterCollegesByUniversity(); filterMajorsByCollege();
+</script>
 @endpush

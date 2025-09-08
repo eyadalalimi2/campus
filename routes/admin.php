@@ -22,6 +22,13 @@ use App\Http\Controllers\Admin\AcademicCalendarController;
 use App\Http\Controllers\Admin\AcademicTermController;
 use App\Http\Controllers\Admin\CountryController;
 
+// الإضافات الجديدة
+use App\Http\Controllers\Admin\MajorProgramController;
+use App\Http\Controllers\Admin\PlanController;
+use App\Http\Controllers\Admin\PlanFeatureController;
+use App\Http\Controllers\Admin\ActivationCodesController;
+use App\Http\Controllers\Admin\ActivationCodeBatchesController;
+
 /*
 |--------------------------------------------------------------------------
 | Admin Routes (prefix=admin, name=admin.) via RouteServiceProvider
@@ -40,7 +47,7 @@ Route::middleware('auth:admin')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('/logout', [AdminAuthController::class, 'logout'])->name('logout');
 
-    // CRUD الموارد الرئيسية
+    // CRUD الموارد الأساسية
     Route::resource('users',         UserController::class);
     Route::resource('contents',      ContentController::class)->except(['show']);
     Route::resource('universities',  UniversityController::class)->except(['show']);
@@ -53,14 +60,83 @@ Route::middleware('auth:admin')->group(function () {
     Route::resource('blogs',         BlogController::class)->except(['show']);
     Route::resource('subscriptions', SubscriptionController::class)->except(['show']);
 
-    // الموارد الجديدة: الدول والمجالات والبرامج والتقويمات والفصول
-    Route::resource('countries',         CountryController::class)->except(['show']);
-    Route::resource('disciplines',       DisciplineController::class)->except(['show']);
-    Route::resource('programs',          ProgramController::class)->except(['show']);
+    // الموارد المضافة: الدول/التخصصات/البرامج/التقويمات/الفصول
+    Route::resource('countries',          CountryController::class)->except(['show']);
+    Route::resource('disciplines',        DisciplineController::class)->except(['show']);
+    Route::resource('programs',           ProgramController::class)->except(['show']);
     Route::resource('academic-calendars', AcademicCalendarController::class)->except(['show']);
-    Route::resource('academic-terms',    AcademicTermController::class)->except(['show']);
+    Route::resource('academic-terms',     AcademicTermController::class)->except(['show']);
 
-    // الثيمات + الاستيراد
+    /*
+     |-----------------------------
+     | الخطط ومزايا الخطط
+     |-----------------------------
+     */
+    Route::resource('plans', PlanController::class)->except(['show']);
+
+    Route::resource('plans.features', PlanFeatureController::class)
+        ->except(['show'])
+        ->names('plan_features'); // => admin.plan_features.*
+
+    /*
+     |-----------------------------
+     | الربط Major ↔ Program (Pivot)
+     |-----------------------------
+     */
+    Route::resource('major-programs', MajorProgramController::class)
+        ->except(['show'])
+        ->names('major_program'); // admin.major_program.*
+
+    /*
+     |-----------------------------
+     | أكواد التفعيل والدفعات
+     |-----------------------------
+     */
+    // دفعات الأكواد
+    Route::resource('activation-code-batches', \App\Http\Controllers\Admin\ActivationCodeBatchesController::class)
+        ->only(['index', 'create', 'store', 'show', 'destroy'])
+        ->names('activation_code_batches'); // admin.activation_code_batches.*
+
+    Route::get(
+        'activation-code-batches/{batch}/export',
+        [\App\Http\Controllers\Admin\ActivationCodeBatchesController::class, 'export']
+    )->name('activation_code_batches.export');
+
+    Route::post(
+        'activation-code-batches/{batch}/disable',
+        [\App\Http\Controllers\Admin\ActivationCodeBatchesController::class, 'disable']
+    )->name('activation_code_batches.disable');
+
+
+    Route::resource('activation-codes', ActivationCodesController::class)
+        ->except(['show'])
+        ->names('activation_codes'); // admin.activation_codes.*
+
+    Route::post(
+        'activation-codes/{code}/disable',
+        [ActivationCodesController::class, 'disable']
+    )->name('activation_codes.disable');
+
+    Route::get(
+        'activation-codes/redeem-form',
+        [ActivationCodesController::class, 'redeemForm']
+    )->name('activation_codes.redeem_form');
+
+    Route::post(
+        'activation-codes/redeem',
+        [ActivationCodesController::class, 'redeem']
+    )->name('activation_codes.redeem');
+    Route::get(
+        'activation-codes/export',
+        [ActivationCodesController::class, 'export']
+    )->name('activation_codes.export');
+
+
+    /*
+     |-----------------------------
+     | الثيمات + الاستيراد
+     |-----------------------------
+     */
     Route::get('/themes',                   [ThemeController::class, 'index'])->name('themes.index');
     Route::get('/themes/{university}/edit', [ThemeController::class, 'edit'])->name('themes.edit');
     Route::put('/themes/{university}',      [ThemeController::class, 'update'])->name('themes.update');
@@ -69,3 +145,4 @@ Route::middleware('auth:admin')->group(function () {
     Route::post('/import/run',          [ImportController::class, 'run'])->name('import.run');
     Route::get('/import/sample/{type}', [ImportController::class, 'sample'])->name('import.sample');
 });
+

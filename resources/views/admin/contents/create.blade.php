@@ -1,13 +1,42 @@
 @extends('admin.layouts.app')
 @section('title','إضافة محتوى')
+
 @section('content')
-<h4 class="mb-3">إضافة محتوى</h4>
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h4 class="mb-0">إضافة محتوى</h4>
+  <a href="{{ route('admin.contents.index') }}" class="btn btn-outline-secondary">
+    <i class="bi bi-arrow-right-circle"></i> رجوع
+  </a>
+</div>
+
+{{-- تلميح تشغيلي: المحتوى خاص بالجامعة دائماً --}}
+<div class="alert alert-warning d-flex align-items-start gap-2">
+  <i class="bi bi-shield-lock fs-5"></i>
+  <div>
+    هذا المحتوى **خاص بالجامعة**: يجب اختيار <strong>جامعة</strong>، ويمكن (اختياريًا) تقييده بـ <strong>كلية/تخصص/مادة</strong>.  
+    عند اختيار حالة <strong>منشور</strong> سيتم تعيين الناشر وتاريخ النشر تلقائيًا.
+  </div>
+</div>
+
 <form action="{{ route('admin.contents.store') }}" method="POST" enctype="multipart/form-data" class="card p-3">
   @csrf
+
+  {{-- حقول المحتوى الرئيسية (تشمل النوع/الملف/الرابط/الجامعة والتدرّج) --}}
   @include('admin.contents.form', ['content'=>null])
+
+  {{-- مذكرة الإصدار (اختياري) --}}
   <div class="mt-3">
-    <button class="btn btn-primary">حفظ</button>
-    <a href="{{ route('admin.contents.index') }}" class="btn btn-link">رجوع</a>
+    <label class="form-label">مذكرة الإصدار (اختياري)</label>
+    <textarea name="changelog" rows="3" class="form-control"
+      placeholder="أكتب ملاحظات مختصرة عمّا يحتويه هذا الإصدار (للمراجعة الداخلية)">{{ old('changelog') }}</textarea>
+    <div class="form-text">
+      * الإصدار يبدأ بـ <code>v1</code> ويزداد تلقائياً عند تغيير الملف أو الرابط في الإصدارات اللاحقة.
+    </div>
+  </div>
+
+  <div class="mt-3 d-flex gap-2">
+    <button class="btn btn-primary"><i class="bi bi-save"></i> حفظ</button>
+    <a href="{{ route('admin.contents.index') }}" class="btn btn-link">إلغاء</a>
   </div>
 </form>
 @endsection
