@@ -20,7 +20,7 @@ class Kernel extends HttpKernel
         \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,
         \App\Http\Middleware\TrimStrings::class,
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
-        // ميدلوير Sanctum للـ SPA لا نحتاجه عالميًا في تدفّق Bearer للموبايل
+        // ميدلوير Sanctum الخاص بالـ SPA غير مطلوب عالميًا في سيناريو الموبايل (Bearer Token)
         // \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
     ];
 
@@ -37,16 +37,28 @@ class Kernel extends HttpKernel
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \App\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
-            // إن كان لديك SPA stateful على نفس الدومين فعّل السطر التالي داخل web لا global:
+            // إن كان لديك SPA stateful على نفس الدومين فعِّل التالي داخل web فقط:
             // \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
         ],
 
         'api' => [
-            // فرض الاستجابة JSON لكل مسارات API
-            \App\Http\Middleware\ForceJsonResponse::class,
-            // تحديد المعدّل المعرّف باسم api في RouteServiceProvider
-            \Illuminate\Routing\Middleware\ThrottleRequests::class . ':api',
+            // إجبار JSON + تعريب حسب الهيدر
+            \App\Http\Middleware\Api\ForceJson::class,
+            \App\Http\Middleware\Api\ApiLocale::class,
+
+            // ثروتل افتراضي لمجموعة API
+            'throttle:api',
+
+            // ربط معرّفات الراوت بالموديلات (bindings)
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
+
+            // Idempotency لحماية POST/PUT/PATCH/DELETE (اختياري لكنه موصى به)
+            \App\Http\Middleware\Api\Idempotency::class,
+
+            // فرض نطاق المستخدم للمحتوى الخاص (يمكن إبقاؤه هنا أو إضافته انتقائيًا على روتات معيّنة)
+            \App\Http\Middleware\Api\UserScopeEnforcer::class,
+
+            // ملاحظة: لا نستخدم EnsureFrontendRequestsAreStateful في مجموعة API الخاصة بالموبايل.
         ],
     ];
 
@@ -68,8 +80,11 @@ class Kernel extends HttpKernel
         'throttle'         => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified'         => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
 
-        // ميدلويرنا المخصصة
-        'force.json'       => \App\Http\Middleware\ForceJsonResponse::class,
+        // ميدلويراتنا المخصصة (أسماء مختصرة للاستخدام في الراوت)
+        'force.json'       => \App\Http\Middleware\Api\ForceJson::class,
+        'abilities'        => \App\Http\Middleware\Api\CheckAbilities::class,
+        'idem'             => \App\Http\Middleware\Api\Idempotency::class,
+        'u-scope'          => \App\Http\Middleware\Api\UserScopeEnforcer::class,
         'verified.api'     => \App\Http\Middleware\EnsureEmailIsVerifiedForApi::class,
     ];
 }

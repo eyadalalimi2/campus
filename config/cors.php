@@ -13,7 +13,18 @@ return [
     'allowed_headers' => ['*'],
 
     // كشف بعض الرؤوس للعميل (مفيد للتعامل مع المعدّل والترقيم)
-    'exposed_headers' => ['Authorization', 'X-RateLimit-Limit', 'X-RateLimit-Remaining', 'Retry-After'],
+    'exposed_headers' => [
+        'Authorization',
+        'X-RateLimit-Limit',
+        'X-RateLimit-Remaining',
+        'Retry-After',
+        'Idempotency-Key',
+        'X-Idempotency-Cache',
+        'X-Request-Id',
+        'X-Correlation-Id',
+        'Content-Disposition'
+    ],
+
 
     // تخزين نتيجة الـ preflight في المتصفح (لا يؤثر على تطبيق أندرويد)
     'max_age' => 3600,

@@ -26,9 +26,18 @@ class Subscription extends Model
     ];
 
     // علاقات
-    public function user(): BelongsTo { return $this->belongsTo(User::class); }
-    public function plan(): BelongsTo { return $this->belongsTo(Plan::class); }
-    public function activationCode(): BelongsTo { return $this->belongsTo(ActivationCode::class, 'activation_code_id'); }
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+    public function plan(): BelongsTo
+    {
+        return $this->belongsTo(Plan::class);
+    }
+    public function activationCode(): BelongsTo
+    {
+        return $this->belongsTo(ActivationCode::class, 'activation_code_id');
+    }
 
     // سكوبات مفيدة
     public function scopeStatus($q, $status)
@@ -40,6 +49,13 @@ class Subscription extends Model
     {
         if ($planId) $q->where('plan_id', (int)$planId);
     }
+    public function scopeActive($q)
+    {
+        return $q->where('status', 'active')->where(function ($w) {
+            $w->whereNull('ends_at')->orWhere('ends_at', '>', now());
+        });
+    }
+
 
     public function scopeDateBetween($q, $from, $to)
     {
