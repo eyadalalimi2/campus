@@ -3,17 +3,16 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ActivationCodeBatch extends Model
 {
-    use HasFactory;
-
     protected $table = 'activation_code_batches';
 
     protected $fillable = [
-        'notes',
         'name',
+        'notes',
         'plan_id',
         'university_id',
         'college_id',
@@ -31,48 +30,25 @@ class ActivationCodeBatch extends Model
     ];
 
     protected $casts = [
-        'starts_on'     => 'date',
-        'valid_from'    => 'datetime',
-        'valid_until'   => 'datetime',
-        'quantity'      => 'integer',
-        'duration_days' => 'integer',
-        'code_length'   => 'integer',
+        'plan_id'             => 'integer',
+        'university_id'       => 'integer',
+        'college_id'          => 'integer',
+        'major_id'            => 'integer',
+        'quantity'            => 'integer',
+        'duration_days'       => 'integer',
+        'starts_on'           => 'date',
+        'valid_from'          => 'datetime',
+        'valid_until'         => 'datetime',
+        'code_length'         => 'integer',
+        'created_by_admin_id' => 'integer',
     ];
 
-    // علاقات
-    public function activationCodes()
-    {
-        return $this->hasMany(ActivationCode::class, 'batch_id');
-    }
+    public function plan(): BelongsTo { return $this->belongsTo(Plan::class, 'plan_id'); }
+    public function createdBy(): BelongsTo { return $this->belongsTo(Admin::class, 'created_by_admin_id'); }
+    public function activationCodes(): HasMany { return $this->hasMany(ActivationCode::class, 'batch_id'); }
 
-    public function plan()
+    public function getDisplayNameAttribute(): string
     {
-        return $this->belongsTo(\App\Models\Plan::class, 'plan_id');
+        return $this->name ?: ('دفعة #' . $this->id);
     }
-
-    public function university()
-    {
-        return $this->belongsTo(\App\Models\University::class, 'university_id');
-    }
-
-    public function college()
-    {
-        return $this->belongsTo(\App\Models\College::class, 'college_id');
-    }
-
-    public function major()
-    {
-        return $this->belongsTo(\App\Models\Major::class, 'major_id');
-    }
-
-    public function creator()
-    {
-        return $this->belongsTo(\App\Models\Admin::class, 'created_by_admin_id');
-    }
-
-    // ملائمات
-    public function isDraft(): bool { return $this->status === 'draft'; }
-    public function isActive(): bool { return $this->status === 'active'; }
-    public function isDisabled(): bool { return $this->status === 'disabled'; }
-    public function isArchived(): bool { return $this->status === 'archived'; }
 }

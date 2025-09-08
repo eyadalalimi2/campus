@@ -2,90 +2,74 @@
 
 namespace App\Services;
 
-use App\Models\ActivationCodeBatch;
-use App\Models\ActivationCode;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Throwable;
 
 class ActivationCodeGenerator
 {
     /**
-     * واجهة ثابتة للتوافق مع أي استدعاءات سابقة
+     * توليد مجموعة فريدة من الأكواد الرقمية بطول $length
+     * مع اختيار بادئة prefix (اختياري).
      */
-    public static function generateUniqueSet(ActivationCodeBatch $batch, ?int $createdByAdminId = null): array
+    public static function generateUniqueSet(int $count, int $length = 10, ?string $prefix = null): array
     {
-        return (new self())->generateForBatch($batch, $createdByAdminId);
+        $length = max(4, min(24, $length));
+        $result = [];
+
+        // اجلب الأكواد الموجودة مسبقًا بنفس البادئة لتفادي التصادم
+        $existing = [];
+        if ($prefix) {
+            $existing = DB::table('activation_codes')
+                ->where('code','like',$prefix.'%')
+                ->pluck('code')->all();
+        } else {
+            $existing = DB::table('activation_codes')->pluck('code')->all();
+        }
+        $existing = array_flip($existing);
+
+        while (count($result) < $count) {
+            // أنشئ دفعة مؤقتة (حتى 1000 في المرة)
+            $need = $count - count($result);
+            $batchSize = min(1000, $need);
+
+            for ($i=0; $i<$batchSize; $i++) {
+                $digits = self::randomDigits($length - ($prefix ? mb_strlen($prefix) : 0));
+                $code = ($prefix ? $prefix : '') . $digits;
+
+                if (!isset($existing[$code]) && !isset($result[$code])) {
+                    $result[$code] = true;
+                }
+            }
+        }
+
+        return array_keys($result);
     }
 
     /**
-     * توليد الأكواد لدُفعة معينة وإنشاء السجلات.
-     * يعيد مصفوفة الأكواد التي تم إنشاؤها.
+     * اصنع صفوف الإدراج bulk insert مع الحقول المشتركة.
      */
-    public function generateForBatch(ActivationCodeBatch $batch, ?int $createdByAdminId = null): array
+    public static function buildInsertRows(array $codes, array $common = []): array
     {
-        $createdByAdminId = $createdByAdminId ?? (Auth::guard('admin')->id() ?? $batch->created_by_admin_id);
-
-        $alphabet = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ'; // بدون 0,1,I,O لتقليل الالتباس
-        $need = max(1, (int)$batch->quantity);
-        $totalLen = max(6, (int)$batch->code_length);
-        $prefix = (string)($batch->code_prefix ?? '');
-        $randLen = max(4, $totalLen - mb_strlen($prefix));
         $now = now();
-
-        $generated = [];
-
-        DB::transaction(function () use ($batch, $createdByAdminId, $alphabet, $need, $prefix, $randLen, $now, &$generated) {
-            for ($i = 0; $i < $need; $i++) {
-                // حاول حتى تحصل على كود فريد
-                $code = null;
-                for ($attempt = 0; $attempt < 10; $attempt++) {
-                    $random = self::randomFromAlphabet($alphabet, $randLen);
-                    $candidate = $prefix . $random;
-
-                    if (!ActivationCode::where('code', $candidate)->lockForUpdate()->exists()) {
-                        $code = $candidate;
-                        break;
-                    }
-                }
-
-                if (!$code) {
-                    throw new \RuntimeException('تعذّر توليد كود فريد بعد عدة محاولات.');
-                }
-
-                $rec = ActivationCode::create([
-                    'batch_id'           => $batch->id,
-                    'code'               => $code,
-                    'plan_id'            => $batch->plan_id,
-                    'university_id'      => $batch->university_id,
-                    'college_id'         => $batch->college_id,
-                    'major_id'           => $batch->major_id,
-                    'duration_days'      => $batch->duration_days,
-                    'start_policy'       => $batch->start_policy,
-                    'starts_on'          => $batch->starts_on,
-                    'valid_from'         => $batch->valid_from,
-                    'valid_until'        => $batch->valid_until,
-                    'max_redemptions'    => 1,
-                    'redemptions_count'  => 0,
-                    'status'             => 'active',
-                    'created_by_admin_id'=> $createdByAdminId,
-                ]);
-
-                $generated[] = $rec->code;
-            }
-        }, 3);
-
-        return $generated;
+        $rows = [];
+        foreach ($codes as $code) {
+            $rows[] = array_merge([
+                'code'       => $code,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ], $common);
+        }
+        return $rows;
     }
 
-    private static function randomFromAlphabet(string $alphabet, int $length): string
+    protected static function randomDigits(int $len): string
     {
-        $chars = [];
-        $max = strlen($alphabet) - 1;
-        for ($i=0; $i<$length; $i++) {
-            $chars[] = $alphabet[random_int(0, $max)];
+        if ($len <= 0) return '';
+        // رقم أولي بدون أصفار مفقودة: نبني سلسلة أرقام مباشرة
+        $s = '';
+        for ($i=0;$i<$len;$i++) {
+            $s .= (string) random_int(0,9);
         }
-        return implode('', $chars);
+        return $s;
     }
 }

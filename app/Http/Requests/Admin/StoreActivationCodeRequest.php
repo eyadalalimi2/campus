@@ -4,58 +4,72 @@ namespace App\Http\Requests\Admin;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\Validator;
 use Illuminate\Support\Facades\DB;
 
 class StoreActivationCodeRequest extends FormRequest
 {
-    public function authorize(): bool { return true; }
+    public function authorize(): bool
+    {
+        return auth('admin')->check();
+    }
+
+    public function prepareForValidation(): void
+    {
+        $this->merge([
+            'notes' => $this->notes ?? '',
+        ]);
+    }
 
     public function rules(): array
     {
         return [
-            'batch_id'        => ['nullable','integer','exists:activation_code_batches,id'],
-            'code'            => ['required','string','max:64','unique:activation_codes,code'],
-            'plan_id'         => ['required','integer','exists:plans,id'],
-            'university_id'   => ['nullable','integer','exists:universities,id'],
-            'college_id'      => ['nullable','integer','exists:colleges,id'],
-            'major_id'        => ['nullable','integer','exists:majors,id'],
-            'duration_days'   => ['required','integer','min:1','max:65535'],
-            'start_policy'    => ['required', Rule::in(['on_redeem','fixed_start'])],
-            'starts_on'       => ['nullable','date','required_if:start_policy,fixed_start'],
-            'valid_from'      => ['nullable','date'],
-            'valid_until'     => ['nullable','date','after_or_equal:valid_from'],
-            'max_redemptions' => ['required','integer','min:1','max:255'],
-            'status'          => ['required', Rule::in(['active','redeemed','expired','disabled'])],
-            'redeemed_by_user_id' => ['nullable','integer','exists:users,id'],
-            'redeemed_at'     => ['nullable','date'],
-            'created_by_admin_id' => ['nullable','integer','exists:admins,id'],
+            'batch_id'        => 'nullable|exists:activation_code_batches,id',
+            'code'            => ['nullable','string','max:64', Rule::unique('activation_codes','code')],
+            'plan_id'         => 'required|exists:plans,id',
+            'university_id'   => 'nullable|exists:universities,id',
+            'college_id'      => 'nullable|exists:colleges,id',
+            'major_id'        => 'nullable|exists:majors,id',
+            'duration_days'   => 'required|integer|min:1|max:1825',
+            'start_policy'    => 'required|in:on_redeem,fixed_start',
+            'starts_on'       => 'nullable|date',
+            'valid_from'      => 'nullable|date',
+            'valid_until'     => 'nullable|date|after_or_equal:valid_from',
+            'max_redemptions' => 'required|integer|min:1|max:1000',
+            'status'          => 'nullable|in:active,redeemed,expired,disabled',
+            'notes'           => 'nullable|string',
         ];
     }
 
-    public function withValidator(\Illuminate\Validation\Validator $validator): void
+    public function withValidator($validator)
     {
         $validator->after(function ($v) {
-            $universityId = $this->input('university_id');
-            $collegeId    = $this->input('college_id');
-            $majorId      = $this->input('major_id');
-
-            if ($collegeId && $universityId) {
-                $ok = DB::table('colleges')->where('id',$collegeId)
-                    ->where('university_id',$universityId)->exists();
-                if (!$ok) $v->errors()->add('college_id','college_id لا يتبع university_id.');
+            if ($this->start_policy === 'fixed_start' && empty($this->starts_on)) {
+                $v->errors()->add('starts_on','عند اختيار بداية ثابتة يجب تحديد تاريخ البداية.');
             }
 
-            if ($majorId) {
-                $query = DB::table('majors as m')
-                    ->join('colleges as c','c.id','=','m.college_id')
-                    ->where('m.id',$majorId);
+            // التحقق من تبعية الكلية للجامعة (لمجاراة القادح)
+            $u = $this->university_id;
+            $c = $this->college_id;
+            $m = $this->major_id;
 
-                if ($collegeId)    $query->where('m.college_id',$collegeId);
-                if ($universityId) $query->where('c.university_id',$universityId);
-
-                if (!$query->exists()) {
-                    $v->errors()->add('major_id','major_id لا يتبع الكلية/الجامعة.');
+            if ($c && $u) {
+                $ok = DB::table('colleges')->where('id',$c)->where('university_id',$u)->exists();
+                if (!$ok) $v->errors()->add('college_id','الكلية لا تتبع هذه الجامعة.');
+            }
+            if ($m) {
+                $row = DB::table('majors')
+                    ->join('colleges','colleges.id','=','majors.college_id')
+                    ->where('majors.id',$m)
+                    ->first(['majors.college_id','colleges.university_id']);
+                if (!$row) {
+                    $v->errors()->add('major_id','التخصص غير موجود.');
+                } else {
+                    if ($c && (int)$row->college_id !== (int)$c) {
+                        $v->errors()->add('major_id','التخصص لا يتبع الكلية المحددة.');
+                    }
+                    if ($u && (int)$row->university_id !== (int)$u) {
+                        $v->errors()->add('major_id','التخصص لا يتبع الجامعة المحددة.');
+                    }
                 }
             }
         });

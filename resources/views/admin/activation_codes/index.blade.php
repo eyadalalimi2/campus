@@ -1,76 +1,84 @@
-<!doctype html>
-<html lang="ar" dir="rtl">
-<head>
-  <meta charset="utf-8">
-  <title>الأكواد</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
-</head>
-<body class="p-3">
-<div class="container">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h3>الأكواد</h3>
-    <div class="d-flex gap-2">
-      <a href="{{ route('admin.activation-codes.create') }}" class="btn btn-primary">إنشاء يدوي</a>
-      <a href="{{ route('admin.activation-codes.redeem') }}" class="btn btn-outline-success">استرداد كود</a>
-    </div>
+@extends('admin.layouts.app')
+@section('title','الأكواد الفردية')
+
+@section('content')
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h4 class="mb-0">الأكواد الفردية</h4>
+  <div class="d-flex gap-2">
+    <a href="{{ route('admin.activation_codes.create') }}" class="btn btn-primary"><i class="bi bi-plus"></i> كود جديد</a>
+    <a href="{{ route('admin.activation_codes.redeem_form') }}" class="btn btn-outline-success"><i class="bi bi-key"></i> تفعيل يدوي</a>
   </div>
-
-  <form class="row g-2 mb-3">
-    <div class="col-md-3">
-      <input type="text" name="s" value="{{ request('s') }}" class="form-control" placeholder="بحث بالكود">
-    </div>
-    <div class="col-md-3">
-      <select name="status" class="form-select">
-        <option value="">الحالة</option>
-        @foreach(['active','redeemed','expired','disabled'] as $st)
-          <option value="{{ $st }}" @selected(request('status')===$st)>{{ $st }}</option>
-        @endforeach
-      </select>
-    </div>
-    <div class="col-md-3">
-      <input type="number" name="batch_id" class="form-control" value="{{ request('batch_id') }}" placeholder="batch_id">
-    </div>
-    <div class="col-md-2">
-      <button class="btn btn-secondary w-100">تصفية</button>
-    </div>
-  </form>
-
-  @if(session('success')) <div class="alert alert-success">{{ session('success') }}</div> @endif
-  @error('error') <div class="alert alert-danger">{{ $message }}</div> @enderror
-
-  <div class="table-responsive">
-    <table class="table table-striped">
-      <thead><tr>
-        <th>#</th><th>الكود</th><th>batch</th><th>plan</th><th>الحالة</th><th>استرداد</th><th>أوامر</th>
-      </tr></thead>
-      <tbody>
-      @foreach($codes as $c)
-        <tr>
-          <td>{{ $c->id }}</td>
-          <td><code>{{ $c->code }}</code></td>
-          <td>{{ $c->batch_id }}</td>
-          <td>{{ $c->plan_id }}</td>
-          <td>{{ $c->status }}</td>
-          <td>
-            @if($c->redeemed_at)
-              {{ $c->redeemed_at }} (user_id={{ $c->redeemed_by_user_id }})
-            @else
-              —
-            @endif
-          </td>
-          <td class="d-flex gap-2">
-            <a class="btn btn-sm btn-outline-primary" href="{{ route('admin.activation-codes.edit',$c->id) }}">تعديل</a>
-            <form method="post" action="{{ route('admin.activation-codes.destroy',$c->id) }}" onsubmit="return confirm('حذف؟');">
-              @csrf @method('DELETE')
-              <button class="btn btn-sm btn-outline-danger">حذف</button>
-            </form>
-          </td>
-        </tr>
-      @endforeach
-      </tbody>
-    </table>
-  </div>
-  {{ $codes->withQueryString()->links() }}
 </div>
-</body>
-</html>
+
+<form class="row g-2 mb-3">
+  <div class="col-md-3"><input type="text" name="q" class="form-control" value="{{ request('q') }}" placeholder="بحث بالكود"></div>
+  <div class="col-md-2">
+    <select name="status" class="form-select" onchange="this.form.submit()">
+      <option value="">الحالة</option>
+      @foreach(['active','redeemed','expired','disabled'] as $st)
+        <option value="{{ $st }}" @selected(request('status')===$st)>{{ $st }}</option>
+      @endforeach
+    </select>
+  </div>
+  <div class="col-md-2">
+    <select name="batch_id" class="form-select" onchange="this.form.submit()">
+      <option value="">الدفعة</option>
+      @foreach($batches as $b)
+        <option value="{{ $b->id }}" @selected(request('batch_id')==$b->id)>{{ $b->name }}</option>
+      @endforeach
+    </select>
+  </div>
+  <div class="col-md-2">
+    <input type="date" name="created_from" class="form-control" value="{{ request('created_from') }}">
+  </div>
+  <div class="col-md-2">
+    <input type="date" name="created_to" class="form-control" value="{{ request('created_to') }}">
+  </div>
+  <div class="col-md-1"><button class="btn btn-outline-secondary w-100">بحث</button></div>
+</form>
+
+<div class="table-responsive">
+<table class="table table-hover bg-white align-middle">
+  <thead class="table-light">
+    <tr>
+      <th>#</th>
+      <th>الكود</th>
+      <th>الدفعة</th>
+      <th>الخطة</th>
+      <th>النطاق</th>
+      <th>المدة</th>
+      <th>الحالة</th>
+      <th class="text-center">إجراءات</th>
+    </tr>
+  </thead>
+  <tbody>
+    @forelse($codes as $c)
+    <tr>
+      <td>{{ $c->id }}</td>
+      <td class="fw-semibold">{{ $c->code }}</td>
+      <td>{{ $c->batch?->name ?: '—' }}</td>
+      <td>{{ $c->plan->name ?? ('#'.$c->plan_id) }}</td>
+      <td class="small text-muted">
+        {{ $c->university->name ?? '—' }}
+        @if($c->college)/ {{ $c->college->name }} @endif
+        @if($c->major)/ {{ $c->major->name }} @endif
+      </td>
+      <td>{{ $c->duration_days }} يوم</td>
+      <td>{{ $c->status }}</td>
+      <td class="text-center">
+        <a href="{{ route('admin.activation_codes.edit',$c) }}" class="btn btn-sm btn-outline-primary">تعديل</a>
+        <form action="{{ route('admin.activation_codes.destroy',$c) }}" method="POST" class="d-inline" onsubmit="return confirm('حذف الكود؟')">
+          @csrf @method('DELETE')
+          <button class="btn btn-sm btn-outline-danger">حذف</button>
+        </form>
+      </td>
+    </tr>
+    @empty
+    <tr><td colspan="8" class="text-center text-muted">لا توجد أكواد.</td></tr>
+    @endforelse
+  </tbody>
+</table>
+</div>
+
+{{ $codes->links('vendor.pagination.bootstrap-custom') }}
+@endsection

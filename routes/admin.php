@@ -92,44 +92,23 @@ Route::middleware('auth:admin')->group(function () {
      | أكواد التفعيل والدفعات
      |-----------------------------
      */
-    // دفعات الأكواد
     Route::resource('activation-code-batches', \App\Http\Controllers\Admin\ActivationCodeBatchesController::class)
-        ->only(['index', 'create', 'store', 'show', 'destroy'])
-        ->names('activation_code_batches'); // admin.activation_code_batches.*
+        ->names('activation_code_batches');
 
-    Route::get(
-        'activation-code-batches/{batch}/export',
-        [\App\Http\Controllers\Admin\ActivationCodeBatchesController::class, 'export']
-    )->name('activation_code_batches.export');
+    Route::get('activation-code-batches/{batch}/export', [\App\Http\Controllers\Admin\ActivationCodeBatchesController::class, 'export'])
+        ->name('activation_code_batches.export');
 
-    Route::post(
-        'activation-code-batches/{batch}/disable',
-        [\App\Http\Controllers\Admin\ActivationCodeBatchesController::class, 'disable']
-    )->name('activation_code_batches.disable');
+    Route::post('activation-code-batches/{batch}/disable', [\App\Http\Controllers\Admin\ActivationCodeBatchesController::class, 'disable'])
+        ->name('activation_code_batches.disable');
 
+    Route::resource('activation-codes', \App\Http\Controllers\Admin\ActivationCodesController::class)
+        ->names('activation_codes');
 
-    Route::resource('activation-codes', ActivationCodesController::class)
-        ->except(['show'])
-        ->names('activation_codes'); // admin.activation_codes.*
+    Route::get('activation-codes/redeem-form', [\App\Http\Controllers\Admin\ActivationCodesController::class, 'redeemForm'])
+        ->name('activation_codes.redeem_form');
 
-    Route::post(
-        'activation-codes/{code}/disable',
-        [ActivationCodesController::class, 'disable']
-    )->name('activation_codes.disable');
-
-    Route::get(
-        'activation-codes/redeem-form',
-        [ActivationCodesController::class, 'redeemForm']
-    )->name('activation_codes.redeem_form');
-
-    Route::post(
-        'activation-codes/redeem',
-        [ActivationCodesController::class, 'redeem']
-    )->name('activation_codes.redeem');
-    Route::get(
-        'activation-codes/export',
-        [ActivationCodesController::class, 'export']
-    )->name('activation_codes.export');
+    Route::post('activation-codes/redeem', [\App\Http\Controllers\Admin\ActivationCodesController::class, 'redeem'])
+        ->name('activation_codes.redeem');
 
 
     /*
@@ -145,4 +124,3 @@ Route::middleware('auth:admin')->group(function () {
     Route::post('/import/run',          [ImportController::class, 'run'])->name('import.run');
     Route::get('/import/sample/{type}', [ImportController::class, 'sample'])->name('import.sample');
 });
-

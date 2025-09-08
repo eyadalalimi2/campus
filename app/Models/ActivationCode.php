@@ -3,12 +3,10 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ActivationCode extends Model
 {
-    use HasFactory;
-
     protected $table = 'activation_codes';
 
     protected $fillable = [
@@ -32,83 +30,40 @@ class ActivationCode extends Model
     ];
 
     protected $casts = [
-        'starts_on'        => 'date',
-        'valid_from'       => 'datetime',
-        'valid_until'      => 'datetime',
-        'redeemed_at'      => 'datetime',
-        'duration_days'    => 'integer',
-        'max_redemptions'  => 'integer',
-        'redemptions_count'=> 'integer',
+        'batch_id'            => 'integer',
+        'plan_id'             => 'integer',
+        'university_id'       => 'integer',
+        'college_id'          => 'integer',
+        'major_id'            => 'integer',
+        'duration_days'       => 'integer',
+        'starts_on'           => 'date',
+        'valid_from'          => 'datetime',
+        'valid_until'         => 'datetime',
+        'max_redemptions'     => 'integer',
+        'redemptions_count'   => 'integer',
+        'redeemed_by_user_id' => 'integer',
+        'redeemed_at'         => 'datetime',
+        'created_by_admin_id' => 'integer',
     ];
 
-    // العلاقات
-    public function batch()
-    {
-        return $this->belongsTo(ActivationCodeBatch::class, 'batch_id');
-    }
+    // علاقات
+    public function batch(): BelongsTo { return $this->belongsTo(ActivationCodeBatch::class, 'batch_id'); }
+    public function plan(): BelongsTo { return $this->belongsTo(Plan::class, 'plan_id'); }
+    public function university(): BelongsTo { return $this->belongsTo(University::class, 'university_id'); }
+    public function college(): BelongsTo { return $this->belongsTo(College::class, 'college_id'); }
+    public function major(): BelongsTo { return $this->belongsTo(Major::class, 'major_id'); }
+    public function redeemedBy(): BelongsTo { return $this->belongsTo(User::class, 'redeemed_by_user_id'); }
+    public function createdBy(): BelongsTo { return $this->belongsTo(Admin::class, 'created_by_admin_id'); }
 
-    public function plan()
-    {
-        return $this->belongsTo(\App\Models\Plan::class, 'plan_id');
-    }
-
-    public function university()
-    {
-        return $this->belongsTo(\App\Models\University::class, 'university_id');
-    }
-
-    public function college()
-    {
-        return $this->belongsTo(\App\Models\College::class, 'college_id');
-    }
-
-    public function major()
-    {
-        return $this->belongsTo(\App\Models\Major::class, 'major_id');
-    }
-
-    public function redeemedBy()
-    {
-        return $this->belongsTo(\App\Models\User::class, 'redeemed_by_user_id');
-    }
-
-    public function creator()
-    {
-        return $this->belongsTo(\App\Models\Admin::class, 'created_by_admin_id');
-    }
-
-    // سكوبات مفيدة
-    public function scopeActive($q)
-    {
-        return $q->where('status', 'active');
-    }
-
-    public function scopeByUniversity($q, $universityId)
-    {
-        return $q->where('university_id', $universityId);
-    }
-
-    public function scopeValidNow($q)
-    {
-        $now = now();
-        return $q->where(function ($qq) use ($now) {
-            $qq->whereNull('valid_from')->orWhere('valid_from', '<=', $now);
-        })->where(function ($qq) use ($now) {
-            $qq->whereNull('valid_until')->orWhere('valid_until', '>=', $now);
-        });
-    }
-
-    // دوال مساعدة
-    public function isExpired(): bool
-    {
-        return $this->status === 'expired'
-            || ($this->valid_until && $this->valid_until->isPast());
-    }
-
-    public function canRedeem(): bool
+    // هل الكود قابل للتفعيل الآن؟
+    public function getIsRedeemableAttribute(): bool
     {
         if ($this->status !== 'active') return false;
-        if ($this->isExpired()) return false;
-        return $this->redemptions_count < $this->max_redemptions;
+        $now = now();
+        if ($this->valid_from && $now->lt($this->valid_from)) return false;
+        if ($this->valid_until && $now->gt($this->valid_until)) return false;
+        if ($this->redemptions_count >= $this->max_redemptions) return false;
+        if ($this->start_policy === 'fixed_start' && empty($this->starts_on)) return false;
+        return true;
     }
 }
