@@ -8,8 +8,7 @@
   @csrf
   @include('admin.activation_codes.batches.form', ['batch' => null])
   <div class="mt-3 d-flex gap-2">
-    <button name="generate_now" value="0" class="btn btn-primary">حفظ</button>
-    <button name="generate_now" value="1" class="btn btn-outline-primary">حفظ + توليد الأكواد الآن</button>
+    <button name="generate_now" value="1" class="btn btn-outline-primary"> توليد الأكواد الآن</button>
     <a href="{{ route('admin.activation_code_batches.index') }}" class="btn btn-link">رجوع</a>
   </div>
 </form>
