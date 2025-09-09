@@ -29,7 +29,7 @@ class ThemeController extends Controller
         ]);
 
         if ($request->hasFile('logo')) {
-            $path = $request->file('logo')->store('logos', 'public');
+            $path = $request->file('logo')->store('universities', 'public');
             $data['logo_path'] = $path;
         }
 

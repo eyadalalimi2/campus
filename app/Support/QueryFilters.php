@@ -1,56 +1,34 @@
 <?php
 namespace App\Support;
 
-use Illuminate\Database\Query\Builder;
+use Illuminate\Database\Query\Builder as QueryBuilder;
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 
 final class QueryFilters
 {
     /**
-     * يطبّق ترتيبًا ديناميكيًا آمنًا بالاعتماد على قائمة/خريطة أعمدة مسموحة.
+     * يطبّق ترتيب ديناميكي آمن على استعلام (يدعم كلًا من Eloquent و Query Builder).
      *
-     * @param Builder     $q       استعلام Query Builder
-     * @param string|null $sort    سلسلة فرز مثل: "created_at,-id" أو "-published_at"
-     * @param array       $allowed قائمة أعمدة مسموحة:
-     *                             - كمصفوفة: ['created_at','id']
-     *                             - أو خريطة: ['created_at'=>'assets.created_at','id'=>'assets.id']
+     * @param QueryBuilder|EloquentBuilder $q
+     * @param string|null $sort   مثال: "name,-created_at"
+     * @param array $allowed      الأعمدة المسموح ترتيبها فقط
      */
-    public static function applySorting(Builder $q, ?string $sort, array $allowed): void
+    public static function applySorting(QueryBuilder|EloquentBuilder $q, ?string $sort, array $allowed): void
     {
         if (!$sort) return;
 
-        // كشف ما إذا كانت قائمة الأعمدة خريطة تحويل (associative)
-        $isMap = static::isAssoc($allowed);
-
-        $applied = [];
-        foreach (explode(',', $sort) as $token) {
-            $token = trim($token);
-            if ($token === '') continue;
-
+        foreach (explode(',', $sort) as $s) {
             $dir = 'asc';
-            if (str_starts_with($token, '-')) {
+            $col = $s;
+
+            if (str_starts_with($s, '-')) {
                 $dir = 'desc';
-                $token = substr($token, 1);
+                $col = substr($s, 1);
             }
 
-            // resolve column
-            $col = null;
-            if ($isMap && array_key_exists($token, $allowed)) {
-                $col = $allowed[$token];
-            } elseif (!$isMap && in_array($token, $allowed, true)) {
-                $col = $token;
+            if (in_array($col, $allowed, true)) {
+                $q->orderBy($col, $dir);
             }
-
-            if (!$col) continue;                  // غير مسموح
-            if (isset($applied[$col])) continue;  // لا نكرر نفس الحقل
-
-            $q->orderBy($col, $dir);
-            $applied[$col] = true;
         }
-    }
-
-    private static function isAssoc(array $arr): bool
-    {
-        if ($arr === []) return false;
-        return array_keys($arr) !== range(0, count($arr) - 1);
     }
 }
