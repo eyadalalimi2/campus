@@ -37,12 +37,12 @@
                     @php
                         // تحديد رابط الشعار:
                         // 1) إن وُجد logo_url في السجل نستخدمه كما هو.
-                        // 2) إن وُجد مسار ملف logo داخل التخزين العام نستخدم Storage::url().
+                        // 2) إن وُجد مسار ملف logo_path داخل التخزين العام نستخدم Storage::url().
                         // 3) وإلا نستخدم صورة افتراضية (ضعها عند public/images/logo.png أو بدّل المسار).
                         $logoSrc =
-                            $u->logo_url ?:
-                            ($u->logo ?? null
-                                ? \Illuminate\Support\Facades\Storage::url($u->logo)
+                            $u->logo_url ?: 
+                            ($u->logo_path ?? null
+                                ? \Illuminate\Support\Facades\Storage::url($u->logo_path)
                                 : asset('images/logo.png'));
                     @endphp
                     <tr>

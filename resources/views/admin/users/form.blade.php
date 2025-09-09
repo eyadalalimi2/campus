@@ -113,6 +113,11 @@
         <input type="password" name="password" class="form-control" {{ $isEdit ? '' : 'required' }} minlength="8">
     </div>
 
+    <div class="col-md-6">
+        <label class="form-label">تأكيد كلمة المرور</label>
+        <input type="password" name="password_confirmation" class="form-control" {{ $isEdit ? '' : 'required' }} minlength="8">
+    </div>
+
 </div>
 
 @push('scripts')

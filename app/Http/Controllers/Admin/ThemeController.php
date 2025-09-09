@@ -25,7 +25,13 @@ class ThemeController extends Controller
             'primary_color'   => ['nullable','string','max:20'],
             'secondary_color' => ['nullable','string','max:20'],
             'theme_mode'      => ['required','in:auto,light,dark'],
+            'logo'            => ['nullable', 'image', 'mimes:png,jpg,jpeg,webp', 'max:2048'],
         ]);
+
+        if ($request->hasFile('logo')) {
+            $path = $request->file('logo')->store('logos', 'public');
+            $data['logo_path'] = $path;
+        }
 
         $university->update($data);
 

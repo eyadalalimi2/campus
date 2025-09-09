@@ -97,8 +97,8 @@
                 @forelse($users as $u)
                     <tr>
                         <td>
-                            @if ($u->profile_photo_url)
-                                <img src="{{ $u->profile_photo_url }}" class="rounded-circle"
+                            @if ($u->profile_photo_path)
+                                <img src="{{ asset('storage/' . $u->profile_photo_path) }}" class="rounded-circle"
                                      style="width:40px;height:40px;object-fit:cover" alt="avatar">
                             @else
                                 <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center"

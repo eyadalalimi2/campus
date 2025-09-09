@@ -4,7 +4,7 @@
 @section('content')
 <h4 class="mb-3">تعديل ثيم — {{ $university->name }}</h4>
 
-<form action="{{ route('admin.themes.update', $university) }}" method="POST" class="row g-3">
+<form action="{{ route('admin.themes.update', $university) }}" method="POST" class="row g-3" enctype="multipart/form-data">
   @csrf @method('PUT')
 
   <div class="col-md-4">
@@ -36,6 +36,23 @@
   <label class="form-check-label" for="use_default_theme">استخدام الثيم الافتراضي بدل ثيم الجامعة</label>
 </div>
 
+{{-- الشعار --}}
+    <div class="col-md-6">
+        <label class="form-label">الشعار (PNG/JPG)</label>
+        <input type="file" name="logo" class="form-control" accept=".png,.jpg,.jpeg,.webp">
+        @php
+            $logoSrc = null;
+            if (!empty($university?->logo_url)) {
+                $logoSrc = $university->logo_url; // رابط مطلق إن كان موجوداً
+            } elseif (!empty($university?->logo)) {
+                $logoSrc = \Illuminate\Support\Facades\Storage::url($university->logo); // مسار داخل storage
+            }
+        @endphp
+        @if ($logoSrc)
+            <img src="{{ $logoSrc }}" alt="Logo" class="mt-2 rounded border"
+                style="height:48px;object-fit:contain">
+        @endif
+    </div>
 
   <div class="col-12">
     <button class="btn btn-primary">حفظ</button>
