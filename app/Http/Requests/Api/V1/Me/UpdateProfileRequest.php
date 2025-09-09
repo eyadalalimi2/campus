@@ -4,10 +4,22 @@ namespace App\Http\Requests\Api\V1\Me;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateProfileRequest extends FormRequest
+/**
+ * @property-read string|null $student_number
+ * @property-read string|null $name
+ * @property-read string|null $phone
+ * @property-read int|null    $country_id
+ * @property-read int|null    $university_id
+ * @property-read int|null    $college_id
+ * @property-read int|null    $major_id
+ * @property-read int|null    $level
+ * @property-read string|null $gender
+ * @property-read string|null $profile_photo_path
+ */
+final class UpdateProfileRequest extends FormRequest
 {
     /**
-     * إيقاف التحقق عند أول خطأ
+     * إيقاف التحقق عند أول خطأ لتقليل زمن الاستجابة.
      */
     protected $stopOnFirstFailure = true;
 
@@ -16,30 +28,19 @@ class UpdateProfileRequest extends FormRequest
         return true;
     }
 
-    /**
-     * تجهيز المدخلات قبل التحقق
-     */
-    protected function prepareForValidation(): void
-    {
-        $this->merge([
-            'student_number'     => $this->filled('student_number') ? trim($this->input('student_number')) : null,
-            'name'               => $this->filled('name') ? trim($this->input('name')) : null,
-            'phone'              => $this->filled('phone') ? trim($this->input('phone')) : null,
-            'profile_photo_path' => $this->filled('profile_photo_path') ? trim($this->input('profile_photo_path')) : null,
-        ]);
-    }
-
     public function rules(): array
     {
         return [
             'student_number'     => ['nullable', 'string', 'max:255'],
             'name'               => ['nullable', 'string', 'max:255'],
             'phone'              => ['nullable', 'string', 'max:20'],
+
             'country_id'         => ['nullable', 'integer', 'exists:countries,id'],
             'university_id'      => ['nullable', 'integer', 'exists:universities,id'],
             'college_id'         => ['nullable', 'integer', 'exists:colleges,id'],
             'major_id'           => ['nullable', 'integer', 'exists:majors,id'],
             'level'              => ['nullable', 'integer', 'min:1', 'max:20'],
+
             'gender'             => ['nullable', 'in:male,female'],
             'profile_photo_path' => ['nullable', 'string', 'max:255', 'regex:/\.(jpg|jpeg|png|webp)$/i'],
         ];
@@ -48,18 +49,18 @@ class UpdateProfileRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'student_number.max'      => 'الرقم الجامعي يجب ألا يتجاوز 255 حرفًا.',
-            'name.max'               => 'الاسم يجب ألا يتجاوز 255 حرفًا.',
-            'phone.max'              => 'رقم الهاتف يجب ألا يتجاوز 20 رقمًا.',
-            'country_id.exists'      => 'الدولة المحددة غير موجودة.',
-            'university_id.exists'   => 'الجامعة المحددة غير موجودة.',
-            'college_id.exists'      => 'الكلية المحددة غير موجودة.',
-            'major_id.exists'        => 'التخصص المحدد غير موجود.',
-            'level.min'              => 'الحد الأدنى للمستوى هو 1.',
-            'level.max'              => 'الحد الأقصى للمستوى هو 20.',
-            'gender.in'              => 'النوع يجب أن يكون ذكر أو أنثى.',
-            'profile_photo_path.regex' => 'صورة الملف الشخصي يجب أن تكون بصيغة jpg أو jpeg أو png أو webp.',
-            'profile_photo_path.max'   => 'مسار صورة الملف الشخصي طويل جدًا.',
+            'student_number.max'        => 'الرقم الجامعي يجب ألا يتجاوز 255 حرفًا.',
+            'name.max'                  => 'الاسم يجب ألا يتجاوز 255 حرفًا.',
+            'phone.max'                 => 'رقم الهاتف يجب ألا يتجاوز 20 خانة.',
+            'country_id.exists'         => 'الدولة المحددة غير موجودة.',
+            'university_id.exists'      => 'الجامعة المحددة غير موجودة.',
+            'college_id.exists'         => 'الكلية المحددة غير موجودة.',
+            'major_id.exists'           => 'التخصص المحدد غير موجود.',
+            'level.min'                 => 'الحد الأدنى للمستوى هو 1.',
+            'level.max'                 => 'الحد الأقصى للمستوى هو 20.',
+            'gender.in'                 => 'قيمة النوع يجب أن تكون male أو female.',
+            'profile_photo_path.regex'  => 'صورة الملف الشخصي يجب أن تكون بصيغة jpg أو jpeg أو png أو webp.',
+            'profile_photo_path.max'    => 'مسار صورة الملف الشخصي طويل جدًا.',
         ];
     }
 
@@ -77,5 +78,13 @@ class UpdateProfileRequest extends FormRequest
             'gender'             => 'النوع',
             'profile_photo_path' => 'صورة الملف الشخصي',
         ];
+    }
+
+    /**
+     * القيم المُتحقَّق منها لاستخدامها في الكنترولر.
+     */
+    public function data(): array
+    {
+        return $this->validated();
     }
 }

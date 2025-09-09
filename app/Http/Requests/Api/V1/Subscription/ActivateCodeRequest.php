@@ -4,10 +4,13 @@ namespace App\Http\Requests\Api\V1\Subscription;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class ActivateCodeRequest extends FormRequest
+/**
+ * @property-read string $code
+ */
+final class ActivateCodeRequest extends FormRequest
 {
     /**
-     * تسريع الاستجابة بإيقاف التحقق عند أول خطأ
+     * تسريع الاستجابة بإيقاف التحقق عند أول خطأ.
      */
     protected $stopOnFirstFailure = true;
 
@@ -16,27 +19,11 @@ class ActivateCodeRequest extends FormRequest
         return true;
     }
 
-    /**
-     * تطبيع المدخلات قبل التحقق:
-     * - إزالة الفراغات حول الكود
-     * - تقليص المسافات الداخلية (إن وُجدت) إلى مسافة واحدة
-     * ملاحظة: لم نفرض تحويل الحالة (Upper/Lower) حتى لا نغيّر معنى الكود إن كان حساسًا لحالة الأحرف.
-     */
-    protected function prepareForValidation(): void
-    {
-        $code = $this->input('code');
-        if ($code !== null) {
-            // trim + collapse inner spaces
-            $code = trim(preg_replace('/\s+/', ' ', $code));
-        }
-        $this->merge(['code' => $code]);
-    }
-
     public function rules(): array
     {
         return [
             // الطول الأقصى يتوافق مع العمود (varchar(64))
-            // السماح بحروف/أرقام و ( - _ . ) ومسافة واحدة داخلية إن كانت الأكواد تُطبع بمسافات
+            // السماح بحروف/أرقام و ( - _ . ) ومسافة واحدة داخلية إن كانت الأكواد تحتويها
             'code' => [
                 'required',
                 'string',
@@ -61,5 +48,13 @@ class ActivateCodeRequest extends FormRequest
         return [
             'code' => 'رمز التفعيل',
         ];
+    }
+
+    /**
+     * القيم المُتحقَّق منها لاستخدامها في الكنترولر.
+     */
+    public function data(): array
+    {
+        return $this->validated();
     }
 }

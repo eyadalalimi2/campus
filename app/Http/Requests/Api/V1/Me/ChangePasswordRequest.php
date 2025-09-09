@@ -4,28 +4,21 @@ namespace App\Http\Requests\Api\V1\Me;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class ChangePasswordRequest extends FormRequest
+/**
+ * @property-read string $current_password
+ * @property-read string $new_password
+ * @property-read string $new_password_confirmation
+ */
+final class ChangePasswordRequest extends FormRequest
 {
     /**
-     * تسريع الاستجابة بإيقاف التحقق عند أول خطأ
+     * تسريع الاستجابة بإيقاف التحقق عند أول خطأ.
      */
     protected $stopOnFirstFailure = true;
 
     public function authorize(): bool
     {
         return true;
-    }
-
-    /**
-     * تطبيع المدخلات قبل التحقق
-     */
-    protected function prepareForValidation(): void
-    {
-        $this->merge([
-            'current_password'         => $this->input('current_password') !== null ? trim($this->input('current_password')) : null,
-            'new_password'             => $this->input('new_password') !== null ? trim($this->input('new_password')) : null,
-            'new_password_confirmation'=> $this->input('new_password_confirmation') !== null ? trim($this->input('new_password_confirmation')) : null,
-        ]);
     }
 
     public function rules(): array
@@ -63,9 +56,17 @@ class ChangePasswordRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'current_password'           => 'كلمة المرور الحالية',
-            'new_password'               => 'كلمة المرور الجديدة',
-            'new_password_confirmation'  => 'تأكيد كلمة المرور الجديدة',
+            'current_password'          => 'كلمة المرور الحالية',
+            'new_password'             => 'كلمة المرور الجديدة',
+            'new_password_confirmation'=> 'تأكيد كلمة المرور الجديدة',
         ];
+    }
+
+    /**
+     * القيم المُتحقَّق منها لاستخدامها في الكنترولر.
+     */
+    public function data(): array
+    {
+        return $this->validated();
     }
 }
