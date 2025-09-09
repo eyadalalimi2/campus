@@ -26,7 +26,7 @@
 <div class="row g-3">
     {{-- الجامعات --}}
     <div class="col-12 col-md-6 col-xl-3">
-        <div class="card kpi-card grad-uni p-3 h-100">
+        <div class="card kpi-card grad-uni p-3 h-100 position-relative">
             <div class="icon-wrap"><i class="bi bi-building-fill"></i></div>
             <div class="muted">عدد الجامعات</div>
             <div class="value">{{ number_format($uniTotal) }}</div>
@@ -39,7 +39,7 @@
     </div>
     {{-- الكليات --}}
     <div class="col-12 col-md-6 col-xl-3">
-        <div class="card kpi-card grad-col p-3 h-100">
+        <div class="card kpi-card grad-col p-3 h-100 position-relative">
             <div class="icon-wrap"><i class="bi bi-bank2"></i></div>
             <div class="muted">عدد الكليات</div>
             <div class="value">{{ number_format($colTotal) }}</div>
@@ -52,7 +52,7 @@
     </div>
     {{-- التخصصات --}}
     <div class="col-12 col-md-6 col-xl-3">
-        <div class="card kpi-card grad-maj p-3 h-100">
+        <div class="card kpi-card grad-maj p-3 h-100 position-relative">
             <div class="icon-wrap"><i class="bi bi-diagram-3-fill"></i></div>
             <div class="muted">عدد الأقسام (التخصصات)</div>
             <div class="value">{{ number_format($majTotal) }}</div>
@@ -65,7 +65,7 @@
     </div>
     {{-- الدكاترة --}}
     <div class="col-12 col-md-6 col-xl-3">
-        <div class="card kpi-card grad-doc p-3 h-100">
+        <div class="card kpi-card grad-doc p-3 h-100 position-relative">
             <div class="icon-wrap"><i class="bi bi-person-badge-fill"></i></div>
             <div class="muted">عدد الدكاترة</div>
             <div class="value">{{ number_format($docTotal) }}</div>
@@ -84,7 +84,7 @@
 <div class="row g-3 mt-1">
     {{-- المواد --}}
     <div class="col-12 col-md-6 col-xl-3">
-        <div class="card kpi-card grad-mat p-3 h-100">
+        <div class="card kpi-card grad-mat p-3 h-100 position-relative">
             <div class="icon-wrap"><i class="bi bi-journal-text"></i></div>
             <div class="muted">عدد المواد</div>
             <div class="value">{{ number_format($matTotal) }}</div>
@@ -97,7 +97,7 @@
     </div>
     {{-- الأجهزة --}}
     <div class="col-12 col-md-6 col-xl-3">
-        <div class="card kpi-card grad-dev p-3 h-100">
+        <div class="card kpi-card grad-dev p-3 h-100 position-relative">
             <div class="icon-wrap"><i class="bi bi-cpu"></i></div>
             <div class="muted">عدد الأجهزة/المهام</div>
             <div class="value">{{ number_format($devTotal) }}</div>
@@ -135,9 +135,65 @@
             <a class="stretched-link" href="{{ route('admin.subscriptions.index') }}"></a>
         </div>
     </div>
+    
+    {{-- المجالات --}}
+    <div class="col-12 col-md-6 col-xl-3">
+        <div class="card kpi-card grad-sub p-3 h-100 position-relative">
+            <div class="icon-wrap"><i class="bi bi-bookmark-fill"></i></div>
+            <div class="muted">عدد المجالات</div>
+            <div class="value">{{ number_format($discTotal) }}</div>
+            <div class="d-flex gap-3 mt-2 small">
+                <span class="badge bg-light text-dark">مفعل: {{ number_format($discActive) }}</span>
+                <span class="badge bg-dark">موقوف: {{ number_format($discInactive) }}</span>
+            </div>
+            <a class="stretched-link" href="{{ route('admin.disciplines.index') }}"></a>
+        </div>
+    </div>
+
+    {{-- البرامج --}}
+    <div class="col-12 col-md-6 col-xl-3">
+        <div class="card kpi-card grad-maj p-3 h-100 position-relative">
+            <div class="icon-wrap"><i class="bi bi-collection-fill"></i></div>
+            <div class="muted">عدد البرامج</div>
+            <div class="value">{{ number_format($progTotal) }}</div>
+            <div class="d-flex gap-3 mt-2 small">
+                <span class="badge bg-light text-dark">مفعل: {{ number_format($progActive) }}</span>
+                <span class="badge bg-dark">موقوف: {{ number_format($progInactive) }}</span>
+            </div>
+            <a class="stretched-link" href="{{ route('admin.programs.index') }}"></a>
+        </div>
+    </div>
+
+    {{-- التقاويم الأكاديمية --}}
+    <div class="col-12 col-md-6 col-xl-3">
+        <div class="card kpi-card grad-doc p-3 h-100 position-relative">
+            <div class="icon-wrap"><i class="bi bi-calendar3"></i></div>
+            <div class="muted">التقاويم الأكاديمية</div>
+            <div class="value">{{ number_format($calTotal) }}</div>
+            <div class="d-flex gap-3 mt-2 small">
+                <span class="badge bg-light text-dark">نشطة: {{ number_format($calActive) }}</span>
+                <span class="badge bg-dark">موقوفة: {{ number_format($calInactive) }}</span>
+            </div>
+            <a class="stretched-link" href="{{ route('admin.academic-calendars.index') }}"></a>
+        </div>
+    </div>
+
+    {{-- الفصول الأكاديمية --}}
+    <div class="col-12 col-md-6 col-xl-3">
+        <div class="card kpi-card grad-col p-3 h-100 position-relative">
+            <div class="icon-wrap"><i class="bi bi-calendar-event-fill"></i></div>
+            <div class="muted">الفصول الأكاديمية</div>
+            <div class="value">{{ number_format($termTotal) }}</div>
+            <div class="d-flex gap-3 mt-2 small">
+                <span class="badge bg-light text-dark">نشطة: {{ number_format($termActive) }}</span>
+                <span class="badge bg-dark">موقوفة: {{ number_format($termInactive) }}</span>
+            </div>
+            <a class="stretched-link" href="{{ route('admin.academic-terms.index') }}"></a>
+        </div>
+    </div>
     {{-- المحتوى --}}
     <div class="col-12">
-        <div class="card kpi-card grad-cnt p-3">
+        <div class="card kpi-card grad-cnt p-3 position-relative">
             <div class="icon-wrap"><i class="bi bi-folder2-open"></i></div>
             <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
                 <div>
@@ -154,66 +210,6 @@
         </div>
     </div>
 </div>
-
-{{-- صف للمجالات والبرامج والتقاويم والفصول الأكاديمية --}}
-<div class="row g-3 mt-1">
-    {{-- المجالات --}}
-    <div class="col-12 col-md-6 col-xl-3">
-        <div class="card kpi-card grad-disc p-3 h-100">
-            <div class="icon-wrap"><i class="bi bi-bookmark-fill"></i></div>
-            <div class="muted">عدد المجالات</div>
-            <div class="value">{{ number_format($discTotal) }}</div>
-            <div class="d-flex gap-3 mt-2 small">
-                <span class="badge bg-light text-dark">مفعل: {{ number_format($discActive) }}</span>
-                <span class="badge bg-dark">موقوف: {{ number_format($discInactive) }}</span>
-            </div>
-            <a class="stretched-link" href="{{ route('admin.disciplines.index') }}"></a>
-        </div>
-    </div>
-
-    {{-- البرامج --}}
-    <div class="col-12 col-md-6 col-xl-3">
-        <div class="card kpi-card grad-prog p-3 h-100">
-            <div class="icon-wrap"><i class="bi bi-collection-fill"></i></div>
-            <div class="muted">عدد البرامج</div>
-            <div class="value">{{ number_format($progTotal) }}</div>
-            <div class="d-flex gap-3 mt-2 small">
-                <span class="badge bg-light text-dark">مفعل: {{ number_format($progActive) }}</span>
-                <span class="badge bg-dark">موقوف: {{ number_format($progInactive) }}</span>
-            </div>
-            <a class="stretched-link" href="{{ route('admin.programs.index') }}"></a>
-        </div>
-    </div>
-
-    {{-- التقاويم الأكاديمية --}}
-    <div class="col-12 col-md-6 col-xl-3">
-        <div class="card kpi-card grad-cal p-3 h-100">
-            <div class="icon-wrap"><i class="bi bi-calendar3"></i></div>
-            <div class="muted">التقاويم الأكاديمية</div>
-            <div class="value">{{ number_format($calTotal) }}</div>
-            <div class="d-flex gap-3 mt-2 small">
-                <span class="badge bg-light text-dark">نشطة: {{ number_format($calActive) }}</span>
-                <span class="badge bg-dark">موقوفة: {{ number_format($calInactive) }}</span>
-            </div>
-            <a class="stretched-link" href="{{ route('admin.academic-calendars.index') }}"></a>
-        </div>
-    </div>
-
-    {{-- الفصول الأكاديمية --}}
-    <div class="col-12 col-md-6 col-xl-3">
-        <div class="card kpi-card grad-term p-3 h-100">
-            <div class="icon-wrap"><i class="bi bi-calendar-event-fill"></i></div>
-            <div class="muted">الفصول الأكاديمية</div>
-            <div class="value">{{ number_format($termTotal) }}</div>
-            <div class="d-flex gap-3 mt-2 small">
-                <span class="badge bg-light text-dark">نشطة: {{ number_format($termActive) }}</span>
-                <span class="badge bg-dark">موقوفة: {{ number_format($termInactive) }}</span>
-            </div>
-            <a class="stretched-link" href="{{ route('admin.academic-terms.index') }}"></a>
-        </div>
-    </div>
-</div>
-
 {{-- التنبيهات --}}
 <div class="row g-3 mt-1">
     <div class="col-12">
