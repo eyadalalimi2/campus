@@ -46,11 +46,12 @@ Route::prefix('v1')->group(function () {
      * Email verification (بدون توكن)
      * ========================= */
 
-    Route::post('auth/email/resend', [AuthController::class, 'resendEmailVerification']);
-    // إعادة إرسال كود/رابط تفعيل البريد
+    // إرسال رابط التفعيل
+    Route::post('auth/email/resend', [AuthController::class, 'resendEmailVerificationLink']);
 
-    Route::post('auth/email/verify', [AuthController::class, 'verifyEmail']);
-    // تفعيل البريد باستخدام (email + code)
+    // تفعيل عبر الرابط (GET) بالـ token
+    Route::get('auth/email/verify/{token}', [AuthController::class, 'verifyEmailByToken'])
+        ->name('api.v1.auth.email.verify');
 
 
     /* =========================
@@ -181,4 +182,5 @@ Route::prefix('v1')->group(function () {
         Route::delete('me/devices/{tokenId}', [DevicesController::class, 'destroy']);
         // إلغاء/حذف توكن جهاز محدد يخص المستخدم الحالي
     });
+   
 });

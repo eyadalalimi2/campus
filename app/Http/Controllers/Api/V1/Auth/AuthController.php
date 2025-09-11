@@ -8,23 +8,27 @@ use App\Http\Requests\Api\V1\Auth\LoginRequest;
 use App\Http\Requests\Api\V1\Auth\RegisterRequest;
 use App\Http\Requests\Api\V1\Auth\ForgotPasswordRequest;
 use App\Http\Requests\Api\V1\Auth\ResetPasswordRequest;
-use App\Http\Requests\Api\V1\Auth\VerifyEmailRequest;
+// تم إلغاء التحقق بالكود الرقمي؛ لا نحتاج VerifyEmailRequest بعد الآن
+// use App\Http\Requests\Api\V1\Auth\VerifyEmailRequest;
+
 use App\Http\Resources\Api\V1\UserResource;
+use App\Mail\EmailVerificationLink;
 use App\Models\User;
 use App\Support\ApiResponse;
-use Carbon\CarbonImmutable;
+use Carbon\Carbon;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
-use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Str;
 
 final class AuthController extends Controller
 {
     /**
      * تسجيل مستخدم جديد + إنشاء توكن Sanctum مرتبط بـ login_device
+     * ثم إرسال رابط تفعيل البريد.
      */
     public function register(RegisterRequest $request)
     {
@@ -46,14 +50,14 @@ final class AuthController extends Controller
             'password'       => $data['password'],
         ]);
 
-        // إنشاء توكن مع القدرات المطلوبة لمسارات المجموعة
+        // إنشاء توكن الوصول
         $token = $user->createToken(
             $data['login_device'],
             ['me:read', 'structure:read', 'catalog:read', 'subscription:write']
         )->plainTextToken;
 
-        // إرسال/توليد كود تحقق البريد (اختياري عند التسجيل)
-        $this->issueEmailVerificationCode($user);
+        // إرسال رابط تفعيل البريد
+        $this->issueAndSendEmailVerificationLink($user->email, $user->name ?? 'طالبنا العزيز');
 
         return ApiResponse::ok([
             'token' => $token,
@@ -92,64 +96,64 @@ final class AuthController extends Controller
     }
 
     /**
-     * إعادة إرسال كود تحقق البريد (OTP) إلى البريد
-     * ملاحظة: لا نكشف وجود البريد. نعيد 200 دائمًا.
+     * إعادة إرسال "رابط" تفعيل البريد.
+     * لا نكشف وجود/عدم وجود البريد؛ نعيد 200 دائمًا.
      */
-    public function resendEmailVerification(Request $request)
+    public function resendEmailVerificationLink(Request $request)
     {
-        $email = $this->normalizeEmail($request->string('email')->toString());
-
+        $email = $this->normalizeEmail($request->input('email'));
         if ($email) {
-            $user = User::query()->where('email', $email)->first();
-            if ($user && is_null($user->email_verified_at)) {
-                $this->issueEmailVerificationCode($user);
-                // هنا ضع إرسال بريد فعلي إن توفر مزود البريد
+            $user = DB::table('users')->where('email', $email)->first();
+            if ($user && empty($user->email_verified_at)) {
+                $this->issueAndSendEmailVerificationLink($email, $user->name ?? 'طالبنا العزيز');
             }
         }
 
-        return ApiResponse::ok(['message' => 'إن وُجد الحساب سيتم إرسال رمز تحقق للبريد.']);
+        return ApiResponse::ok(['message' => 'إن وُجد الحساب سيتم إرسال رابط التفعيل إلى البريد.']);
     }
 
     /**
-     * تحقق البريد عبر كود OTP رقمي (4-8)
+     * تفعيل البريد عبر "التوكن" الموجود في الرابط.
+     * GET /api/v1/auth/email/verify/{token}
      */
-    public function verifyEmail(VerifyEmailRequest $request)
+    public function verifyEmailByToken(Request $request, string $token)
     {
-        $data = $request->validated();
-
-        /** @var User|null $user */
-        $user = User::query()->where('email', $data['email'])->first();
-        if (!$user) {
-            // لا نكشف وجود/عدم وجود البريد
-            return ApiResponse::ok(['message' => 'تم التحقق (إن كان الرمز صالحًا).']);
+        $row = DB::table('email_verification_tokens')->where('token', $token)->first();
+        if (!$row) {
+            return ApiResponse::error('TOKEN_INVALID', 'رابط التفعيل غير صالح.', [], 422);
         }
 
-        if ($user->email_verified_at) {
-            return ApiResponse::ok(['message' => 'البريد مُتحقق مسبقًا.']);
+        if (!empty($row->used_at)) {
+            return ApiResponse::error('TOKEN_USED', 'تم استخدام رابط التفعيل مسبقًا.', [], 422);
         }
 
-        $cacheKey = $this->emailVerificationCacheKey($user->email);
-        $expected = Cache::get($cacheKey);
-
-        if (!$expected || $expected !== $data['code']) {
-            throw new ApiException('OTP_INVALID', 'رمز التحقق غير صحيح أو منتهي.', 422);
+        if (Carbon::parse($row->expires_at)->isPast()) {
+            return ApiResponse::error('TOKEN_EXPIRED', 'انتهت صلاحية رابط التفعيل.', [], 422);
         }
 
-        $user->forceFill(['email_verified_at' => now()])->save();
-        Cache::forget($cacheKey);
+        // تفعيل البريد
+        DB::table('users')->where('email', $row->email)->update(['email_verified_at' => Carbon::now()]);
+        // وسم هذا التوكن كمستخدم
+        DB::table('email_verification_tokens')->where('id', $row->id)->update(['used_at' => Carbon::now()]);
+        // تنظيف أي توكنات متبقية لنفس البريد
+        DB::table('email_verification_tokens')
+            ->where('email', $row->email)
+            ->whereNull('used_at')
+            ->delete();
 
-        return ApiResponse::ok(['message' => 'تم التحقق من البريد بنجاح.']);
+        // يمكن بدلاً من JSON أن نعيد توجيه Deep Link للتطبيق:
+        // return redirect()->away('com.eyadalalimi.students://email-verified');
+        return redirect()->away('com.eyadalalimi.students://email-verified');
     }
 
     /**
-     * بداية تدفق نسيان كلمة المرور — يعيد 200 دائمًا
+     * بداية تدفّق "نسيت كلمة المرور" — يعيد 200 دائمًا
      */
     public function forgotPassword(ForgotPasswordRequest $request)
     {
         $email = $request->validated()['email'];
 
-        // نستخدم Laravel Password Broker (سيرسل البريد إن كانت الإعدادات مهيأة)
-        // نعيد 200 بغض النظر لتفادي كشف وجود البريد.
+        // استخدام Laravel Password Broker لإرسال رابط/رمز الاستعادة
         Password::broker()->sendResetLink(['email' => $email]);
 
         return ApiResponse::ok(['message' => 'إن وُجد الحساب سيتم إرسال رابط/رمز الاستعادة.']);
@@ -180,7 +184,6 @@ final class AuthController extends Controller
         );
 
         if ($status !== Password::PASSWORD_RESET) {
-            // لا نُفصح بالتفاصيل (رمز غير صحيح/منتهي)
             throw new ApiException('RESET_FAILED', 'فشل إعادة التعيين. الرمز غير صحيح أو منتهي.', 422);
         }
 
@@ -194,7 +197,6 @@ final class AuthController extends Controller
     {
         /** @var User $user */
         $user = $request->user();
-
         return ApiResponse::ok(new UserResource($user));
     }
 
@@ -224,32 +226,44 @@ final class AuthController extends Controller
     }
 
     /**
-     * توليد وحفظ كود تحقق البريد (OTP) في الـ Cache لمدة 15 دقيقة
+     * إنشاء توكن تحقق بريد وحفظه وإرسال بريد يحتوي رابط التفعيل.
+     * - صلاحية 10 دقائق
+     * - حد إرسال 5 مرات لكل بريد خلال 24 ساعة (حماية من الإساءة)
      */
-    private function issueEmailVerificationCode(User $user): void
+    private function issueAndSendEmailVerificationLink(string $email, string $userName = 'طالبنا العزيز'): void
     {
-        // توليد OTP رقمي 6 خانات
-        $code = $this->numericOtp(6);
+        // حد الإرسال اليومي
+        $sendCount = DB::table('email_verification_tokens')
+            ->where('email', $email)
+            ->where('created_at', '>=', Carbon::now()->subDay())
+            ->count();
 
-        $ttlMinutes = 15;
-        Cache::put($this->emailVerificationCacheKey($user->email), $code, now()->addMinutes($ttlMinutes));
-
-        // مكان إرسال البريد الفعلي (Mail::to($user->email)->send(...))
-        // لأغراض الإنتاج، احرص على عدم إرجاع الكود في الاستجابة.
-    }
-
-    private function emailVerificationCacheKey(string $email): string
-    {
-        return 'verify_email:' . sha1(mb_strtolower($email));
-    }
-
-    private function numericOtp(int $length = 6): string
-    {
-        $length = max(4, min($length, 8));
-        $out = '';
-        for ($i = 0; $i < $length; $i++) {
-            $out .= random_int(0, 9);
+        if ($sendCount >= 5) {
+            // لا نرمي خطأ للمستخدم علنًا؛ فقط نتوقف عن الإرسال
+            return;
         }
-        return $out;
+
+        // إنشاء التوكن
+        $token = Str::random(64);
+
+        DB::table('email_verification_tokens')->insert([
+            'email'      => $email,
+            'token'      => $token,
+            'expires_at' => Carbon::now()->addMinutes(10),
+            'created_at' => Carbon::now(),
+            'updated_at' => Carbon::now(),
+        ]);
+
+        // بناء الرابط (API GET)
+        $verifyUrl = url('/api/v1/auth/email/verify/' . $token);
+
+        // إرسال البريد
+        try {
+            Mail::to($email)->send(new EmailVerificationLink($verifyUrl, $userName));
+        } catch (\Throwable $e) {
+            // لا نفصح عن الفشل للمستخدم (لأسباب أمان/خصوصية)
+            // يمكن تسجيل الخطأ في اللوج فقط
+            // \Log::error('Mail send failed: '.$e->getMessage());
+        }
     }
 }
