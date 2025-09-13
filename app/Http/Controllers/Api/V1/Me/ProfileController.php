@@ -8,6 +8,9 @@ use App\Http\Resources\Api\V1\UserResource;
 use App\Models\User;
 use App\Support\ApiResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use App\Http\Requests\Api\V1\Me\UploadPhotoRequest;
+use Illuminate\Http\JsonResponse;
 
 final class ProfileController extends Controller
 {
@@ -23,6 +26,43 @@ final class ProfileController extends Controller
         }
 
         return ApiResponse::ok(new UserResource($user));
+    }
+    public function uploadPhoto(UploadPhotoRequest $request): JsonResponse
+    {
+        $user = $request->user();
+
+        if (!$request->hasFile('photo')) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'لم تصل أي صورة إلى الخادم.'
+            ], 422);
+        }
+
+        $file = $request->file('photo');
+        if (!$file->isValid()) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'الملف المرفوع غير صالح.'
+            ], 422);
+        }
+
+        // حذف القديمة إن وُجدت
+        if ($user->profile_photo_path && Storage::disk('public')->exists($user->profile_photo_path)) {
+            Storage::disk('public')->delete($user->profile_photo_path);
+        }
+
+        // تخزين الجديدة
+        $path = $file->store('profiles', 'public');
+
+        // تحديث المستخدم
+        $user->profile_photo_path = $path;
+        $user->save();
+
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'تم تحديث الصورة بنجاح.',
+            'data'    => $user, // يحتوي على profile_photo_url إذا أضفت الـ accessor بالموديل
+        ]);
     }
 
     /**
@@ -62,8 +102,12 @@ final class ProfileController extends Controller
                 ->join('colleges as c', 'c.id', '=', 'm.college_id')
                 ->where('m.id', $majorId);
 
-            if ($collegeId)    { $q->where('m.college_id', $collegeId); }
-            if ($universityId) { $q->where('c.university_id', $universityId); }
+            if ($collegeId) {
+                $q->where('m.college_id', $collegeId);
+            }
+            if ($universityId) {
+                $q->where('c.university_id', $universityId);
+            }
 
             if (!$q->exists()) {
                 return ApiResponse::error('INVALID_RELATION', 'التخصص لا يتبع الكلية/الجامعة المحددة.', ['major_id' => ['التخصص غير متطابق']], 422);

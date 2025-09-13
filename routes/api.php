@@ -129,6 +129,9 @@ Route::prefix('v1')->group(function () {
         Route::put('me/profile', [ProfileController::class, 'update']);
         // تحديث بيانات الملف الشخصي
 
+       Route::post('me/profile/photo', [ProfileController::class, 'uploadPhoto']);
+        // رفع/تحديث صورة البروفايل
+
         Route::put('me/security/change-password', [SecurityController::class, 'changePassword']);
         // تغيير كلمة المرور (التحقق من الحالية + تعيين جديدة)
 
@@ -182,5 +185,4 @@ Route::prefix('v1')->group(function () {
         Route::delete('me/devices/{tokenId}', [DevicesController::class, 'destroy']);
         // إلغاء/حذف توكن جهاز محدد يخص المستخدم الحالي
     });
-   
 });
