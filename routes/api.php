@@ -121,6 +121,8 @@ Route::prefix('v1')->group(function () {
 
         Route::post('auth/logout', [AuthController::class, 'logout']);
         // إبطال التوكن الحالي
+        Route::delete('me/account', [AuthController::class, 'destroyAccount'])
+            ->middleware('idem');
 
         /* الملف الشخصي */
         Route::get('me/profile', [ProfileController::class, 'show']);
@@ -129,7 +131,7 @@ Route::prefix('v1')->group(function () {
         Route::put('me/profile', [ProfileController::class, 'update']);
         // تحديث بيانات الملف الشخصي
 
-       Route::post('me/profile/photo', [ProfileController::class, 'uploadPhoto']);
+        Route::post('me/profile/photo', [ProfileController::class, 'uploadPhoto']);
         // رفع/تحديث صورة البروفايل
 
         Route::put('me/security/change-password', [SecurityController::class, 'changePassword']);

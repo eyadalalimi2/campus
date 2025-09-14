@@ -2,15 +2,13 @@
 
 namespace App\Http\Controllers\Api\V1\Auth;
 
+use Illuminate\Support\Facades\Storage;
 use App\Exceptions\Api\ApiException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Auth\LoginRequest;
 use App\Http\Requests\Api\V1\Auth\RegisterRequest;
 use App\Http\Requests\Api\V1\Auth\ForgotPasswordRequest;
 use App\Http\Requests\Api\V1\Auth\ResetPasswordRequest;
-// تم إلغاء التحقق بالكود الرقمي؛ لا نحتاج VerifyEmailRequest بعد الآن
-// use App\Http\Requests\Api\V1\Auth\VerifyEmailRequest;
-
 use App\Http\Resources\Api\V1\UserResource;
 use App\Mail\EmailVerificationLink;
 use App\Models\User;
@@ -212,6 +210,51 @@ final class AuthController extends Controller
         }
 
         return ApiResponse::ok(['message' => 'تم تسجيل الخروج بنجاح.']);
+    }
+    /**
+     * حذف الحساب نهائيًا بعد التحقق من كلمة المرور الحالية.
+     * DELETE /api/v1/me/account
+     * Body: { "current_password": "..." }
+     */
+    public function destroyAccount(Request $request)
+    {
+        // تحقّق من وجود كلمة المرور
+        $data = $request->validate([
+            'current_password' => ['required', 'string', 'min:6'],
+        ]);
+
+        /** @var User $user */
+        $user = $request->user();
+
+        // مطابقة كلمة المرور
+        if (! Hash::check($data['current_password'], $user->password)) {
+            throw new \App\Exceptions\Api\ApiException('INVALID_PASSWORD', 'كلمة المرور غير صحيحة.', 422);
+        }
+
+        DB::transaction(function () use ($user) {
+            // (اختياري) حذف صورة البروفايل من التخزين إن وُجدت
+            if (!empty($user->profile_photo_path)) {
+                // لو كنت تخزن بـ storage/app/public واستخدمت storage/ للعرض
+                $path = ltrim(preg_replace('#^storage/#', '', $user->profile_photo_path), '/');
+                try {
+                    Storage::disk('public')->delete($path);
+                } catch (\Throwable $e) {
+                }
+            }
+
+            // حذف جميع توكنات Sanctum (الجلسات)
+            try {
+                $user->tokens()->delete();
+            } catch (\Throwable $e) {
+            }
+
+            // TODO: لو عندك علاقات بقيود FK بلا cascade، احذف/افرغ هنا حسب الحاجة
+
+            // حذف الحساب (حسب إعدادك: نهائي أو SoftDelete إن مفعل)
+            $user->delete();
+        });
+
+        return \App\Support\ApiResponse::ok(['message' => 'تم حذف الحساب']);
     }
 
     /* =========================
