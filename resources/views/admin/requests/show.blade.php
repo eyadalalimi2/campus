@@ -5,6 +5,11 @@
 <div class="d-flex align-items-center mb-3">
   <h1 class="h4 mb-0">طلب #{{ $requestItem->id }}</h1>
   <a href="{{ route('admin.requests.index') }}" class="btn btn-secondary ms-auto">عودة</a>
+  <form method="POST" action="{{ route('admin.requests.destroy', $requestItem) }}" style="display:inline" onsubmit="return confirm('هل أنت متأكد من حذف الطلب؟');">
+    @csrf
+    @method('DELETE')
+    <button class="btn btn-danger ms-2">حذف الطلب</button>
+  </form>
 </div>
 
 <div class="row g-3">
@@ -16,7 +21,16 @@
         <div class="mb-2"><span class="text-muted">النوع:</span> {{ $requestItem->type }}</div>
         <div class="mb-2"><span class="text-muted">الموضوع:</span> {{ $requestItem->subject }}</div>
         <div class="mb-2"><span class="text-muted">المحتوى:</span><br>{{ $requestItem->body }}</div>
-        <div class="mb-2"><span class="text-muted">الحالة الحالية:</span> <span class="badge bg-primary">{{ $requestItem->status }}</span></div>
+        @php
+          $statusMap = [
+            'open' => 'مفتوح',
+            'in_progress' => 'قيد المعالجة',
+            'resolved' => 'تم الحل',
+            'rejected' => 'مرفوض',
+            'closed' => 'مغلق',
+          ];
+        @endphp
+        <div class="mb-2"><span class="text-muted">الحالة الحالية:</span> <span class="badge bg-primary">{{ $statusMap[$requestItem->status] ?? $requestItem->status }}</span></div>
         @if($requestItem->admin_note)
           <div class="mb-2"><span class="text-muted">ملاحظة المسؤول:</span> {{ $requestItem->admin_note }}</div>
         @endif
@@ -54,6 +68,8 @@
             <select class="form-select" name="status" required>
               <option value="open" @selected($requestItem->status==='open')>مفتوح</option>
               <option value="in_progress" @selected($requestItem->status==='in_progress')>قيد المعالجة</option>
+              <option value="resolved" @selected($requestItem->status==='resolved')>تم الحل</option>
+              <option value="rejected" @selected($requestItem->status==='rejected')>مرفوض</option>
               <option value="closed" @selected($requestItem->status==='closed')>مغلق</option>
             </select>
           </div>

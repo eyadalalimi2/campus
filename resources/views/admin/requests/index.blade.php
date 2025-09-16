@@ -53,13 +53,27 @@
             <td><span class="badge bg-info-subtle text-dark">{{ $r->type }}</span></td>
             <td class="text-truncate" style="max-width:260px">{{ $r->subject }}</td>
             <td>
-              @php $map=['open'=>'success','in_progress'=>'warning','closed'=>'secondary']; @endphp
-              <span class="badge bg-{{ $map[$r->status] ?? 'secondary' }}">{{ $r->status }}</span>
+              @php
+                $map = ['open'=>'success','in_progress'=>'warning','resolved'=>'info','rejected'=>'danger','closed'=>'secondary'];
+                $statusMap = [
+                  'open' => 'مفتوح',
+                  'in_progress' => 'قيد المعالجة',
+                  'resolved' => 'تم الحل',
+                  'rejected' => 'مرفوض',
+                  'closed' => 'مغلق',
+                ];
+              @endphp
+              <span class="badge bg-{{ $map[$r->status] ?? 'secondary' }}">{{ $statusMap[$r->status] ?? $r->status }}</span>
             </td>
             <td>{{ $r->assignee?->name ?? '—' }}</td>
             <td class="small text-muted">{{ $r->created_at?->format('Y-m-d H:i') }}</td>
             <td class="text-nowrap">
               <a class="btn btn-sm btn-outline-primary" href="{{ route('admin.requests.show',$r) }}">عرض</a>
+              <form method="POST" action="{{ route('admin.requests.destroy', $r) }}" style="display:inline" onsubmit="return confirm('هل أنت متأكد من حذف الطلب؟');">
+                @csrf
+                @method('DELETE')
+                <button class="btn btn-sm btn-outline-danger">حذف</button>
+              </form>
             </td>
           </tr>
         @empty

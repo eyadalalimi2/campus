@@ -11,7 +11,7 @@ class StudentRequestsController extends Controller
     public function index(Request $r)
     {
         $status = $r->query('status');
-        $requests = DB::table('student_requests')
+        $requests = \App\Models\StudentRequest::with(['user','assignee'])
             ->when($status, fn($q)=>$q->where('status',$status))
             ->orderBy('created_at','desc')->paginate(20);
 
@@ -20,9 +20,16 @@ class StudentRequestsController extends Controller
 
     public function show($id)
     {
-        $row = DB::table('student_requests')->find($id);
-        abort_unless($row, 404);
-        return view('admin.requests.show', compact('row'));
+    $requestItem = \App\Models\StudentRequest::with('user')->find($id);
+    abort_unless($requestItem, 404);
+    $admins = \App\Models\Admin::all();
+    return view('admin.requests.show', compact('requestItem','admins'));
+    }
+    public function destroy($id)
+    {
+        $request = \App\Models\StudentRequest::findOrFail($id);
+        $request->delete();
+        return redirect()->route('admin.requests.index')->with('ok','تم حذف الطلب بنجاح.');
     }
 
     public function assign(Request $r, $id)
@@ -40,12 +47,12 @@ class StudentRequestsController extends Controller
     public function changeStatus(Request $r, $id)
     {
         $data = $r->validate([
-            'status'=>['required','in:open,in_progress,resolved,closed'],
-            'admin_notes'=>['nullable','string','max:2000']
+            'status'=>['required','in:open,in_progress,resolved,rejected,closed'],
+            'body'=>['nullable','string','max:2000']
         ]);
         DB::table('student_requests')->where('id',$id)->update([
             'status'=>$data['status'],
-            'admin_notes'=>$data['admin_notes'] ?? null,
+            'body'=>$data['body'] ?? null,
             'updated_at'=>now()
         ]);
         return back()->with('ok','تم تحديث الحالة.');

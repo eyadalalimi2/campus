@@ -140,6 +140,7 @@ Route::middleware('auth:admin')->group(function () {
     Route::put('requests/{id}/assign',  [StudentRequestsController::class, 'assign'])->name('requests.assign');
     Route::put('requests/{id}/status',  [StudentRequestsController::class, 'changeStatus'])->name('requests.status');
     Route::put('requests/{id}/close',   [StudentRequestsController::class, 'close'])->name('requests.close');
+    Route::delete('requests/{id}',      [StudentRequestsController::class, 'destroy'])->name('requests.destroy');
 
     // Complaints
     Route::get('complaints', [ComplaintController::class, 'index'])->name('complaints.index');

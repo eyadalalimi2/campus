@@ -29,14 +29,41 @@
           <dt class="col-sm-3">النص</dt>
           <dd class="col-sm-9"><pre class="mb-0" style="white-space: pre-wrap;">{{ $complaint->body ?? '—' }}</pre></dd>
 
+          @php
+            $typeMap = [
+              'general' => 'عام',
+              'technical' => 'تقني',
+              'account' => 'حساب',
+              'material' => 'مادة',
+              'other' => 'أخرى',
+            ];
+          @endphp
           <dt class="col-sm-3">النوع</dt>
-          <dd class="col-sm-9"><span class="badge bg-info-subtle text-dark">{{ $complaint->type ?? '—' }}</span></dd>
+          <dd class="col-sm-9"><span class="badge bg-info-subtle text-dark">{{ $typeMap[$complaint->type] ?? $complaint->type ?? '—' }}</span></dd>
 
+          @php
+            $severityMap = [
+              'low' => 'منخفضة',
+              'medium' => 'متوسطة',
+              'high' => 'مرتفعة',
+              'critical' => 'حرجة',
+            ];
+          @endphp
           <dt class="col-sm-3">الخطورة</dt>
-          <dd class="col-sm-9"><span class="badge bg-secondary">{{ $complaint->severity ?? '—' }}</span></dd>
+          <dd class="col-sm-9"><span class="badge bg-secondary">{{ $severityMap[$complaint->severity] ?? $complaint->severity ?? '—' }}</span></dd>
 
+          @php
+            $statusMap = [
+              'open' => 'مفتوحة',
+              'triaged' => 'قيد التصنيف',
+              'in_progress' => 'قيد المعالجة',
+              'resolved' => 'تم الحل',
+              'rejected' => 'مرفوضة',
+              'closed' => 'مغلقة',
+            ];
+          @endphp
           <dt class="col-sm-3">الحالة</dt>
-          <dd class="col-sm-9"><span class="badge bg-primary">{{ $complaint->status ?? '—' }}</span></dd>
+          <dd class="col-sm-9"><span class="badge bg-primary">{{ $statusMap[$complaint->status] ?? $complaint->status ?? '—' }}</span></dd>
 
           <dt class="col-sm-3">المُعيّن</dt>
           <dd class="col-sm-9">{{ optional($complaint->assignee)->name ?? '—' }}</dd>
@@ -80,8 +107,15 @@
           <div class="mb-3">
             <label class="form-label">الحالة</label>
             <select name="status" class="form-select">
-              @foreach(['open','triaged','in_progress','resolved','rejected','closed'] as $s)
-                <option value="{{ $s }}" @selected(old('status',$complaint->status)===$s)>{{ $s }}</option>
+              @foreach([
+                'open' => 'مفتوحة',
+                'triaged' => 'قيد التصنيف',
+                'in_progress' => 'قيد المعالجة',
+                'resolved' => 'تم الحل',
+                'rejected' => 'مرفوضة',
+                'closed' => 'مغلقة',
+              ] as $s => $label)
+                <option value="{{ $s }}" @selected(old('status',$complaint->status)===$s)>{{ $label }}</option>
               @endforeach
             </select>
             @error('status') <div class="text-danger small">{{ $message }}</div> @enderror
@@ -90,8 +124,13 @@
           <div class="mb-3">
             <label class="form-label">الخطورة</label>
             <select name="severity" class="form-select">
-              @foreach(['low','medium','high','critical'] as $sev)
-                <option value="{{ $sev }}" @selected(old('severity',$complaint->severity)===$sev)>{{ $sev }}</option>
+              @foreach([
+                'low' => 'منخفضة',
+                'medium' => 'متوسطة',
+                'high' => 'مرتفعة',
+                'critical' => 'حرجة',
+              ] as $sev => $label)
+                <option value="{{ $sev }}" @selected(old('severity',$complaint->severity)===$sev)>{{ $label }}</option>
               @endforeach
             </select>
             @error('severity') <div class="text-danger small">{{ $message }}</div> @enderror
