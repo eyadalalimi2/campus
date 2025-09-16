@@ -48,11 +48,11 @@ class StudentRequestsController extends Controller
     {
         $data = $r->validate([
             'status'=>['required','in:open,in_progress,resolved,rejected,closed'],
-            'body'=>['nullable','string','max:2000']
+            'admin_notes'=>['nullable','string','max:2000']
         ]);
         DB::table('student_requests')->where('id',$id)->update([
             'status'=>$data['status'],
-            'body'=>$data['body'] ?? null,
+            'admin_notes'=>$data['admin_notes'] ?? null,
             'updated_at'=>now()
         ]);
         return back()->with('ok','تم تحديث الحالة.');
