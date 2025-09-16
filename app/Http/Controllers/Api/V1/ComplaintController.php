@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Complaint\StoreComplaintRequest;
 use App\Http\Requests\Api\V1\Complaint\UpdateComplaintRequest;
-use App\Http\Resources\ComplaintResource;
+use App\Http\Resources\Api\V1\ComplaintResource;
 use App\Models\Complaint;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
