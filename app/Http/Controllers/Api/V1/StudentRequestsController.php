@@ -3,46 +3,110 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\DB;
-use App\Support\ApiResponse;
+use App\Http\Requests\Api\V1\StudentRequests\StoreStudentRequestRequest;
+use App\Http\Requests\Api\V1\StudentRequests\UpdateStudentRequestRequest;
 use App\Http\Resources\Api\V1\StudentRequestResource;
-use App\Http\Requests\Api\V1\StudentRequests\StoreRequest;
+use App\Models\StudentRequest;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 
 class StudentRequestsController extends Controller
 {
-    public function index()
+    // GET /api/v1/me/requests
+    public function index(Request $request)
     {
-        $u = request()->user();
-        $rows = DB::table('student_requests')
-            ->where('user_id',$u->id)
-            ->orderBy('created_at','desc')->limit(200)->get();
+        $user = $request->user();
 
-        return ApiResponse::ok(StudentRequestResource::collection($rows));
+        $q = StudentRequest::query()->where('user_id', $user->id);
+
+        // فلاتر اختيارية
+        if ($s = $request->query('status'))   $q->where('status', $s);           // open|in_progress|resolved|rejected|closed
+        if ($p = $request->query('priority')) $q->where('priority', $p);         // low|normal|high
+        if ($c = $request->query('category')) $q->where('category', $c);         // general|material|account|technical|other
+        if ($t = $request->query('q')) {
+            $q->where(fn($w) => $w->where('title', 'like', "%{$t}%")
+                ->orWhere('body', 'like', "%{$t}%"));
+        }
+
+        $requests = $q->latest('created_at')->paginate(15)->withQueryString();
+
+        return StudentRequestResource::collection($requests)
+            ->additional(['status' => 'ok']);
     }
 
-    public function store(StoreRequest $r)
+    // POST /api/v1/me/requests
+    public function store(StoreStudentRequestRequest $request)
     {
-        $u = request()->user();
-        $data = $r->validated();
-        $id = DB::table('student_requests')->insertGetId([
-            'user_id'      => $u->id,
-            'type'         => $data['type'],
-            'subject'      => $data['subject'],
-            'body'         => $data['body'],
-            'status'       => 'open',
-            'created_at'   => now(),
-            'updated_at'   => now(),
-        ]);
+        $data = $request->validated();
+        $data['user_id'] = $request->user()->id;
+        $data['priority'] = $data['priority'] ?? 'normal';
+        $data['status'] = 'open';
 
-        $row = DB::table('student_requests')->find($id);
-        return ApiResponse::ok(new StudentRequestResource((object)$row), ['created'=>true]);
+        if ($request->hasFile('attachment')) {
+            $data['attachment_path'] = $request->file('attachment')->store('student_requests', 'public');
+        }
+
+        $req = StudentRequest::create($data);
+
+        return (new StudentRequestResource($req))
+            ->additional(['status' => 'created'])
+            ->response()
+            ->setStatusCode(201);
     }
 
-    public function show($id)
+    // GET /api/v1/me/requests/{id}
+    public function show(Request $request, $id)
     {
-        $u = request()->user();
-        $row = DB::table('student_requests')->where('user_id',$u->id)->where('id',$id)->first();
-        if (!$row) return ApiResponse::error('NOT_FOUND','الطلب غير موجود.',[],404);
-        return ApiResponse::ok(new StudentRequestResource((object)$row));
+        $req = StudentRequest::findOrFail($id);
+        Gate::authorize('view', $req);
+
+        return (new StudentRequestResource($req))
+            ->additional(['status' => 'ok']);
+    }
+    // PATCH /api/v1/me/requests/{id}
+    public function update(UpdateStudentRequestRequest $request, $id)
+    {
+        $req = StudentRequest::findOrFail($id);
+        Gate::authorize('update', $req);
+
+        $data = $request->validated();
+
+        if (array_key_exists('title', $data)) $req->title = $data['title'];
+        if (array_key_exists('body', $data))  $req->body  = $data['body'];
+        if (array_key_exists('priority', $data) && $data['priority']) {
+            $req->priority = $data['priority'];
+        }
+
+        // تبديل/إضافة مرفق
+        if ($request->hasFile('attachment')) {
+            if ($req->attachment_path && !str_starts_with($req->attachment_path, 'http')) {
+                Storage::disk('public')->delete($req->attachment_path);
+            }
+            $req->attachment_path = $request->file('attachment')->store('student_requests', 'public');
+        }
+
+        // إغلاق اختياري
+        if (!empty($data['close'])) {
+            $req->status    = 'closed';
+            $req->closed_at = now();
+        }
+
+        $req->save();
+
+        return (new StudentRequestResource($req->fresh()))
+            ->additional(['status' => 'ok']);
+    }
+
+
+    // DELETE /api/v1/me/requests/{id}
+    public function destroy(Request $request, $id)
+    {
+        $req = StudentRequest::findOrFail($id);
+        Gate::authorize('delete', $req);
+
+        $req->delete(); // Soft delete
+
+        return response()->json(['status' => 'deleted']);
     }
 }

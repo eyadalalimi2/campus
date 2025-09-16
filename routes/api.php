@@ -30,7 +30,7 @@ use App\Http\Controllers\Api\V1\Feed\FeedController;
 use App\Http\Controllers\Api\V1\Me\DevicesController;
 use App\Http\Controllers\Api\V1\BannerController;
 use App\Http\Controllers\Api\V1\NotificationsController as ApiNotificationsController;
-use App\Http\Controllers\Api\V1\StudentRequestsController as ApiStudentRequestsController;
+use App\Http\Controllers\Api\V1\StudentRequestsController;
 use App\Http\Controllers\Api\V1\ComplaintController;
 use App\Http\Controllers\Api\V1\Me\VisibilityController as ApiVisibilityController;
 
@@ -199,9 +199,11 @@ Route::prefix('v1')->group(function () {
         Route::put('me/notifications/{id}/read', [ApiNotificationsController::class, 'markRead']);
 
         // Student Requests
-        Route::get('me/requests', [ApiStudentRequestsController::class, 'index']);
-        Route::post('me/requests', [ApiStudentRequestsController::class, 'store']);
-        Route::get('me/requests/{id}', [ApiStudentRequestsController::class, 'show']);
+        Route::get('me/requests',            [StudentRequestsController::class, 'index']);
+        Route::post('me/requests',            [StudentRequestsController::class, 'store']);
+        Route::get('me/requests/{id}',       [StudentRequestsController::class, 'show']);
+        Route::patch('me/requests/{id}',       [StudentRequestsController::class, 'update']); 
+        Route::delete('me/requests/{id}',       [StudentRequestsController::class, 'destroy']);
 
         // Complaints
         Route::get('complaints',        [ComplaintController::class, 'index']);   // ?status=&severity=&type=&q=
