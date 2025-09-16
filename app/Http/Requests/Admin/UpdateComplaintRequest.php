@@ -9,7 +9,7 @@ class UpdateComplaintRequest extends FormRequest
     public function authorize(): bool
     {
         // فعّل صلاحياتك/Policy إن وجدت
-        return $this->user('admin') !== null;
+        return auth()->guard('admin')->check();
     }
 
     public function rules(): array
