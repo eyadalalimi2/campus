@@ -22,6 +22,27 @@
         {{-- Collapsible Area --}}
         <div class="collapse navbar-collapse" id="adminTopbar">
             <ul class="navbar-nav ms-auto align-items-lg-center">
+                    {{-- إدارة البنرات والشكاوى والإشعارات والطلبات --}}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('admin.banners.index') }}">
+                            <i class="bi bi-image"></i> البنرات
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('admin.complaints.index') }}">
+                            <i class="bi bi-exclamation-diamond"></i> الشكاوى
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('admin.notifications.index') }}">
+                            <i class="bi bi-bell"></i> الإشعارات
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('admin.requests.index') }}">
+                            <i class="bi bi-envelope-paper"></i> الطلبات
+                        </a>
+                    </li>
 
                 {{-- روابط عامة --}}
                 <li class="nav-item">

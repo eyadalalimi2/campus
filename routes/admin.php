@@ -21,8 +21,10 @@ use App\Http\Controllers\Admin\ProgramController;
 use App\Http\Controllers\Admin\AcademicCalendarController;
 use App\Http\Controllers\Admin\AcademicTermController;
 use App\Http\Controllers\Admin\CountryController;
-
-// الإضافات الجديدة
+use App\Http\Controllers\Admin\BannersController;
+use App\Http\Controllers\Admin\StudentRequestsController;
+use App\Http\Controllers\Admin\ComplaintController;
+use App\Http\Controllers\Admin\NotificationsController;
 use App\Http\Controllers\Admin\MajorProgramController;
 use App\Http\Controllers\Admin\PlanController;
 use App\Http\Controllers\Admin\PlanFeatureController;
@@ -128,4 +130,24 @@ Route::middleware('auth:admin')->group(function () {
     Route::get('/import',               [ImportController::class, 'index'])->name('import.index');
     Route::post('/import/run',          [ImportController::class, 'run'])->name('import.run');
     Route::get('/import/sample/{type}', [ImportController::class, 'sample'])->name('import.sample');
+
+    // Banners
+    Route::resource('banners', \App\Http\Controllers\Admin\BannerController::class);
+
+    // Student Requests
+    Route::get('requests',              [StudentRequestsController::class, 'index'])->name('requests.index');
+    Route::get('requests/{id}',         [StudentRequestsController::class, 'show'])->name('requests.show');
+    Route::put('requests/{id}/assign',  [StudentRequestsController::class, 'assign'])->name('requests.assign');
+    Route::put('requests/{id}/status',  [StudentRequestsController::class, 'changeStatus'])->name('requests.status');
+    Route::put('requests/{id}/close',   [StudentRequestsController::class, 'close'])->name('requests.close');
+
+    // Complaints
+    Route::get('complaints', [ComplaintController::class, 'index'])->name('complaints.index');
+    Route::get('complaints/{complaint}', [ComplaintController::class, 'show'])->name('complaints.show');
+    Route::patch('complaints/{complaint}', [ComplaintController::class, 'update'])->name('complaints.update');
+    Route::delete('complaints/{complaint}', [ComplaintController::class, 'destroy'])->name('complaints.destroy');
+    // Notifications (لوحة إرسال/إدارة إشعارات)
+    Route::get('notifications',         [NotificationsController::class, 'index'])->name('notifications.index');
+    Route::get('notifications/create',  [NotificationsController::class, 'create'])->name('notifications.create');
+    Route::post('notifications',        [NotificationsController::class, 'store'])->name('notifications.store');
 });

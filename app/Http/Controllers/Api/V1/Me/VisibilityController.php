@@ -1,30 +1,43 @@
 <?php
-
 namespace App\Http\Controllers\Api\V1\Me;
 
-use App\Domain\Policy\ContentScopePolicy;
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use App\Support\ApiResponse;
-use App\Exceptions\Api\ApiException;
+use Illuminate\Http\Request;
 
-final class VisibilityController extends Controller
+class VisibilityController extends Controller
 {
-    public function __construct(private ContentScopePolicy $policy) {}
-
-    /**
-     * إظهار حالة الربط بالمؤسسة التعليمية ومصادر المحتوى المسموح بها وفق السياسة المركزية.
-     */
     public function show()
     {
-        /** @var User|null $user */
-        $user = auth()->user();
-        if (!$user) {
-            throw new ApiException('UNAUTHORIZED', 'يجب تسجيل الدخول أولاً.', 401);
-        }
+        $u = request()->user();
+        $row = DB::table('users')->where('id',$u->id)->first();
+        $linked = (bool)$row->university_id;
+        return ApiResponse::ok([
+            'linked_to_university' => $linked,
+            'allowed_sources' => $linked ? ['assets','contents'] : ['assets'],
+            'scope'=>[
+                'university_id'=>$row->university_id,'college_id'=>$row->college_id,'major_id'=>$row->major_id
+            ]
+        ]);
+    }
 
-        $result = $this->policy->evaluate($user);
+    public function update(Request $r)
+    {
+        $u = request()->user();
+        $data = $r->validate([
+            'university_id' => ['nullable','integer','exists:universities,id'],
+            'college_id'    => ['nullable','integer','exists:colleges,id'],
+            'major_id'      => ['nullable','integer','exists:majors,id'],
+        ]);
 
-        return ApiResponse::ok($result);
+        DB::table('users')->where('id',$u->id)->update([
+            'university_id' => $data['university_id'] ?? null,
+            'college_id'    => $data['college_id'] ?? null,
+            'major_id'      => $data['major_id'] ?? null,
+            'updated_at'    => now(),
+        ]);
+
+        return $this->show();
     }
 }

@@ -28,12 +28,20 @@ use App\Http\Controllers\Api\V1\Subscription\SubscriptionsController;
 
 use App\Http\Controllers\Api\V1\Feed\FeedController;
 use App\Http\Controllers\Api\V1\Me\DevicesController;
+use App\Http\Controllers\Api\V1\BannerController;
+use App\Http\Controllers\Api\V1\NotificationsController as ApiNotificationsController;
+use App\Http\Controllers\Api\V1\StudentRequestsController as ApiStudentRequestsController;
+use App\Http\Controllers\Api\V1\ComplaintController;
+use App\Http\Controllers\Api\V1\Me\VisibilityController as ApiVisibilityController;
 
 Route::prefix('v1')->group(function () {
 
     /* =========================
      * Auth (بدون مصادقة)
      * ========================= */
+
+    // عام: البنرات
+    Route::get('banners', [BannerController::class, 'index']);
 
     Route::post('auth/register', [AuthController::class, 'register']);
     // إنشاء حساب جديد وإرجاع توكن جلسة أولية
@@ -186,5 +194,23 @@ Route::prefix('v1')->group(function () {
 
         Route::delete('me/devices/{tokenId}', [DevicesController::class, 'destroy']);
         // إلغاء/حذف توكن جهاز محدد يخص المستخدم الحالي
+        // Notifications
+        Route::get('me/notifications', [ApiNotificationsController::class, 'index']);
+        Route::put('me/notifications/{id}/read', [ApiNotificationsController::class, 'markRead']);
+
+        // Student Requests
+        Route::get('me/requests', [ApiStudentRequestsController::class, 'index']);
+        Route::post('me/requests', [ApiStudentRequestsController::class, 'store']);
+        Route::get('me/requests/{id}', [ApiStudentRequestsController::class, 'show']);
+
+        // Complaints
+        Route::get('complaints',        [ComplaintController::class, 'index']);   // ?status=&severity=&type=&q=
+        Route::post('complaints',        [ComplaintController::class, 'store']);   // form-data أو JSON + ملف
+        Route::get('complaints/{id}',   [ComplaintController::class, 'show']);    // يضمن الملكية عبر Policy
+        Route::patch('complaints/{id}',   [ComplaintController::class, 'update']);  // تعديل النص/إرفاق/إغلاق
+        Route::delete('complaints/{id}',   [ComplaintController::class, 'destroy']); // حذف (Soft) لحالات محددة
+        // Visibility (عرض/تحديث)
+        Route::get('me/visibility', [ApiVisibilityController::class, 'show']);
+        Route::put('me/visibility', [ApiVisibilityController::class, 'update']);
     });
 });
