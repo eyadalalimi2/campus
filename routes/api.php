@@ -29,7 +29,7 @@ use App\Http\Controllers\Api\V1\Subscription\SubscriptionsController;
 use App\Http\Controllers\Api\V1\Feed\FeedController;
 use App\Http\Controllers\Api\V1\Me\DevicesController;
 use App\Http\Controllers\Api\V1\BannerController;
-use App\Http\Controllers\Api\V1\NotificationsController as ApiNotificationsController;
+use App\Http\Controllers\Api\V1\NotificationsController;
 use App\Http\Controllers\Api\V1\StudentRequestsController;
 use App\Http\Controllers\Api\V1\ComplaintController;
 use App\Http\Controllers\Api\V1\Me\VisibilityController as ApiVisibilityController;
@@ -194,15 +194,17 @@ Route::prefix('v1')->group(function () {
 
         Route::delete('me/devices/{tokenId}', [DevicesController::class, 'destroy']);
         // إلغاء/حذف توكن جهاز محدد يخص المستخدم الحالي
-        // Notifications
-        Route::get('me/notifications', [ApiNotificationsController::class, 'index']);
-        Route::put('me/notifications/{id}/read', [ApiNotificationsController::class, 'markRead']);
-
-        // Student Requests
+        // إشعارات الطالب
+        Route::get('me/notifications',          [NotificationsController::class, 'index']);
+        Route::get('me/notifications/{id}',     [NotificationsController::class, 'show']);
+        Route::patch('me/notifications/{id}/read', [NotificationsController::class, 'markRead']);
+        Route::patch('me/notifications/read-all', [NotificationsController::class, 'markAllRead']);
+        Route::delete('me/notifications/{id}', [NotificationsController::class, 'destroy']);
+        // طلبات الطالب
         Route::get('me/requests',            [StudentRequestsController::class, 'index']);
         Route::post('me/requests',            [StudentRequestsController::class, 'store']);
         Route::get('me/requests/{id}',       [StudentRequestsController::class, 'show']);
-        Route::patch('me/requests/{id}',       [StudentRequestsController::class, 'update']); 
+        Route::patch('me/requests/{id}',       [StudentRequestsController::class, 'update']);
         Route::delete('me/requests/{id}',       [StudentRequestsController::class, 'destroy']);
 
         // Complaints

@@ -24,7 +24,7 @@ use App\Http\Controllers\Admin\CountryController;
 use App\Http\Controllers\Admin\BannersController;
 use App\Http\Controllers\Admin\StudentRequestsController;
 use App\Http\Controllers\Admin\ComplaintController;
-use App\Http\Controllers\Admin\NotificationsController;
+use App\Http\Controllers\Admin\NotificationsController as AdminNotificationsController;
 use App\Http\Controllers\Admin\MajorProgramController;
 use App\Http\Controllers\Admin\PlanController;
 use App\Http\Controllers\Admin\PlanFeatureController;
@@ -148,7 +148,16 @@ Route::middleware('auth:admin')->group(function () {
     Route::patch('complaints/{complaint}', [ComplaintController::class, 'update'])->name('complaints.update');
     Route::delete('complaints/{complaint}', [ComplaintController::class, 'destroy'])->name('complaints.destroy');
     // Notifications (لوحة إرسال/إدارة إشعارات)
-    Route::get('notifications',         [NotificationsController::class, 'index'])->name('notifications.index');
-    Route::get('notifications/create',  [NotificationsController::class, 'create'])->name('notifications.create');
-    Route::post('notifications',        [NotificationsController::class, 'store'])->name('notifications.store');
+    // CRUD
+    Route::get   ('/notifications',            [AdminNotificationsController::class, 'index'])->name('notifications.index');
+    Route::get   ('/notifications/create',     [AdminNotificationsController::class, 'create'])->name('notifications.create');
+    Route::post  ('/notifications',            [AdminNotificationsController::class, 'store'])->name('notifications.store');
+    Route::get   ('/notifications/{id}',       [AdminNotificationsController::class, 'show'])->name('notifications.show');
+    Route::delete('/notifications/{id}',       [AdminNotificationsController::class, 'destroy'])->name('notifications.destroy');
+
+    // AJAX options for cascading selects
+    Route::get('/notifications/options/users',        [AdminNotificationsController::class, 'optionsUsers'])->name('notifications.options.users');
+    Route::get('/notifications/options/universities', [AdminNotificationsController::class, 'optionsUniversities'])->name('notifications.options.universities');
+    Route::get('/notifications/options/colleges',     [AdminNotificationsController::class, 'optionsColleges'])->name('notifications.options.colleges');     // ?university_id=
+    Route::get('/notifications/options/majors',       [AdminNotificationsController::class, 'optionsMajors'])->name('notifications.options.majors');       // ?college_id=
 });

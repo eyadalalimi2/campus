@@ -3,41 +3,68 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\DB;
-use App\Support\ApiResponse;
 use App\Http\Resources\Api\V1\NotificationResource;
+use App\Models\Notification;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class NotificationsController extends Controller
 {
-    public function index()
+    // GET /api/v1/me/notifications?type=&unread=1&q=
+    public function index(Request $request)
     {
-        $u = request()->user();
-        $rows = DB::table('user_notifications as un')
-            ->join('notifications as n','n.id','=','un.notification_id')
-            ->where('un.user_id', $u->id)
-            ->select('n.id','n.title','n.body','un.status','un.read_at','n.created_at')
-            ->orderBy('n.created_at','desc')
-            ->limit(200)
-            ->get();
+        $user = $request->user();
 
-        return ApiResponse::ok(NotificationResource::collection($rows));
+        $q = Notification::query()
+            ->where('user_id', $user->id)
+            ->when($request->filled('type'), fn($w) => $w->where('type', $request->type))
+            ->when($request->filled('unread'), function ($w) use ($request) {
+                return $request->unread ? $w->whereNull('read_at') : $w;
+            })
+            ->when($request->filled('q'), function ($w) use ($request) {
+                $term = $request->q;
+                return $w->where(fn($x) => $x->where('title','like',"%{$term}%")
+                                              ->orWhere('body','like',"%{$term}%"));
+            })
+            ->latest('created_at');
+
+        $page = $q->paginate(20)->withQueryString();
+
+        return NotificationResource::collection($page)->additional(['status' => 'ok']);
     }
 
-    public function markRead($id)
+    // GET /api/v1/me/notifications/{id}  (لا يغيّر حالة القراءة)
+    public function show(Request $request, $id)
     {
-        $u = request()->user();
-        $exists = DB::table('user_notifications')->where([
-            'user_id'=>$u->id,'notification_id'=>$id
-        ])->exists();
+        $n = Notification::where('user_id', $request->user()->id)->findOrFail($id);
+        return (new NotificationResource($n))->additional(['status' => 'ok']);
+    }
 
-        if (!$exists) {
-            return ApiResponse::error('NOT_FOUND','الإشعار غير موجود.',[],404);
+    // PATCH /api/v1/me/notifications/{id}/read
+    public function markRead(Request $request, $id)
+    {
+        $n = Notification::where('user_id', $request->user()->id)->findOrFail($id);
+        if (!$n->read_at) {
+            $n->read_at = now();
+            $n->save();
         }
+        return response()->json(['status' => 'ok', 'read_at' => optional($n->read_at)->toISOString()]);
+    }
 
-        DB::table('user_notifications')->where([
-            'user_id'=>$u->id,'notification_id'=>$id
-        ])->update(['status'=>'read','read_at'=>now(),'updated_at'=>now()]);
+    // PATCH /api/v1/me/notifications/read-all
+    public function markAllRead(Request $request)
+    {
+        $userId = $request->user()->id;
+        Notification::where('user_id',$userId)->whereNull('read_at')
+            ->update(['read_at' => now(), 'updated_at' => now()]);
+        return response()->json(['status' => 'ok']);
+    }
 
-        return ApiResponse::ok(['message'=>'تم التأشير كمقروء.']);
+    // DELETE /api/v1/me/notifications/{id}
+    public function destroy(Request $request, $id)
+    {
+        $n = Notification::where('user_id', $request->user()->id)->findOrFail($id);
+        $n->delete();
+        return response()->json(['status' => 'deleted']);
     }
 }
