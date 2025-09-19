@@ -102,7 +102,7 @@
     </table>
   </div>
   <div class="card-footer">
-    {{ $complaints->withQueryString()->links() }}
+    {{ $complaints->withQueryString()->links('vendor.pagination.bootstrap-custom') }}
   </div>
 </div>
 @endsection

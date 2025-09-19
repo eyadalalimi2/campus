@@ -12,7 +12,6 @@ use App\Support\ApiResponse;
 use App\Support\Cursor;
 use App\Support\QueryFilters;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\DB;
 
 final class AssetsController extends Controller
 {
@@ -23,11 +22,13 @@ final class AssetsController extends Controller
 
     /**
      * GET /api/v1/assets
-     * يُظهر المحتوى العام (Assets) وفق الجمهور:
-     * - سجلات بدون جمهور (global) للجميع
-     * - أو المطابقة لتخصص المستخدم عبر جدول asset_audiences (major_id)
-     * فلاتر إضافية: q (title/description), category, material_id, status=published, sort, limit, cursor
-     * sort المسموح: published_at, -published_at, created_at, -created_at, id, -id
+     *
+     * يُظهر المحتوى العام (Assets) وفق الجمهور العام:
+     * - الأصول "العالمية" (لا جمهور عام مرتبط) للجميع.
+     * - أو الأصول المطابقة لـ public_major_id للمستخدم (مباشرًا أو عبر mapping من Major الجامعي).
+     *
+     * فلاتر: q (title/description), category, material_id, status=published, sort, limit, cursor
+     * sort: published_at, -published_at, created_at, -created_at, id, -id
      */
     public function index(PaginateRequest $request)
     {
@@ -37,10 +38,23 @@ final class AssetsController extends Controller
         $offset = (int)($cursor['offset'] ?? 0);
 
         $user   = auth()->user();
-        $vis    = $user ? $this->policy->evaluate($user) : ['linked_to_university'=>false,'scope'=>['major_id'=>null]];
+        // سياسة الرؤية العامة (قد تحتاج لاحقًا للمحتوى المؤسسي؛ نُبقيها كما هي)
+        $vis    = $user ? $this->policy->evaluate($user) : ['linked_to_university'=>false,'scope'=>[]];
+
+        // فلتر اختياري يُمرّره العميل صراحة
+        $filterPublicMajorId = isset($data['public_major_id']) ? (int)$data['public_major_id'] : 0;
+
+        // استنتاج public_major للمستخدم إن لم يمرر فلتر مباشر (يتطلب mapping: user->major->public_major_id)
+        if (! $filterPublicMajorId && $user && $user->major && $user->major->public_major_id) {
+            $filterPublicMajorId = (int) $user->major->public_major_id;
+        }
 
         $query = Asset::query()
-            ->select(['assets.id','assets.category','assets.title','assets.description','assets.status','assets.published_at','assets.is_active','assets.material_id','assets.discipline_id','assets.program_id','assets.device_id','assets.doctor_id','assets.created_at'])
+            ->select([
+                'assets.id','assets.category','assets.title','assets.description','assets.status',
+                'assets.published_at','assets.is_active','assets.material_id','assets.discipline_id',
+                'assets.program_id','assets.device_id','assets.doctor_id','assets.created_at'
+            ])
             ->where('assets.status','published')
             ->where('assets.is_active',1)
             ->whereNotNull('assets.published_at')
@@ -55,12 +69,15 @@ final class AssetsController extends Controller
                 });
             });
 
-        // الجمهور: إظهار الأصول العامة (لا توجد audience) أو المطابقة لِـ major_id للمستخدم
-        $majorId = $vis['scope']['major_id'] ?? null;
-        $query->where(function (Builder $w) use ($majorId) {
-            $w->whereDoesntHave('audiences'); // لا جمهور = عالمي
-            if ($majorId) {
-                $w->orWhereHas('audiences', fn ($aa) => $aa->where('major_id', (int)$majorId));
+        /**
+         * الجمهور العام:
+         * - whereDoesntHave('publicMajors') => أصل عالمي
+         * - orWhereHas('publicMajors', id = $filterPublicMajorId) عند وجود معرف
+         */
+        $query->where(function (Builder $w) use ($filterPublicMajorId) {
+            $w->whereDoesntHave('publicMajors');
+            if ($filterPublicMajorId) {
+                $w->orWhereHas('publicMajors', fn ($qq) => $qq->where('public_majors.id', $filterPublicMajorId));
             }
         });
 
@@ -73,28 +90,50 @@ final class AssetsController extends Controller
 
         $next = ($offset + $items->count() < $total) ? Cursor::encode(['offset'=>$offset + $items->count()]) : null;
 
-        return ApiResponse::ok(AssetResource::collection($items), ['count'=>$items->count(),'total'=>$total,'next_cursor'=>$next], ['next'=>$next]);
+        return ApiResponse::ok(
+            AssetResource::collection($items),
+            ['count'=>$items->count(),'total'=>$total,'next_cursor'=>$next],
+            ['next'=>$next]
+        );
     }
 
     /**
      * GET /api/v1/assets/{id}
+     *
+     * يُرجع الأصل إذا كان:
+     * - عالميًا (لا جمهور عام مرتبط)
+     * - أو يطابق public_major للمستخدم/الفلتر
      */
     public function show(int $id)
     {
         $asset = Asset::query()
-            ->with(['audiences'])
+            ->with(['publicMajors']) // علاقات الجمهور العام فقط
             ->where('status','published')->where('is_active',1)
             ->whereNotNull('published_at')->where('published_at','<=', now())
             ->find($id);
 
-        if (!$asset) return ApiResponse::error('NOT_FOUND','العنصر غير موجود أو غير منشور.',[],404);
+        if (! $asset) {
+            return ApiResponse::error('NOT_FOUND','العنصر غير موجود أو غير منشور.',[],404);
+        }
 
-        // تحقق الجمهور: إن كان للأصل جمهور محدد يجب أن يطابق تخصص المستخدم
-        $user = auth()->user();
-        if ($asset->audiences?->count()) {
-            $majorId = $user?->major_id;
-            $allowed = $majorId ? DB::table('asset_audiences')->where('asset_id',$asset->id)->where('major_id',$majorId)->exists() : false;
-            if (!$allowed) return ApiResponse::error('FORBIDDEN','غير مصرح بعرض هذا المحتوى.',[],403);
+        // إن كان للأصل جمهور عام مقيّد، تحقّق المطابقة
+        if ($asset->publicMajors->isNotEmpty()) {
+            $user = auth()->user();
+            // يسمح العميل بتمرير public_major_id كفلتر (مثلاً تطبيق جوّال يحدد اهتمام المستخدم)
+            $publicMajorId = (int) request()->query('public_major_id', 0);
+
+            // استنتج من المستخدم إن لم يُمرّر فلتر مباشر
+            if (! $publicMajorId && $user && $user->major && $user->major->public_major_id) {
+                $publicMajorId = (int) $user->major->public_major_id;
+            }
+
+            $allowed = $publicMajorId
+                ? $asset->publicMajors->contains('id', $publicMajorId)
+                : false;
+
+            if (! $allowed) {
+                return ApiResponse::error('FORBIDDEN','غير مصرح بعرض هذا المحتوى.',[],403);
+            }
         }
 
         return ApiResponse::ok(new AssetResource($asset));

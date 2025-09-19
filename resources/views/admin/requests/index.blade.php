@@ -83,7 +83,7 @@
     </table>
   </div>
   <div class="card-footer">
-    {{ $requests->withQueryString()->links() }}
+    {{ $requests->withQueryString()->links('vendor.pagination.bootstrap-custom') }}
   </div>
 </div>
 @endsection

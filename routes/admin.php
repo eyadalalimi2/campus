@@ -30,6 +30,8 @@ use App\Http\Controllers\Admin\PlanController;
 use App\Http\Controllers\Admin\PlanFeatureController;
 use App\Http\Controllers\Admin\ActivationCodesController;
 use App\Http\Controllers\Admin\ActivationCodeBatchesController;
+use App\Http\Controllers\Admin\PublicCollegeController;
+use App\Http\Controllers\Admin\PublicMajorController;
 
 /*
 |--------------------------------------------------------------------------
@@ -61,7 +63,8 @@ Route::middleware('auth:admin')->group(function () {
     Route::resource('assets',        AssetController::class)->except(['show']);
     Route::resource('blogs',         BlogController::class)->except(['show']);
     Route::resource('subscriptions', SubscriptionController::class)->except(['show']);
-
+    Route::resource('public-colleges', PublicCollegeController::class)->except(['show']);
+    Route::resource('public-majors', PublicMajorController::class)->except(['show']);
     // الموارد المضافة: الدول/التخصصات/البرامج/التقويمات/الفصول
     Route::resource('countries',          CountryController::class)->except(['show']);
     Route::resource('disciplines',        DisciplineController::class)->except(['show']);
@@ -149,10 +152,10 @@ Route::middleware('auth:admin')->group(function () {
     Route::delete('complaints/{complaint}', [ComplaintController::class, 'destroy'])->name('complaints.destroy');
     // Notifications (لوحة إرسال/إدارة إشعارات)
     // CRUD
-    Route::get   ('/notifications',            [AdminNotificationsController::class, 'index'])->name('notifications.index');
-    Route::get   ('/notifications/create',     [AdminNotificationsController::class, 'create'])->name('notifications.create');
-    Route::post  ('/notifications',            [AdminNotificationsController::class, 'store'])->name('notifications.store');
-    Route::get   ('/notifications/{id}',       [AdminNotificationsController::class, 'show'])->name('notifications.show');
+    Route::get('/notifications',            [AdminNotificationsController::class, 'index'])->name('notifications.index');
+    Route::get('/notifications/create',     [AdminNotificationsController::class, 'create'])->name('notifications.create');
+    Route::post('/notifications',            [AdminNotificationsController::class, 'store'])->name('notifications.store');
+    Route::get('/notifications/{id}',       [AdminNotificationsController::class, 'show'])->name('notifications.show');
     Route::delete('/notifications/{id}',       [AdminNotificationsController::class, 'destroy'])->name('notifications.destroy');
 
     // AJAX options for cascading selects

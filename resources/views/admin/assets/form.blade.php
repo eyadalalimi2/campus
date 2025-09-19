@@ -1,21 +1,54 @@
 @php
-  $isEdit = isset($asset);
-  $cat    = old('category', $asset->category ?? 'file');
+  $isEdit    = isset($asset);
+  $cat       = old('category', $asset->category ?? 'file');
   $statusVal = old('status', $asset->status ?? 'draft');
 
-  // جمهور الأصل (تخصّصات)
-  $selectedMajors = old(
-    'audience_major_ids',
+  // تحضير قائمة "التخصصات العامة" (Public Majors)
+  $publicMajors = $publicMajors
+      ?? \App\Models\PublicMajor::with('publicCollege')->active()->orderBy('name')->get();
+
+  // المختارات الحالية للتخصصات العامة
+  $selectedPublicMajors = collect(old(
+    'public_major_ids',
     $isEdit
-      ? ($asset->relationLoaded('audienceMajors')
-          ? $asset->audienceMajors->pluck('id')->all()
-          : \App\Models\Major::select('majors.id')
-              ->join('asset_audiences as aa','aa.major_id','=','majors.id')
-              ->where('aa.asset_id',$asset->id)
-              ->pluck('majors.id')->all()
+      ? ($asset->relationLoaded('publicMajors')
+          ? $asset->publicMajors->pluck('id')->all()
+          : \App\Models\PublicMajor::select('public_majors.id')
+              ->join('asset_public_major as apm','apm.public_major_id','=','public_majors.id')
+              ->where('apm.asset_id', $asset->id)
+              ->pluck('public_majors.id')->all()
         )
       : []
+  ))->map(fn($v)=> (int)$v)->all();
+
+  // التخصص الرئيسي (Primary)
+  $currentPrimaryId = (int) old(
+    'primary_public_major_id',
+    $isEdit
+      ? (optional(
+            $asset->relationLoaded('publicMajors')
+              ? $asset->publicMajors->firstWhere('pivot.is_primary', 1)
+              : \App\Models\PublicMajor::select('public_majors.*','apm.is_primary')
+                  ->join('asset_public_major as apm','apm.public_major_id','=','public_majors.id')
+                  ->where('apm.asset_id', $asset->id)
+                  ->where('apm.is_primary', 1)
+                  ->first()
+        )?->id ?? 0)
+      : 0
   );
+
+  // أولوية العرض (priority) لكل تخصص عام
+  $priorities = old('public_major_priorities', (function() use ($isEdit, $asset){
+      if (! $isEdit) return [];
+      if ($asset->relationLoaded('publicMajors')) {
+          return $asset->publicMajors->mapWithKeys(fn($m)=> [$m->id => (int)($m->pivot->priority ?? 0)])->all();
+      }
+      return \App\Models\PublicMajor::select('public_majors.id','apm.priority')
+          ->join('asset_public_major as apm','apm.public_major_id','=','public_majors.id')
+          ->where('apm.asset_id', $asset->id)
+          ->get()
+          ->mapWithKeys(fn($r)=> [$r->id => (int)($r->priority ?? 0)])->all();
+  })());
 @endphp
 
 <div class="row g-3">
@@ -130,19 +163,58 @@
     </select>
   </div>
 
-  {{-- جمهور الأصل (تخصّصات) --}}
+  {{-- الجمهور العام (تخصصات عامة) --}}
   <div class="col-12">
-    <label class="form-label">الجمهور المستهدف (التخصّصات)</label>
-    <select name="audience_major_ids[]" id="audience_major_ids" class="form-select" multiple size="8">
-      @foreach(\App\Models\Major::with('college')->orderBy('name')->get() as $maj)
-        <option value="{{ $maj->id }}" @selected(in_array($maj->id, $selectedMajors))>
-          {{ $maj->college?->name }} — {{ $maj->name }}
-        </option>
+    <label class="form-label">التخصصات العامة (يمكن اختيار أكثر من واحد)</label>
+    <select name="public_major_ids[]" id="public_major_ids" class="form-select" multiple size="8">
+      @foreach($publicMajors->groupBy(fn($m) => $m->publicCollege?->name ?? 'بدون كلية') as $collegeName => $majors)
+        <optgroup label="{{ $collegeName }}">
+          @foreach($majors as $m)
+            <option value="{{ $m->id }}" @selected(in_array($m->id, $selectedPublicMajors))>
+              {{ $m->name }}
+            </option>
+          @endforeach
+        </optgroup>
       @endforeach
     </select>
     <div class="form-text">
-      اتركه فارغًا ليكون الأصل عامًا لكل التخصّصات. إن اخترت واحدًا أو أكثر، سيظهر فقط لطلاب تلك التخصّصات.
+      اتركه فارغًا ليكون الأصل عامًا للجميع. عند اختيار تخصصات عامة، سيظهر فقط لمن ينتمي إليها.
     </div>
+    @error('public_major_ids')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+    @error('public_major_ids.*')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+  </div>
+
+  {{-- التخصص الرئيسي (Primary) --}}
+  <div class="col-md-6">
+    <label class="form-label">التخصص الرئيسي (Primary)</label>
+    <select name="primary_public_major_id" id="primary_public_major_id" class="form-select">
+      <option value="">— لا شيء —</option>
+      @php $selectedIds = collect($selectedPublicMajors); @endphp
+      @foreach($publicMajors as $m)
+        @if($selectedIds->contains($m->id))
+          <option value="{{ $m->id }}" @selected($currentPrimaryId === (int)$m->id)>{{ $m->name }}</option>
+        @endif
+      @endforeach
+    </select>
+    <div class="form-text">اختياري؛ يحدد التصنيف الرئيسي لعرض البطاقة.</div>
+    @error('primary_public_major_id')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+  </div>
+
+  {{-- الأولوية (Priority) --}}
+  <div class="col-12">
+    <label class="form-label">الأولوية (Priority) لكل تخصص عام</label>
+    <div class="row g-2">
+      @foreach($publicMajors as $m)
+        @php $val = (int)($priorities[$m->id] ?? 0); @endphp
+        <div class="col-md-6 d-flex align-items-center gap-2">
+          <span class="text-muted flex-grow-1">
+            {{ $m->publicCollege?->name }} — {{ $m->name }}
+          </span>
+          <input type="number" name="public_major_priorities[{{ $m->id }}]" class="form-control" style="max-width:120px" value="{{ $val }}">
+        </div>
+      @endforeach
+    </div>
+    <div class="form-text">استخدم الأرقام لتحديد ترتيب العرض داخل الأصل.</div>
   </div>
 
   {{-- YouTube --}}
@@ -186,6 +258,8 @@
   const $dev   = document.getElementById('device_id');
   const $file  = document.getElementById('file_input');
   const $yt    = document.getElementById('video_url');
+  const $pmSel = document.getElementById('public_major_ids');
+  const $primarySel = document.getElementById('primary_public_major_id');
 
   function toggleCategory(){
     const c = $cat.value;
@@ -229,15 +303,29 @@
     });
   }
 
+  // تحديث خيارات "Primary" لتعرض فقط المختارة في قائمة التخصصات العامة
+  function syncPrimaryOptions(){
+    if(!$pmSel || !$primarySel) return;
+    const selected = new Set([...$pmSel.options].filter(o=>o.selected).map(o=>o.value));
+    [...$primarySel.options].forEach(o=>{
+      if (!o.value) return; // تخطّي "لا شيء"
+      const show = selected.has(o.value);
+      o.hidden = !show;
+      if(!show && o.selected) o.selected = false;
+    });
+  }
+
   // init
   toggleCategory();
   filterDevicesByMaterial();
   filterProgramsByDiscipline();
+  syncPrimaryOptions();
 
   // events
   $cat?.addEventListener('change', toggleCategory);
   $mat?.addEventListener('change', filterDevicesByMaterial);
   $disc?.addEventListener('change', filterProgramsByDiscipline);
+  $pmSel?.addEventListener('change', syncPrimaryOptions);
 })();
 </script>
 @endpush

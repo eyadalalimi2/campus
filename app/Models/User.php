@@ -9,6 +9,7 @@ use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Hash;
+use App\Models\Subscription; // ✅ تصحيح الاستيراد
 
 class User extends Authenticatable
 {
@@ -51,6 +52,9 @@ class User extends Authenticatable
 
     protected $appends = [
         'has_active_subscription',
+        // ملاحظة: لم نُضف public_major_id إلى $appends لتجنّب تغييرات API غير متوقعة.
+        // يمكنك إضافته هنا إذا رغبت في إظهاره صراحة في السيريالايز:
+        // 'public_major_id',
     ];
 
     /* ============================
@@ -111,6 +115,17 @@ class User extends Authenticatable
         return $this->subscriptions()->active()->exists();
     }
 
+    /**
+     * public_major_id (محسوب):
+     * يُستنتج من Major المرتبط بالمستخدم عبر الحقل majors.public_major_id.
+     * يعيد null إذا لم يرتبط المستخدم بتخصص أو لم يُضبط المابّينغ.
+     */
+    public function getPublicMajorIdAttribute(): ?int
+    {
+        // يتطلب وجود عمود public_major_id في جدول majors
+        return $this->major?->public_major_id ? (int)$this->major->public_major_id : null;
+    }
+
     /* ============================
      | Scopes (فلترة جاهزة)
      |============================*/
@@ -132,6 +147,18 @@ class User extends Authenticatable
     public function scopeForMajor($q, ?int $majorId)
     {
         return $majorId ? $q->where('major_id', $majorId) : $q;
+    }
+
+    /**
+     * فلترة بحسب التخصص العام عبر المابّينغ (users -> majors.public_major_id)
+     * لا تحتاج أي أعمدة إضافية على users.
+     */
+    public function scopeForPublicMajor($q, ?int $publicMajorId)
+    {
+        if (! $publicMajorId) return $q;
+        return $q->whereHas('major', function ($mq) use ($publicMajorId) {
+            $mq->where('public_major_id', (int)$publicMajorId);
+        });
     }
 
     public function scopeForCountry($q, ?int $countryId)
@@ -158,7 +185,8 @@ class User extends Authenticatable
 
     /**
      * فلترة موحّدة للاستخدام في الكنترولرز:
-     * يدعم: q, status, university_id, college_id, major_id, country_id, level, has_active_subscription
+     * يدعم: q, status, university_id, college_id, major_id, country_id, level,
+     *       has_active_subscription, public_major_id (اختياري).
      */
     public function scopeFilter($q, array $f = [])
     {
@@ -169,7 +197,9 @@ class User extends Authenticatable
             ->when(!empty($f['college_id']),      fn($qq) => $qq->forCollege((int)$f['college_id']))
             ->when(!empty($f['major_id']),        fn($qq) => $qq->forMajor((int)$f['major_id']))
             ->when(!empty($f['country_id']),      fn($qq) => $qq->forCountry((int)$f['country_id']))
-            ->when(isset($f['level']) && $f['level'] !== '', fn($qq) => $qq->level($f['level']));
+            ->when(isset($f['level']) && $f['level'] !== '', fn($qq) => $qq->level($f['level']))
+            // ✅ فلترة اختيارية بالتخصص العام عبر المابّينغ
+            ->when(!empty($f['public_major_id']), fn($qq) => $qq->forPublicMajor((int)$f['public_major_id']));
 
         // تصفية حسب وجود اشتراك نشط (اختياري)
         if (isset($f['has_active_subscription'])) {

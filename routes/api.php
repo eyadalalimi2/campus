@@ -6,7 +6,7 @@ use App\Http\Controllers\Api\V1\Auth\AuthController;
 use App\Http\Controllers\Api\V1\Me\ProfileController;
 use App\Http\Controllers\Api\V1\Me\SecurityController;
 use App\Http\Controllers\Api\V1\Me\VisibilityController;
-
+use App\Http\Controllers\Api\V1\Structure\PublicTaxonomyController;
 use App\Http\Controllers\Api\V1\Structure\CountriesController;
 use App\Http\Controllers\Api\V1\Structure\UniversitiesController;
 use App\Http\Controllers\Api\V1\Structure\CollegesController;
@@ -105,7 +105,7 @@ Route::prefix('v1')->group(function () {
     /* =========================
      * مسارات عامة للأصول (Assets) — مرئية للجميع
      * ========================= */
-
+    Route::get('public/taxonomy', [PublicTaxonomyController::class, 'index']);
     Route::get('assets', [AssetsController::class, 'index']);
     // تغذية الأصول العامة (يوتيوب/ملفات/مراجع...) مع استهداف الجمهور حسب التخصص إذا توفّر
 

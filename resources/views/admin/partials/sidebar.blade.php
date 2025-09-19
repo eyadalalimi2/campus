@@ -46,6 +46,25 @@
             </a>
         </div>
 
+        {{-- التصنيف العام (كليات/تخصصات عامة مستقلة) --}}
+        <div class="section-title mt-3">
+            <i class="bi bi-ui-checks-grid"></i> التصنيف العام
+        </div>
+        <div class="nav-item">
+            <a href="{{ route('admin.public-colleges.index') }}"
+               class="nav-link {{ request()->is('admin/public-colleges*') ? 'active' : '' }}">
+                <i class="bi bi-bank2"></i>
+                الكليات العامة
+            </a>
+        </div>
+        <div class="nav-item">
+            <a href="{{ route('admin.public-majors.index') }}"
+               class="nav-link {{ request()->is('admin/public-majors*') ? 'active' : '' }}">
+                <i class="bi bi-diagram-3-fill"></i>
+                التخصصات العامة
+            </a>
+        </div>
+
         {{-- الإدارة الأكاديمية --}}
         <div class="section-title mt-3">
             <i class="bi bi-mortarboard"></i> الإدارة الأكاديمية
@@ -115,7 +134,7 @@
         </div>
 
         {{-- البنرات والشكاوى والإشعارات والطلبات --}}
-            {{-- ...existing code... --}}
+        {{-- ...existing code... --}}
 
         {{-- إدارة الطلاب --}}
         <div class="nav-item">
@@ -173,7 +192,7 @@
         </div>
 
         {{-- إدارة الاستيراد والثيمات --}}
-            {{-- ...existing code... --}}
+        {{-- ...existing code... --}}
 
     </nav>
 </aside>

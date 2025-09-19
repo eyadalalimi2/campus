@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\PublicMajor;
+use App\Models\AssetPublicMajor;
 
 class Asset extends Model
 {
@@ -268,5 +270,32 @@ class Asset extends Model
         $this->published_at = now();
         $this->published_by_admin_id = $adminId;
         $this->save();
+    }
+    public function publicMajors()
+    {
+        return $this->belongsToMany(PublicMajor::class, 'asset_public_major', 'asset_id', 'public_major_id')
+            ->withPivot(['is_primary', 'priority'])
+            ->using(AssetPublicMajor::class)
+            ->orderByPivot('priority');
+    }
+
+    public function getPrimaryPublicMajorAttribute(): ?PublicMajor
+    {
+        if (! array_key_exists('publicMajors', $this->relations)) {
+            $this->loadMissing('publicMajors');
+        }
+        return $this->publicMajors->firstWhere('pivot.is_primary', 1);
+    }
+
+    // (اختياري) مُجال نطاق للاستعلام على مطابقة جمهور عام
+    public function scopeMatchesPublicAudience($q, ?int $publicMajorId = null)
+    {
+        return $q->where(function ($w) use ($publicMajorId) {
+            // عالمي (لا جمهور بأي نوع)
+            $w->whereDoesntHave('publicMajors');
+            if ($publicMajorId) {
+                $w->orWhereHas('publicMajors', fn($qq) => $qq->where('public_majors.id', $publicMajorId));
+            }
+        });
     }
 }

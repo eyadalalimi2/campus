@@ -121,7 +121,7 @@
     </table>
   </div>
   <div class="card-footer">
-    {{ $notifications->links() }}
+    {{ $notifications->links('vendor.pagination.bootstrap-custom') }}
   </div>
 </div>
 @endsection
