@@ -10,6 +10,8 @@ use App\Models\University;
 use App\Models\College;
 use App\Models\Major;
 use App\Models\Country;
+use App\Models\PublicCollege;
+use App\Models\PublicMajor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -27,12 +29,12 @@ class UserController extends Controller
         if ($s = $r->string('q')->toString()) {
             $q->where(function ($w) use ($s) {
                 $w->where('name', 'like', "%{$s}%")
-                    ->orWhere('email', 'like', "%{$s}%")
-                    ->orWhere('phone', 'like', "%{$s}%")
-                    ->orWhere('student_number', 'like', "%{$s}%")
-                    ->orWhereHas('country', function ($cw) use ($s) {
-                        $cw->where('name_ar', 'like', "%{$s}%");
-                    });
+                  ->orWhere('email', 'like', "%{$s}%")
+                  ->orWhere('phone', 'like', "%{$s}%")
+                  ->orWhere('student_number', 'like', "%{$s}%")
+                  ->orWhereHas('country', function ($cw) use ($s) {
+                      $cw->where('name_ar', 'like', "%{$s}%");
+                  });
             });
         }
 
@@ -48,22 +50,36 @@ class UserController extends Controller
         $users = $q->paginate(15)->withQueryString();
 
         // مصادر القوائم
-        $universities = University::orderBy('name')->get();
-        $colleges     = College::orderBy('name')->get();
-        $majors       = Major::orderBy('name')->get();
-        $countries    = Country::orderBy('name_ar')->get();
+        $universities  = University::orderBy('name')->get();
+        $colleges      = College::orderBy('name')->get();
+        $majors        = Major::orderBy('name')->get();
+        $countries     = Country::orderBy('name_ar')->get();
 
-        return view('admin.users.index', compact('users', 'universities', 'colleges', 'majors', 'countries'));
+        // التصنيف العام (للاستخدام في الفلترة أو العرض إن رغبت)
+        $publicColleges = PublicCollege::active()->orderBy('name')->get();
+        $publicMajors   = PublicMajor::active()->with('publicCollege')->orderBy('name')->get();
+
+        return view('admin.users.index', compact(
+            'users', 'universities', 'colleges', 'majors', 'countries',
+            'publicColleges', 'publicMajors'
+        ));
     }
 
     public function create()
     {
-        $universities = University::orderBy('name')->get();
-        $colleges     = College::orderBy('name')->get();
-        $majors       = Major::orderBy('name')->get();
-        $countries    = Country::orderBy('name_ar')->get();
+        $universities  = University::orderBy('name')->get();
+        $colleges      = College::orderBy('name')->get();
+        $majors        = Major::orderBy('name')->get();
+        $countries     = Country::orderBy('name_ar')->get();
 
-        return view('admin.users.create', compact('universities', 'colleges', 'majors', 'countries'));
+        // الكليات/التخصصات العامة لإظهارها عند "غير مرتبط"
+        $publicColleges = PublicCollege::active()->orderBy('name')->get();
+        $publicMajors   = PublicMajor::active()->with('publicCollege')->orderBy('name')->get();
+
+        return view('admin.users.create', compact(
+            'universities', 'colleges', 'majors', 'countries',
+            'publicColleges', 'publicMajors'
+        ));
     }
 
     public function store(StoreUserRequest $req)
@@ -72,6 +88,28 @@ class UserController extends Controller
 
         // كلمة المرور مطلوبة في Store
         $data['password'] = Hash::make($data['password']);
+
+        // منطق “مرتبط/غير مرتبط بجامعة”
+        $linked = ($req->input('is_linked_to_university') === '1');
+
+        if ($linked) {
+            // مرتبط: نُبقي الحقول المؤسسية كما هي (حسب التحقق في FormRequest)
+            // يمكن جعل student_number/level مطلوبة/اختيارية وفق سياستك.
+            // الحقول العامة تُتجاهل عند التخزين (لا عمود للمستخدم).
+            unset($data['public_college_id'], $data['public_major_id']);
+        } else {
+            // غير مرتبط: نظّف الروابط المؤسسية + الحقول الأكاديمية
+            $data['university_id']  = null;
+            $data['college_id']     = null;
+            $data['major_id']       = null;
+            $data['student_number'] = null;
+            $data['level']          = null;
+
+            // لا نحفظ public_college_id / public_major_id في users (لا أعمدة لها).
+            // تُستخدم هذه القيم فقط لاختيار التصنيف العام في الواجهة،
+            // ويمكن تمرير public_major_id إلى واجهات العرض/الـAPI عند الحاجة.
+            unset($data['public_college_id'], $data['public_major_id']);
+        }
 
         // country_id: إن لم يُرسل، استخدم اليمن كافتراضي (إن وجد)
         if (empty($data['country_id'])) {
@@ -94,12 +132,19 @@ class UserController extends Controller
     {
         $user->load(['country', 'university', 'college', 'major']);
 
-        $universities = University::orderBy('name')->get();
-        $colleges     = College::orderBy('name')->get();
-        $majors       = Major::orderBy('name')->get();
-        $countries    = Country::orderBy('name_ar')->get();
+        $universities  = University::orderBy('name')->get();
+        $colleges      = College::orderBy('name')->get();
+        $majors        = Major::orderBy('name')->get();
+        $countries     = Country::orderBy('name_ar')->get();
 
-        return view('admin.users.edit', compact('user', 'universities', 'colleges', 'majors', 'countries'));
+        // الكليات/التخصصات العامة لإظهارها عند "غير مرتبط"
+        $publicColleges = PublicCollege::active()->orderBy('name')->get();
+        $publicMajors   = PublicMajor::active()->with('publicCollege')->orderBy('name')->get();
+
+        return view('admin.users.edit', compact(
+            'user', 'universities', 'colleges', 'majors', 'countries',
+            'publicColleges', 'publicMajors'
+        ));
     }
 
     public function update(UpdateUserRequest $req, User $user)
@@ -111,6 +156,22 @@ class UserController extends Controller
             $data['password'] = Hash::make($data['password']);
         } else {
             unset($data['password']);
+        }
+
+        // منطق “مرتبط/غير مرتبط بجامعة”
+        $linked = ($req->input('is_linked_to_university') === '1');
+
+        if ($linked) {
+            // مرتبط: نُبقي المؤسسي ونُهمل العام
+            unset($data['public_college_id'], $data['public_major_id']);
+        } else {
+            // غير مرتبط: ننظّف المؤسسي + الحقول الأكاديمية
+            $data['university_id']  = null;
+            $data['college_id']     = null;
+            $data['major_id']       = null;
+            $data['student_number'] = null;
+            $data['level']          = null;
+            unset($data['public_college_id'], $data['public_major_id']);
         }
 
         // country_id افتراضي لليمن إن لم يُرسل

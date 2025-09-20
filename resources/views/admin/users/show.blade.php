@@ -16,7 +16,7 @@
       <div class="card-body text-center">
         @php
           $photoUrl = $user->profile_photo_url
-            ?? ($user->profile_photo_path ? asset('storage/'.$user->profile_photo_path) : 'https://via.placeholder.com/160x160?text=Profile');
+            ?? ($user->profile_photo_path ? asset('storage/'.$user->profile_photo_path) : 'https://obdcodehub.com/storage/images/icon.png');
         @endphp
         <img src="{{ $photoUrl }}" class="rounded-circle mb-3" style="width:160px;height:160px;object-fit:cover" alt="Profile">
         <h5 class="mb-1">{{ $user->name }}</h5>
