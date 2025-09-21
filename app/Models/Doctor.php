@@ -17,6 +17,7 @@ class Doctor extends Model
         'password',
         'type',        // university | independent
         'university_id',
+        'branch_id',
         'college_id',
         'major_id',
         'degree',
@@ -30,6 +31,11 @@ class Doctor extends Model
         'is_active' => 'boolean',
         'degree_year' => 'integer',
     ];
+    public function branch()
+    {
+        return $this->belongsTo(UniversityBranch::class);
+    }
+
 
     public function university(): BelongsTo
     {
@@ -59,6 +65,6 @@ class Doctor extends Model
      */
     public function getPhotoUrlAttribute(): ?string
     {
-        return $this->photo_path ? asset('storage/'.$this->photo_path) : null;
+        return $this->photo_path ? asset('storage/' . $this->photo_path) : null;
     }
 }

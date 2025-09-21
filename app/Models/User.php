@@ -32,6 +32,7 @@ class User extends Authenticatable
         'country_id',          // إلزامي في DB
         'profile_photo_path',
         'university_id',
+        'branch_id',
         'college_id',
         'major_id',
         'level',
@@ -60,6 +61,11 @@ class User extends Authenticatable
     /* ============================
      | علاقات
      |============================*/
+    public function branch()
+    {
+        return $this->belongsTo(UniversityBranch::class);
+    }
+
     public function country(): BelongsTo
     {
         return $this->belongsTo(Country::class);
@@ -176,10 +182,10 @@ class User extends Authenticatable
         if (!$term) return $q;
         $term = trim($term);
         return $q->where(function ($w) use ($term) {
-            $w->where('name', 'like', '%'.$term.'%')
-              ->orWhere('email', 'like', '%'.$term.'%')
-              ->orWhere('phone', 'like', '%'.$term.'%')
-              ->orWhere('student_number', 'like', '%'.$term.'%');
+            $w->where('name', 'like', '%' . $term . '%')
+                ->orWhere('email', 'like', '%' . $term . '%')
+                ->orWhere('phone', 'like', '%' . $term . '%')
+                ->orWhere('student_number', 'like', '%' . $term . '%');
         });
     }
 
@@ -218,7 +224,7 @@ class User extends Authenticatable
     public function scopeOrderDefault($q)
     {
         return $q->orderByRaw("FIELD(status, 'active','suspended','graduated')")
-                 ->orderBy('name');
+            ->orderBy('name');
     }
 
     /* ============================

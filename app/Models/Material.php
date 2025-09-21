@@ -21,6 +21,7 @@ class Material extends Model
         'name',
         'scope',         // global | university
         'university_id',
+        'branch_id',
         'college_id',
         'major_id',
         'level',
@@ -40,6 +41,10 @@ class Material extends Model
     public function university(): BelongsTo
     {
         return $this->belongsTo(University::class);
+    }
+    public function branch()
+    {
+        return $this->belongsTo(UniversityBranch::class);
     }
 
     public function college(): BelongsTo
@@ -144,29 +149,46 @@ class Material extends Model
      * - إن كانت Global: تظهر للجميع.
      * - إن كانت University: يجب مطابقة الجامعة، ثم (الكلية NULL أو كلية الطالب)، ثم (التخصص NULL أو تخصص الطالب).
      */
-    public function scopeMatchAudience($q, ?int $universityId, ?int $collegeId = null, ?int $majorId = null)
+    public function scopeMatchAudience($q, ?int $universityId, ?int $branchId = null, ?int $collegeId = null, ?int $majorId = null)
     {
-        return $q->where(function ($w) use ($universityId, $collegeId, $majorId) {
-            // Global
+        return $q->where(function ($w) use ($universityId, $branchId, $collegeId, $majorId) {
+            // محتوى عام (global)
             $w->where('scope', self::SCOPE_GLOBAL);
 
-            // University-scoped
+            // محتوى على مستوى الجامعة
             if ($universityId) {
-                $w->orWhere(function ($wu) use ($universityId, $collegeId, $majorId) {
+                $w->orWhere(function ($wu) use ($universityId, $branchId, $collegeId, $majorId) {
                     $wu->where('scope', self::SCOPE_UNIVERSITY)
                         ->where('university_id', $universityId)
+
+                        // فلترة الفرع: يسمح بقيمة NULL أو فرع الطالب
+                        ->where(function ($wb) use ($branchId) {
+                            $wb->whereNull('branch_id');
+                            if ($branchId) {
+                                $wb->orWhere('branch_id', $branchId);
+                            }
+                        })
+
+                        // فلترة الكلية
                         ->where(function ($wc) use ($collegeId) {
                             $wc->whereNull('college_id');
-                            if ($collegeId) $wc->orWhere('college_id', $collegeId);
+                            if ($collegeId) {
+                                $wc->orWhere('college_id', $collegeId);
+                            }
                         })
+
+                        // فلترة التخصص
                         ->where(function ($wm) use ($majorId) {
                             $wm->whereNull('major_id');
-                            if ($majorId) $wm->orWhere('major_id', $majorId);
+                            if ($majorId) {
+                                $wm->orWhere('major_id', $majorId);
+                            }
                         });
                 });
             }
         });
     }
+
 
     /**
      * فلترة موحّدة للاستخدام في الكنترولرز:
