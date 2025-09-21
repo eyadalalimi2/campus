@@ -36,6 +36,14 @@ class University extends Model
     {
         return $this->belongsTo(Country::class);
     }
+    /**
+     * الفروع التابعة للجامعة.
+     */
+
+    public function branches()
+    {
+        return $this->hasMany(UniversityBranch::class);
+    }
 
     /**
      * الكليات التابعة للجامعة.

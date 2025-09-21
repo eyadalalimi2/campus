@@ -97,7 +97,7 @@ class Content extends Model
     /** رابط الملف المخزّن */
     public function getFileUrlAttribute(): ?string
     {
-        return $this->file_path ? asset('storage/'.$this->file_path) : null;
+        return $this->file_path ? asset('storage/' . $this->file_path) : null;
     }
 
     /** هل هو منشور ونشط */
@@ -150,8 +150,8 @@ class Content extends Model
     {
         if (!$qstr) return $q;
         return $q->where(function ($w) use ($qstr) {
-            $w->where('title', 'like', '%'.$qstr.'%')
-              ->orWhere('description', 'like', '%'.$qstr.'%');
+            $w->where('title', 'like', '%' . $qstr . '%')
+                ->orWhere('description', 'like', '%' . $qstr . '%');
         });
     }
 
@@ -167,30 +167,32 @@ class Content extends Model
      * مطابقة جمهور الطالب: نفس الجامعة + (كلية NULL أو كلية الطالب) + (تخصص NULL أو تخصص الطالب).
      * مناسبة لتغذية التطبيق للطالب.
      */
-    public function scopeMatchAudience($q, int $universityId, ?int $collegeId = null, ?int $majorId = null)
+    public function scopeMatchAudience($query, $user)
     {
-        $q->where('university_id', $universityId);
+        $query->where('university_id', $user->university_id);
 
-        // college: إما NULL أو يساوي كلية الطالب
-        if ($collegeId) {
-            $q->where(function ($w) use ($collegeId) {
-                $w->whereNull('college_id')->orWhere('college_id', $collegeId);
+        if ($user->branch_id) {
+            $query->where(function ($q) use ($user) {
+                $q->whereNull('branch_id')
+                    ->orWhere('branch_id', $user->branch_id);
             });
-        } else {
-            $q->whereNull('college_id');
         }
 
-        // major: إما NULL أو يساوي تخصص الطالب
-        if ($majorId) {
-            $q->where(function ($w) use ($majorId) {
-                $w->whereNull('major_id')->orWhere('major_id', $majorId);
+        if ($user->college_id) {
+            $query->where(function ($q) use ($user) {
+                $q->whereNull('college_id')
+                    ->orWhere('college_id', $user->college_id);
             });
-        } else {
-            $q->whereNull('major_id');
         }
 
-        return $q;
+        if ($user->major_id) {
+            $query->where(function ($q) use ($user) {
+                $q->whereNull('major_id')
+                    ->orWhere('major_id', $user->major_id);
+            });
+        }
     }
+
 
     /**
      * فلترة موحّدة لاستخدامها في الـ Controllers:
@@ -215,8 +217,8 @@ class Content extends Model
     public function scopeOrderForFeed($q)
     {
         return $q->orderByDesc('status')
-                 ->orderByDesc('published_at')
-                 ->orderByDesc('created_at');
+            ->orderByDesc('published_at')
+            ->orderByDesc('created_at');
     }
 
     /* ============================

@@ -12,7 +12,7 @@ class College extends Model
     use HasFactory;
 
     protected $fillable = [
-        'university_id',
+        'branch_id',
         'name',
         'is_active',
     ];
@@ -21,9 +21,14 @@ class College extends Model
         'is_active' => 'boolean',
     ];
 
-    public function university(): BelongsTo
+    public function branch()
     {
-        return $this->belongsTo(University::class);
+        return $this->belongsTo(UniversityBranch::class, 'branch_id');
+    }
+
+    public function university()
+    {
+        return $this->branch->university();
     }
 
     public function majors(): HasMany
