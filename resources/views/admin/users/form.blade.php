@@ -8,7 +8,7 @@
 
   // مصادر السلاسل (مع بدائل في حال عدم تمريرها من الـ Controller)
   $universities = $universities ?? \App\Models\University::orderBy('name')->get();
-  $branches     = $branches     ?? \App\Models\UniversityBranch::with('university:id,name')->orderBy('name')->get();  {{-- ✅ جديد --}}
+  $branches     = $branches     ?? \App\Models\UniversityBranch::with('university:id,name')->orderBy('name')->get();
   $colleges     = $colleges     ?? \App\Models\College::with('university:id,name')->orderBy('name')->get();
   $majors       = $majors       ?? \App\Models\Major::with('college:id,name')->orderBy('name')->get();
   $countries    = $countries    ?? \App\Models\Country::orderBy('name_ar')->get();
@@ -27,17 +27,22 @@
     <label class="form-label">الاسم</label>
     <input type="text" name="name" class="form-control" required value="{{ old('name', $user->name ?? '') }}">
   </div>
+  <div class="col-md-6">
+    <label class="form-label">رقم الهاتف</label>
+  <input type="tel" name="phone" class="form-control" value="{{ old('phone', $user->phone ?? '') }}" autocomplete="new-password" pattern="[0-9]*" inputmode="numeric">
+  </div>
 
   <div class="col-md-6">
     <label class="form-label">البريد الإلكتروني</label>
     <input type="email" name="email" class="form-control" required value="{{ old('email', $user->email ?? '') }}">
+    <div class="form-check mt-2">
+  <input class="form-check-input" type="checkbox" name="email_verified" id="email_verified" value="1" {{ old('email_verified', !empty($user) && $user->email_verified_at ? '1' : '') == '1' ? 'checked' : '' }}>
+      <label class="form-check-label" for="email_verified">تم التحقق من البريد الإلكتروني</label>
+    </div>
   </div>
 
   {{-- هاتف وصورة --}}
-  <div class="col-md-6">
-    <label class="form-label">رقم الهاتف</label>
-    <input type="text" name="phone" class="form-control" value="{{ old('phone', $user->phone ?? '') }}">
-  </div>
+  
 
   <div class="col-md-6">
     <label class="form-label">الصورة الشخصية (اختياري)</label>

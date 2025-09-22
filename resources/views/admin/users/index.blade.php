@@ -84,9 +84,7 @@
                     <th>البروفيل</th>
                     <th>أسم الطالب</th>
                     <th>رقم الهاتف</th>
-                    <th>الرقم الأكاديمي</th>
-                    <th>الجامعة / الكلية / التخصص</th>
-                    <th>المستوى</th>
+                    <th>الجامعة / الفرع / الكلية / التخصص</th>
                     <th>الجنس</th>
                     <th>الدولة</th>
                     <th>الحالة</th>
@@ -110,15 +108,19 @@
 
                         <td class="fw-semibold">{{ $u->name }}</td>
                         <td>{{ $u->phone ?: '—' }}</td>
-                        <td>{{ $u->student_number ?: '—' }}</td>
 
                         <td class="small text-muted">
-                            {{ optional($u->university)->name ?? '—' }}
-                            @if ($u->college) / {{ $u->college->name }} @endif
-                            @if ($u->major)   / {{ $u->major->name }}   @endif
+                            @if ($u->university)
+                                {{ $u->university->name }}
+                                @if ($u->branch) / {{ $u->branch->name }} @endif
+                                @if ($u->college) / {{ $u->college->name }} @endif
+                                @if ($u->major)   / {{ $u->major->name }}   @endif
+                            @else
+                                <span class="text-danger">غير مرتبط بجامعة</span>
+                                @if ($u->publicCollege) / {{ $u->publicCollege->name }} @endif
+                                @if ($u->publicMajor) / {{ $u->publicMajor->name }} @endif
+                            @endif
                         </td>
-
-                        <td>{{ $u->level ?: '—' }}</td>
 
                         <td>
                             @if ($u->gender === 'male')

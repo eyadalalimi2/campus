@@ -15,6 +15,16 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
+    public function publicCollege(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\PublicCollege::class, 'public_college_id');
+    }
+
+    public function publicMajor(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\PublicMajor::class, 'public_major_id');
+    }
+
     /** حالات المستخدم */
     public const STATUS_ACTIVE    = 'active';
     public const STATUS_SUSPENDED = 'suspended';
@@ -35,10 +45,13 @@ class User extends Authenticatable
         'branch_id',
         'college_id',
         'major_id',
+        'public_college_id',
+        'public_major_id',
         'level',
         'gender',
         'status',
         'password',
+        'email_verified_at',
     ];
 
     protected $hidden = [

@@ -44,6 +44,10 @@ class UpdateUserRequest extends FormRequest
             'college_id'    => ['nullable','exists:colleges,id'],
             'major_id'      => ['nullable','exists:majors,id'],
 
+            'public_college_id' => ['nullable','exists:public_colleges,id'],
+            'public_major_id'   => ['nullable','exists:public_majors,id'],
+            'email_verified_at' => ['nullable','date'],
+
             'level'  => ['nullable','integer','min:1'],
             'gender' => ['nullable', Rule::in(['male','female'])],
             'status' => ['nullable', Rule::in(['active','suspended','graduated'])],

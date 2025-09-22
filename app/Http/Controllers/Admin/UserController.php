@@ -51,8 +51,14 @@ class UserController extends Controller
 
         // مصادر القوائم
         $universities  = University::orderBy('name')->get();
+        $branches      = \App\Models\UniversityBranch::with('university:id,name')->orderBy('name')->get();
         $colleges      = College::orderBy('name')->get();
-        $majors        = Major::orderBy('name')->get();
+        // جلب التخصصات المرتبطة بالكلية المختارة فقط
+        if ($r->filled('college_id')) {
+            $majors = Major::where('college_id', $r->college_id)->orderBy('name')->get();
+        } else {
+            $majors = Major::orderBy('name')->get();
+        }
         $countries     = Country::orderBy('name_ar')->get();
 
         // التصنيف العام (للاستخدام في الفلترة أو العرض إن رغبت)
@@ -68,6 +74,7 @@ class UserController extends Controller
     public function create()
     {
         $universities  = University::orderBy('name')->get();
+        $branches      = \App\Models\UniversityBranch::with('university:id,name')->orderBy('name')->get();
         $colleges      = College::orderBy('name')->get();
         $majors        = Major::orderBy('name')->get();
         $countries     = Country::orderBy('name_ar')->get();
@@ -77,26 +84,25 @@ class UserController extends Controller
         $publicMajors   = PublicMajor::active()->with('publicCollege')->orderBy('name')->get();
 
         return view('admin.users.create', compact(
-            'universities', 'colleges', 'majors', 'countries',
+            'universities', 'branches', 'colleges', 'majors', 'countries',
             'publicColleges', 'publicMajors'
         ));
     }
 
     public function store(StoreUserRequest $req)
     {
-        $data = $req->validated();
+    $data = $req->validated();
 
         // كلمة المرور مطلوبة في Store
         $data['password'] = Hash::make($data['password']);
 
         // منطق “مرتبط/غير مرتبط بجامعة”
-        $linked = ($req->input('is_linked_to_university') === '1');
+    $linked = ($req->input('is_linked_to_university') === '1');
 
         if ($linked) {
             // مرتبط: نُبقي الحقول المؤسسية كما هي (حسب التحقق في FormRequest)
             // يمكن جعل student_number/level مطلوبة/اختيارية وفق سياستك.
-            // الحقول العامة تُتجاهل عند التخزين (لا عمود للمستخدم).
-            unset($data['public_college_id'], $data['public_major_id']);
+            // الحقول العامة تُحفظ إذا أرسلت.
         } else {
             // غير مرتبط: نظّف الروابط المؤسسية + الحقول الأكاديمية
             $data['university_id']  = null;
@@ -104,11 +110,7 @@ class UserController extends Controller
             $data['major_id']       = null;
             $data['student_number'] = null;
             $data['level']          = null;
-
-            // لا نحفظ public_college_id / public_major_id في users (لا أعمدة لها).
-            // تُستخدم هذه القيم فقط لاختيار التصنيف العام في الواجهة،
-            // ويمكن تمرير public_major_id إلى واجهات العرض/الـAPI عند الحاجة.
-            unset($data['public_college_id'], $data['public_major_id']);
+            // public_college_id و public_major_id تُحفظ كما أرسلت
         }
 
         // country_id: إن لم يُرسل، استخدم اليمن كافتراضي (إن وجد)
@@ -123,6 +125,8 @@ class UserController extends Controller
             $data['profile_photo_path'] = $req->file('profile_photo')->store('profiles', 'public');
         }
 
+        // تحقق البريد الإلكتروني
+        $data['email_verified_at'] = ($req->get('email_verified') == '1') ? now() : null;
         User::create($data);
 
         return redirect()->route('admin.users.index')->with('success', 'تم إضافة الطالب.');
@@ -133,6 +137,7 @@ class UserController extends Controller
         $user->load(['country', 'university', 'college', 'major']);
 
         $universities  = University::orderBy('name')->get();
+        $branches      = \App\Models\UniversityBranch::with('university:id,name')->orderBy('name')->get();
         $colleges      = College::orderBy('name')->get();
         $majors        = Major::orderBy('name')->get();
         $countries     = Country::orderBy('name_ar')->get();
@@ -142,7 +147,7 @@ class UserController extends Controller
         $publicMajors   = PublicMajor::active()->with('publicCollege')->orderBy('name')->get();
 
         return view('admin.users.edit', compact(
-            'user', 'universities', 'colleges', 'majors', 'countries',
+            'user', 'universities', 'branches', 'colleges', 'majors', 'countries',
             'publicColleges', 'publicMajors'
         ));
     }
@@ -157,13 +162,14 @@ class UserController extends Controller
         } else {
             unset($data['password']);
         }
+        // تحقق البريد الإلكتروني
+        $data['email_verified_at'] = ($req->get('email_verified') == '1') ? now() : null;
 
         // منطق “مرتبط/غير مرتبط بجامعة”
-        $linked = ($req->input('is_linked_to_university') === '1');
+    $linked = ($req->input('is_linked_to_university') === '1');
 
         if ($linked) {
-            // مرتبط: نُبقي المؤسسي ونُهمل العام
-            unset($data['public_college_id'], $data['public_major_id']);
+            // مرتبط: نُبقي المؤسسي ونُهمل العام إذا لم يُرسل
         } else {
             // غير مرتبط: ننظّف المؤسسي + الحقول الأكاديمية
             $data['university_id']  = null;
@@ -171,7 +177,7 @@ class UserController extends Controller
             $data['major_id']       = null;
             $data['student_number'] = null;
             $data['level']          = null;
-            unset($data['public_college_id'], $data['public_major_id']);
+            // public_college_id و public_major_id تُحفظ كما أرسلت
         }
 
         // country_id افتراضي لليمن إن لم يُرسل
