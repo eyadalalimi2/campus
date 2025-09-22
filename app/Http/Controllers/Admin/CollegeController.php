@@ -54,12 +54,15 @@ class CollegeController extends Controller
     {
         $universities = University::orderBy('name')->get();
 
-        // إن جاء create مع جامعة محددة مسبقًا، أعرض فروعها مباشرة
-        $branches = collect();
-        if ($r->filled('university_id')) {
-            $branches = UniversityBranch::where('university_id', (int) $r->input('university_id'))
+        // تحديد الجامعة المختارة من old أو request
+        $selectedUniversityId = $r->old('university_id') ?? $r->input('university_id');
+
+        if ($selectedUniversityId) {
+            $branches = UniversityBranch::where('university_id', (int) $selectedUniversityId)
                 ->orderBy('name')
                 ->get();
+        } else {
+            $branches = UniversityBranch::orderBy('name')->get();
         }
 
         return view('admin.colleges.create', compact('universities', 'branches'));

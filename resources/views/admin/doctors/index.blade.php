@@ -32,11 +32,11 @@
     @php $selUni = request('university_id'); @endphp
     <select name="branch_id" id="flt_branch" class="form-select" onchange="docCascadeFilters(); this.form.submit()">
       <option value="">— كل الفروع —</option>
-      @foreach(\App\Models\UniversityBranch::with('university')->orderBy('name')->get() as $b)
+      @foreach(\App\Models\UniversityBranch::orderBy('name')->get() as $b)
         <option value="{{ $b->id }}"
                 data-university="{{ $b->university_id }}"
                 @selected(request('branch_id')==$b->id)>
-          {{ $b->name }} ({{ $b->university?->name }})
+          {{ $b->name }} ({{ optional($b->university)->name ?? '—' }})
         </option>
       @endforeach
     </select>
@@ -45,11 +45,11 @@
   <div class="col-md-2">
     <select name="college_id" id="flt_college" class="form-select" onchange="docCascadeFilters(); this.form.submit()">
       <option value="">— كل الكليات —</option>
-      @foreach(\App\Models\College::with('university')->orderBy('name')->get() as $c)
+      @foreach(\App\Models\College::orderBy('name')->get() as $c)
         <option value="{{ $c->id }}"
-                data-university="{{ $c->university_id }}"
+                data-university="{{ $c->university_id ?? ($c->branch?->university_id) }}"
                 @selected(request('college_id')==$c->id)>
-          {{ $c->name }} ({{ $c->university?->name }})
+          {{ $c->name }} ({{ optional($c->university)->name ?? '—' }})
         </option>
       @endforeach
     </select>

@@ -14,7 +14,7 @@
 
   $universities = University::orderBy('name')->get();
   $branches     = UniversityBranch::with('university')->orderBy('name')->get();
-  $colleges     = College::with('university')->orderBy('name')->get();
+  $colleges     = College::orderBy('name')->get();
   $majorsAll    = Major::with('college')->orderBy('name')->get();
 @endphp
 
@@ -89,9 +89,9 @@
       <option value="">— اختر —</option>
       @foreach($colleges as $c)
         <option value="{{ $c->id }}"
-                data-university="{{ $c->university_id }}"
+                data-university="{{ $c->university_id ?? ($c->branch?->university_id) }}"
                 @selected($selCol == $c->id)>
-          {{ $c->name }} ({{ $c->university?->name }})
+          {{ $c->name }} ({{ optional($c->university)->name ?? '—' }})
         </option>
       @endforeach
     </select>

@@ -13,14 +13,14 @@ class MajorController extends Controller
 {
     public function index(Request $r)
     {
-        $q = Major::with('college.university')->orderBy('name');
+    $q = Major::with('college')->orderBy('name');
 
         if ($r->filled('college_id')) {
             $q->where('college_id', $r->input('college_id'));
         }
 
         if ($r->filled('university_id')) {
-            $q->whereHas('college', fn($w) => $w->where('university_id', $r->input('university_id')));
+            $q->whereHas('college.branch', fn($b) => $b->where('university_id', $r->input('university_id')));
         }
 
         if ($search = $r->get('q')) {
@@ -31,7 +31,7 @@ class MajorController extends Controller
 
         $universities = University::orderBy('name')->get();
         $colleges = $r->filled('university_id')
-            ? College::where('university_id', $r->input('university_id'))->orderBy('name')->get()
+            ? College::whereHas('branch', fn($b) => $b->where('university_id', $r->input('university_id')))->orderBy('name')->get()
             : College::orderBy('name')->get();
 
         return view('admin.majors.index', compact('majors', 'universities', 'colleges'));
@@ -58,7 +58,7 @@ class MajorController extends Controller
     public function edit(Major $major)
     {
         $universities = University::orderBy('name')->get();
-        $colleges = College::where('university_id', $major->college->university_id)->orderBy('name')->get();
+    $colleges = College::whereHas('branch', fn($b) => $b->where('university_id', $major->college->university_id))->orderBy('name')->get();
 
         return view('admin.majors.edit', compact('major', 'universities', 'colleges'));
     }
