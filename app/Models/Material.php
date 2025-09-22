@@ -42,7 +42,8 @@ class Material extends Model
     {
         return $this->belongsTo(University::class);
     }
-    public function branch()
+
+    public function branch(): BelongsTo
     {
         return $this->belongsTo(UniversityBranch::class);
     }
@@ -77,13 +78,12 @@ class Material extends Model
      * الفصول الأكاديمية المرتبطة بالمادة عبر جدول material_term.
      * ملاحظة: الجدول يحتوي أعمدة (material_id, term_id, created_at) بدون updated_at.
      */
-    public function terms(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function terms(): BelongsToMany
     {
         return $this->belongsToMany(AcademicTerm::class, 'material_term', 'material_id', 'term_id')
             ->using(MaterialTerm::class)   // استخدام Pivot المخصص
             ->withPivot('id');             // للوصول إلى id في الـ pivot (اختياري)
     }
-
 
     /* ============================
      | Accessors
@@ -127,6 +127,11 @@ class Material extends Model
         return $universityId ? $q->where('university_id', $universityId) : $q;
     }
 
+    public function scopeForBranch($q, ?int $branchId) // ← جديد
+    {
+        return $branchId ? $q->where('branch_id', $branchId) : $q;
+    }
+
     public function scopeForCollege($q, ?int $collegeId)
     {
         return $collegeId ? $q->where('college_id', $collegeId) : $q;
@@ -147,7 +152,7 @@ class Material extends Model
     /**
      * مطابقة جمهور الطالب:
      * - إن كانت Global: تظهر للجميع.
-     * - إن كانت University: يجب مطابقة الجامعة، ثم (الكلية NULL أو كلية الطالب)، ثم (التخصص NULL أو تخصص الطالب).
+     * - إن كانت University: يجب مطابقة الجامعة، ثم (الفرع NULL أو فرع الطالب)، ثم (الكلية NULL أو كلية الطالب)، ثم (التخصص NULL أو تخصص الطالب).
      */
     public function scopeMatchAudience($q, ?int $universityId, ?int $branchId = null, ?int $collegeId = null, ?int $majorId = null)
     {
@@ -159,50 +164,50 @@ class Material extends Model
             if ($universityId) {
                 $w->orWhere(function ($wu) use ($universityId, $branchId, $collegeId, $majorId) {
                     $wu->where('scope', self::SCOPE_UNIVERSITY)
-                        ->where('university_id', $universityId)
+                       ->where('university_id', $universityId)
 
-                        // فلترة الفرع: يسمح بقيمة NULL أو فرع الطالب
-                        ->where(function ($wb) use ($branchId) {
-                            $wb->whereNull('branch_id');
-                            if ($branchId) {
-                                $wb->orWhere('branch_id', $branchId);
-                            }
-                        })
+                       // الفرع: يسمح بـ NULL أو مطابقة فرع الطالب
+                       ->where(function ($wb) use ($branchId) {
+                           $wb->whereNull('branch_id');
+                           if ($branchId) {
+                               $wb->orWhere('branch_id', $branchId);
+                           }
+                       })
 
-                        // فلترة الكلية
-                        ->where(function ($wc) use ($collegeId) {
-                            $wc->whereNull('college_id');
-                            if ($collegeId) {
-                                $wc->orWhere('college_id', $collegeId);
-                            }
-                        })
+                       // الكلية
+                       ->where(function ($wc) use ($collegeId) {
+                           $wc->whereNull('college_id');
+                           if ($collegeId) {
+                               $wc->orWhere('college_id', $collegeId);
+                           }
+                       })
 
-                        // فلترة التخصص
-                        ->where(function ($wm) use ($majorId) {
-                            $wm->whereNull('major_id');
-                            if ($majorId) {
-                                $wm->orWhere('major_id', $majorId);
-                            }
-                        });
+                       // التخصص
+                       ->where(function ($wm) use ($majorId) {
+                           $wm->whereNull('major_id');
+                           if ($majorId) {
+                               $wm->orWhere('major_id', $majorId);
+                           }
+                       });
                 });
             }
         });
     }
 
-
     /**
      * فلترة موحّدة للاستخدام في الكنترولرز:
-     * يدعم: q, scope, university_id, college_id, major_id, level, is_active, term_ids[]
+     * يدعم: q, scope, university_id, branch_id, college_id, major_id, level, is_active, term_ids[]
      */
     public function scopeFilter($q, array $f = [])
     {
         return $q
             ->when(isset($f['q']) && $f['q'] !== '', fn($qq) => $qq->search($f['q']))
             ->when(!empty($f['scope']),            fn($qq) => $qq->scopeType($f['scope']))
-            ->when(!empty($f['university_id']),    fn($qq) => $qq->forUniversity((int)$f['university_id']))
-            ->when(!empty($f['college_id']),       fn($qq) => $qq->forCollege((int)$f['college_id']))
-            ->when(!empty($f['major_id']),         fn($qq) => $qq->forMajor((int)$f['major_id']))
-            ->when(isset($f['level']) && $f['level'] !== '', fn($qq) => $qq->where('level', (int)$f['level']))
+            ->when(!empty($f['university_id']),    fn($qq) => $qq->forUniversity((int) $f['university_id']))
+            ->when(!empty($f['branch_id']),        fn($qq) => $qq->forBranch((int) $f['branch_id'])) // ← جديد
+            ->when(!empty($f['college_id']),       fn($qq) => $qq->forCollege((int) $f['college_id']))
+            ->when(!empty($f['major_id']),         fn($qq) => $qq->forMajor((int) $f['major_id']))
+            ->when(isset($f['level']) && $f['level'] !== '', fn($qq) => $qq->where('level', (int) $f['level']))
             ->when(isset($f['is_active']),         fn($qq) => $qq->active($f['is_active']))
             ->when(
                 !empty($f['term_ids']) && is_array($f['term_ids']),

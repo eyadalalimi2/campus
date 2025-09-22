@@ -34,4 +34,8 @@ class AcademicCalendar extends Model
     {
         return $this->hasMany(AcademicTerm::class, 'calendar_id');
     }
+    public function scopeForUniversity($q, ?int $universityId)
+    {
+        return $universityId ? $q->where('university_id', $universityId) : $q;
+    }
 }

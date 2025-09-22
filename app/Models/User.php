@@ -9,7 +9,7 @@ use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Hash;
-use App\Models\Subscription; // ✅ تصحيح الاستيراد
+use App\Models\Subscription;
 
 class User extends Authenticatable
 {
@@ -29,7 +29,7 @@ class User extends Authenticatable
         'name',
         'email',
         'phone',
-        'country_id',          // إلزامي في DB
+        'country_id',
         'profile_photo_path',
         'university_id',
         'branch_id',
@@ -53,15 +53,13 @@ class User extends Authenticatable
 
     protected $appends = [
         'has_active_subscription',
-        // ملاحظة: لم نُضف public_major_id إلى $appends لتجنّب تغييرات API غير متوقعة.
-        // يمكنك إضافته هنا إذا رغبت في إظهاره صراحة في السيريالايز:
-        // 'public_major_id',
+        'public_major_id',
     ];
 
-    /* ============================
+    /*=============================
      | علاقات
-     |============================*/
-    public function branch()
+     |=============================*/
+    public function branch(): BelongsTo
     {
         return $this->belongsTo(UniversityBranch::class);
     }
@@ -92,13 +90,12 @@ class User extends Authenticatable
         return $this->hasMany(Subscription::class);
     }
 
-    /* ============================
+    /*=============================
      | Mutators
-     |============================*/
+     |=============================*/
     public function setPasswordAttribute($value): void
     {
         if (!$value) return;
-        // لا تعيد التهشير إذا كان مُهشّرًا مسبقًا
         $this->attributes['password'] = Hash::needsRehash($value) ? Hash::make($value) : $value;
     }
 
@@ -112,29 +109,25 @@ class User extends Authenticatable
         $this->attributes['phone'] = $value ? trim($value) : null;
     }
 
-    /* ============================
+    /*=============================
      | Accessors
-     |============================*/
+     |=============================*/
     public function getHasActiveSubscriptionAttribute(): bool
     {
-        // يعتمد على سكوب Subscription::active()
         return $this->subscriptions()->active()->exists();
     }
 
     /**
-     * public_major_id (محسوب):
-     * يُستنتج من Major المرتبط بالمستخدم عبر الحقل majors.public_major_id.
-     * يعيد null إذا لم يرتبط المستخدم بتخصص أو لم يُضبط المابّينغ.
+     * public_major_id (محسوب من Major->public_major_id)
      */
     public function getPublicMajorIdAttribute(): ?int
     {
-        // يتطلب وجود عمود public_major_id في جدول majors
-        return $this->major?->public_major_id ? (int)$this->major->public_major_id : null;
+        return $this->major?->public_major_id ? (int) $this->major->public_major_id : null;
     }
 
-    /* ============================
+    /*=============================
      | Scopes (فلترة جاهزة)
-     |============================*/
+     |=============================*/
     public function scopeStatus($q, ?string $status)
     {
         return $status ? $q->where('status', $status) : $q;
@@ -143,6 +136,11 @@ class User extends Authenticatable
     public function scopeForUniversity($q, ?int $universityId)
     {
         return $universityId ? $q->where('university_id', $universityId) : $q;
+    }
+
+    public function scopeForBranch($q, ?int $branchId) // ← جديد
+    {
+        return $branchId ? $q->where('branch_id', $branchId) : $q;
     }
 
     public function scopeForCollege($q, ?int $collegeId)
@@ -157,13 +155,13 @@ class User extends Authenticatable
 
     /**
      * فلترة بحسب التخصص العام عبر المابّينغ (users -> majors.public_major_id)
-     * لا تحتاج أي أعمدة إضافية على users.
      */
     public function scopeForPublicMajor($q, ?int $publicMajorId)
     {
-        if (! $publicMajorId) return $q;
+        if (!$publicMajorId) return $q;
+
         return $q->whereHas('major', function ($mq) use ($publicMajorId) {
-            $mq->where('public_major_id', (int)$publicMajorId);
+            $mq->where('public_major_id', (int) $publicMajorId);
         });
     }
 
@@ -180,18 +178,19 @@ class User extends Authenticatable
     public function scopeSearch($q, ?string $term)
     {
         if (!$term) return $q;
+
         $term = trim($term);
         return $q->where(function ($w) use ($term) {
-            $w->where('name', 'like', '%' . $term . '%')
-                ->orWhere('email', 'like', '%' . $term . '%')
-                ->orWhere('phone', 'like', '%' . $term . '%')
-                ->orWhere('student_number', 'like', '%' . $term . '%');
+            $w->where('name', 'like', "%{$term}%")
+              ->orWhere('email', 'like', "%{$term}%")
+              ->orWhere('phone', 'like', "%{$term}%")
+              ->orWhere('student_number', 'like', "%{$term}%");
         });
     }
 
     /**
      * فلترة موحّدة للاستخدام في الكنترولرز:
-     * يدعم: q, status, university_id, college_id, major_id, country_id, level,
+     * يدعم: q, status, university_id, branch_id, college_id, major_id, country_id, level,
      *       has_active_subscription, public_major_id (اختياري).
      */
     public function scopeFilter($q, array $f = [])
@@ -199,13 +198,13 @@ class User extends Authenticatable
         $q = $q
             ->when(isset($f['q']) && $f['q'] !== '', fn($qq) => $qq->search($f['q']))
             ->when(!empty($f['status']),          fn($qq) => $qq->status($f['status']))
-            ->when(!empty($f['university_id']),   fn($qq) => $qq->forUniversity((int)$f['university_id']))
-            ->when(!empty($f['college_id']),      fn($qq) => $qq->forCollege((int)$f['college_id']))
-            ->when(!empty($f['major_id']),        fn($qq) => $qq->forMajor((int)$f['major_id']))
-            ->when(!empty($f['country_id']),      fn($qq) => $qq->forCountry((int)$f['country_id']))
+            ->when(!empty($f['university_id']),   fn($qq) => $qq->forUniversity((int) $f['university_id']))
+            ->when(!empty($f['branch_id']),       fn($qq) => $qq->forBranch((int) $f['branch_id']))     // ← جديد
+            ->when(!empty($f['college_id']),      fn($qq) => $qq->forCollege((int) $f['college_id']))
+            ->when(!empty($f['major_id']),        fn($qq) => $qq->forMajor((int) $f['major_id']))
+            ->when(!empty($f['country_id']),      fn($qq) => $qq->forCountry((int) $f['country_id']))
             ->when(isset($f['level']) && $f['level'] !== '', fn($qq) => $qq->level($f['level']))
-            // ✅ فلترة اختيارية بالتخصص العام عبر المابّينغ
-            ->when(!empty($f['public_major_id']), fn($qq) => $qq->forPublicMajor((int)$f['public_major_id']));
+            ->when(!empty($f['public_major_id']), fn($qq) => $qq->forPublicMajor((int) $f['public_major_id']));
 
         // تصفية حسب وجود اشتراك نشط (اختياري)
         if (isset($f['has_active_subscription'])) {
@@ -224,13 +223,12 @@ class User extends Authenticatable
     public function scopeOrderDefault($q)
     {
         return $q->orderByRaw("FIELD(status, 'active','suspended','graduated')")
-            ->orderBy('name');
+                 ->orderBy('name');
     }
 
-    /* ============================
+    /*=============================
      | Helpers
-     |============================*/
-    /** الاشتراك النشط الحالي (إن وجد) */
+     |=============================*/
     public function currentSubscription(): ?Subscription
     {
         return $this->subscriptions()

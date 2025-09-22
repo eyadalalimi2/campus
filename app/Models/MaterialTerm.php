@@ -13,18 +13,22 @@ class MaterialTerm extends Pivot
     /** الجدول يحتوي على عمود id Auto Increment */
     protected $primaryKey = 'id';
     public $incrementing = true;
+    protected $keyType = 'int';
 
-    /** لدينا created_at في الجدول (بافتراض DEFAULT CURRENT_TIMESTAMP) */
-    public $timestamps = false;
+    /**
+     * الجدول يحتوي على created_at فقط (بدون updated_at).
+     */
+    public $timestamps = true;
+    const UPDATED_AT = null;
 
     protected $fillable = [
         'material_id',
         'term_id',
     ];
 
-    /* ============================
+    /*=============================
      | علاقات
-     |============================*/
+     |=============================*/
     public function material(): BelongsTo
     {
         return $this->belongsTo(Material::class, 'material_id');
@@ -35,9 +39,9 @@ class MaterialTerm extends Pivot
         return $this->belongsTo(AcademicTerm::class, 'term_id');
     }
 
-    /* ============================
+    /*=============================
      | Scopes
-     |============================*/
+     |=============================*/
     public function scopeForMaterial($q, int $materialId)
     {
         return $q->where('material_id', $materialId);
@@ -48,9 +52,9 @@ class MaterialTerm extends Pivot
         return $q->where('term_id', $termId);
     }
 
-    /* ============================
+    /*=============================
      | Helpers
-     |============================*/
+     |=============================*/
     /**
      * يُنشئ الربط إذا لم يكن موجودًا (محمي بقيود UNIQUE uq_material_term).
      */

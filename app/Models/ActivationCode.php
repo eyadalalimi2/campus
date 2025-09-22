@@ -14,6 +14,7 @@ class ActivationCode extends Model
         'code',
         'plan_id',
         'university_id',
+        'branch_id', // ← جديد
         'college_id',
         'major_id',
         'duration_days',
@@ -33,6 +34,7 @@ class ActivationCode extends Model
         'batch_id'            => 'integer',
         'plan_id'             => 'integer',
         'university_id'       => 'integer',
+        'branch_id'           => 'integer', // ← جديد
         'college_id'          => 'integer',
         'major_id'            => 'integer',
         'duration_days'       => 'integer',
@@ -50,20 +52,21 @@ class ActivationCode extends Model
     public function batch(): BelongsTo { return $this->belongsTo(ActivationCodeBatch::class, 'batch_id'); }
     public function plan(): BelongsTo { return $this->belongsTo(Plan::class, 'plan_id'); }
     public function university(): BelongsTo { return $this->belongsTo(University::class, 'university_id'); }
+     public function branch(): BelongsTo { return $this->belongsTo(UniversityBranch::class, 'branch_id'); } // ← جديد
     public function college(): BelongsTo { return $this->belongsTo(College::class, 'college_id'); }
     public function major(): BelongsTo { return $this->belongsTo(Major::class, 'major_id'); }
     public function redeemedBy(): BelongsTo { return $this->belongsTo(User::class, 'redeemed_by_user_id'); }
     public function createdBy(): BelongsTo { return $this->belongsTo(Admin::class, 'created_by_admin_id'); }
 
     // هل الكود قابل للتفعيل الآن؟
-    public function getIsRedeemableAttribute(): bool
+    public function getStatusLabelAttribute(): string
     {
-        if ($this->status !== 'active') return false;
-        $now = now();
-        if ($this->valid_from && $now->lt($this->valid_from)) return false;
-        if ($this->valid_until && $now->gt($this->valid_until)) return false;
-        if ($this->redemptions_count >= $this->max_redemptions) return false;
-        if ($this->start_policy === 'fixed_start' && empty($this->starts_on)) return false;
-        return true;
+        return match ($this->status) {
+            'draft' => 'مسودة',
+            'active' => 'نشطة',
+            'disabled' => 'مُعطّلة',
+            'archived' => 'مؤرشفة',
+            default => $this->status,
+        };
     }
 }

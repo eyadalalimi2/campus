@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class University extends Model
 {
@@ -25,8 +26,8 @@ class University extends Model
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
-        'use_default_theme' => 'boolean',
+        'is_active'        => 'boolean',
+        'use_default_theme'=> 'boolean',
     ];
 
     /**
@@ -36,25 +37,32 @@ class University extends Model
     {
         return $this->belongsTo(Country::class);
     }
+
     /**
      * الفروع التابعة للجامعة.
      */
-
-    public function branches()
+    public function branches(): HasMany
     {
         return $this->hasMany(UniversityBranch::class);
     }
 
     /**
-     * الكليات التابعة للجامعة.
+     * الكليات التابعة للجامعة عبر الفروع.
      */
-    public function colleges(): HasMany
+    public function colleges(): HasManyThrough
     {
-        return $this->hasMany(College::class);
+        return $this->hasManyThrough(
+            College::class,
+            UniversityBranch::class,
+            'university_id', // Foreign key on branches
+            'branch_id',     // Foreign key on colleges
+            'id',            // Local key on universities
+            'id'             // Local key on branches
+        );
     }
 
     /**
-     * التقويم الأكاديمي الخاص بالجامعة.
+     * التقويمات الأكاديمية الخاصة بالجامعة.
      */
     public function academicCalendars(): HasMany
     {

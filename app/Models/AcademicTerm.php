@@ -39,7 +39,7 @@ class AcademicTerm extends Model
         return $this->belongsTo(AcademicCalendar::class, 'calendar_id');
     }
 
-    public function materials(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function materials(): BelongsToMany
     {
         return $this->belongsToMany(Material::class, 'material_term', 'term_id', 'material_id')
             ->using(MaterialTerm::class)

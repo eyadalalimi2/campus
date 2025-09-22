@@ -30,7 +30,8 @@ class Content extends Model
         'source_url',
         'file_path',
         'university_id',          // إلزامي (خاصة بالمحتوى الخاص)
-        'college_id',             // اختياري ضمن نفس الجامعة
+        'branch_id',              // ← جديد: دعم الفرع
+        'college_id',             // اختياري ضمن نفس الجامعة/الفرع
         'major_id',               // اختياري ضمن نفس الكلية/الجامعة
         'material_id',
         'doctor_id',
@@ -57,6 +58,11 @@ class Content extends Model
     public function university(): BelongsTo
     {
         return $this->belongsTo(University::class);
+    }
+
+    public function branch(): BelongsTo  // ← جديد
+    {
+        return $this->belongsTo(UniversityBranch::class);
     }
 
     public function college(): BelongsTo
@@ -94,13 +100,11 @@ class Content extends Model
     /* ============================
      | Accessors
      |============================*/
-    /** رابط الملف المخزّن */
     public function getFileUrlAttribute(): ?string
     {
         return $this->file_path ? asset('storage/' . $this->file_path) : null;
     }
 
-    /** هل هو منشور ونشط */
     public function getIsPublishedAttribute(): bool
     {
         return $this->status === self::STATUS_PUBLISHED && (bool) $this->is_active;
@@ -109,53 +113,51 @@ class Content extends Model
     /* ============================
      | Scopes (فلترة جاهزة)
      |============================*/
-    /** منشور + نشط */
     public function scopePublished($q)
     {
         return $q->where('status', self::STATUS_PUBLISHED)->where('is_active', true);
     }
 
-    /** للجامعة المحددة (محتوى خاص) */
-    public function scopeForUniversity($q, $universityId)
+    public function scopeForUniversity($q, ?int $universityId)
     {
-        return $q->where('university_id', $universityId);
+        return $universityId ? $q->where('university_id', $universityId) : $q;
     }
 
-    /** للكلية داخل الجامعة (عند التمرير) */
-    public function scopeForCollege($q, $collegeId)
+    public function scopeForBranch($q, ?int $branchId) // ← جديد
+    {
+        return $branchId ? $q->where('branch_id', $branchId) : $q;
+    }
+
+    public function scopeForCollege($q, ?int $collegeId)
     {
         return $collegeId ? $q->where('college_id', $collegeId) : $q;
     }
 
-    /** للتخصص داخل الكلية (عند التمرير) */
-    public function scopeForMajor($q, $majorId)
+    public function scopeForMajor($q, ?int $majorId)
     {
         return $majorId ? $q->where('major_id', $majorId) : $q;
     }
 
-    /** حسب النوع */
     public function scopeType($q, ?string $type)
     {
         return $type ? $q->where('type', $type) : $q;
     }
 
-    /** حسب الحالة */
     public function scopeStatus($q, ?string $status)
     {
         return $status ? $q->where('status', $status) : $q;
     }
 
-    /** بحث نصي بسيط */
     public function scopeSearch($q, ?string $qstr)
     {
         if (!$qstr) return $q;
+
         return $q->where(function ($w) use ($qstr) {
             $w->where('title', 'like', '%' . $qstr . '%')
-                ->orWhere('description', 'like', '%' . $qstr . '%');
+              ->orWhere('description', 'like', '%' . $qstr . '%');
         });
     }
 
-    /** نطاق زمني عبر published_at */
     public function scopePublishedBetween($q, ?string $from, ?string $to)
     {
         if ($from) $q->where('published_at', '>=', $from);
@@ -164,8 +166,11 @@ class Content extends Model
     }
 
     /**
-     * مطابقة جمهور الطالب: نفس الجامعة + (كلية NULL أو كلية الطالب) + (تخصص NULL أو تخصص الطالب).
-     * مناسبة لتغذية التطبيق للطالب.
+     * مطابقة جمهور الطالب:
+     * - نفس الجامعة (إلزامي)
+     * - (الفرع NULL أو فرع الطالب)
+     * - (الكلية NULL أو كلية الطالب)
+     * - (التخصص NULL أو تخصص الطالب)
      */
     public function scopeMatchAudience($query, $user)
     {
@@ -174,57 +179,56 @@ class Content extends Model
         if ($user->branch_id) {
             $query->where(function ($q) use ($user) {
                 $q->whereNull('branch_id')
-                    ->orWhere('branch_id', $user->branch_id);
+                  ->orWhere('branch_id', $user->branch_id);
             });
         }
 
         if ($user->college_id) {
             $query->where(function ($q) use ($user) {
                 $q->whereNull('college_id')
-                    ->orWhere('college_id', $user->college_id);
+                  ->orWhere('college_id', $user->college_id);
             });
         }
 
         if ($user->major_id) {
             $query->where(function ($q) use ($user) {
                 $q->whereNull('major_id')
-                    ->orWhere('major_id', $user->major_id);
+                  ->orWhere('major_id', $user->major_id);
             });
         }
     }
 
-
     /**
-     * فلترة موحّدة لاستخدامها في الـ Controllers:
-     * يدعم: q, status, type, university_id, college_id, major_id, material_id, doctor_id, is_active, from, to
+     * فلترة موحّدة للاستخدام في الـ Controllers:
+     * يدعم: q, status, type, university_id, branch_id, college_id, major_id, material_id, doctor_id, is_active, from, to
      */
     public function scopeFilter($q, array $f = [])
     {
         return $q
-            ->when(isset($f['q']) && $f['q'] !== '', fn($qq) => $qq->search($f['q']))
-            ->when(!empty($f['status']),        fn($qq) => $qq->status($f['status']))
-            ->when(!empty($f['type']),          fn($qq) => $qq->type($f['type']))
-            ->when(!empty($f['university_id']), fn($qq) => $qq->forUniversity($f['university_id']))
-            ->when(!empty($f['college_id']),    fn($qq) => $qq->forCollege($f['college_id']))
-            ->when(!empty($f['major_id']),      fn($qq) => $qq->forMajor($f['major_id']))
-            ->when(!empty($f['material_id']),   fn($qq) => $qq->where('material_id', $f['material_id']))
-            ->when(!empty($f['doctor_id']),     fn($qq) => $qq->where('doctor_id', $f['doctor_id']))
-            ->when(isset($f['is_active']),       fn($qq) => $qq->where('is_active', (bool)$f['is_active']))
-            ->when(!empty($f['from']) || !empty($f['to']), fn($qq) => $qq->publishedBetween($f['from'] ?? null, $f['to'] ?? null));
+            ->when(isset($f['q']) && $f['q'] !== '',      fn($qq) => $qq->search($f['q']))
+            ->when(!empty($f['status']),                  fn($qq) => $qq->status($f['status']))
+            ->when(!empty($f['type']),                    fn($qq) => $qq->type($f['type']))
+            ->when(!empty($f['university_id']),           fn($qq) => $qq->forUniversity((int)$f['university_id']))
+            ->when(!empty($f['branch_id']),               fn($qq) => $qq->forBranch((int)$f['branch_id']))   // ← جديد
+            ->when(!empty($f['college_id']),              fn($qq) => $qq->forCollege((int)$f['college_id']))
+            ->when(!empty($f['major_id']),                fn($qq) => $qq->forMajor((int)$f['major_id']))
+            ->when(!empty($f['material_id']),             fn($qq) => $qq->where('material_id', (int)$f['material_id']))
+            ->when(!empty($f['doctor_id']),               fn($qq) => $qq->where('doctor_id', (int)$f['doctor_id']))
+            ->when(isset($f['is_active']),                fn($qq) => $qq->where('is_active', (bool)$f['is_active']))
+            ->when(!empty($f['from']) || !empty($f['to']),fn($qq) => $qq->publishedBetween($f['from'] ?? null, $f['to'] ?? null));
     }
 
     /** ترتيب افتراضي لتدفق الإدارة: الأحدث نشراً ثم آخر تحديث */
     public function scopeOrderForFeed($q)
     {
         return $q->orderByDesc('status')
-            ->orderByDesc('published_at')
-            ->orderByDesc('created_at');
+                 ->orderByDesc('published_at')
+                 ->orderByDesc('created_at');
     }
 
     /* ============================
      | عمليات مساعدة
      |============================*/
-    /** نشر المحتوى وتعيين الحقول المرتبطة */
     public function publish(int $adminId): void
     {
         $this->status = self::STATUS_PUBLISHED;

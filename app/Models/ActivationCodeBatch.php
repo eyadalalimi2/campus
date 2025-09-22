@@ -14,6 +14,7 @@ class ActivationCodeBatch extends Model
         'notes',
         'plan_id',
         'university_id',
+        'branch_id',
         'college_id',
         'major_id',
         'quantity',
