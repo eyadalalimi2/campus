@@ -5,6 +5,13 @@
         <div class="section-title">
             <i class="bi bi-list-task"></i> القائمة الرئيسية
         </div>
+         <div class="nav-item mb-2">
+            <a href="{{ route('admin.universities_management') }}"
+               class="nav-link {{ request()->routeIs('admin.universities_management') ? 'active' : '' }}">
+                <i class="bi bi-building-fill-check"></i>
+                إدارة الجامعات والكليات
+            </a>
+        </div>
         <div class="nav-item">
             <a href="{{ route('admin.dashboard') }}"
                class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
@@ -115,7 +122,7 @@
                 ربط التخصص ↔ البرنامج
             </a>
         </div>
-
+    
         {{-- إدارة العناصر التعليمية --}}
         <div class="section-title mt-3">
             <i class="bi bi-journal-check"></i> إدارة العناصر التعليمية

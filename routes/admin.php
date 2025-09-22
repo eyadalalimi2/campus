@@ -38,7 +38,9 @@ use App\Http\Controllers\Admin\UniversityBranchController;
 | Admin Routes (prefix=admin, name=admin.) via RouteServiceProvider
 |--------------------------------------------------------------------------
 */
-
+Route::get('universities-management', function() {
+    return view('admin.universities_management');
+})->name('universities_management');
 // ضيوف الأدمن
 Route::middleware('guest:admin')->group(function () {
     Route::get('/login',  [AdminAuthController::class, 'showLogin'])->name('login');
