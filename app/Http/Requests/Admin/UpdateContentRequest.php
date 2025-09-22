@@ -2,9 +2,9 @@
 
 namespace App\Http\Requests\Admin;
 
-use Illuminate\Foundation\Http\FormRequest;
-
 class UpdateContentRequest extends StoreContentRequest
 {
-    // ترث نفس القواعد، ويمكن تخصيص الفروق إن لزم
+    // ترث نفس القواعد والتحققات.
+    // إن أردت تغيير قيود الملف في التحديث (السماح بعدم وجوده دائمًا)،
+    // فالقواعد الحالية بالفعل تتعامل مع ذلك عبر required_if:type,file.
 }

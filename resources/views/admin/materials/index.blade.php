@@ -1,12 +1,13 @@
 @extends('admin.layouts.app')
 @section('title','المواد')
+
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-3">
   <h4 class="mb-0">المواد</h4>
   <a href="{{ route('admin.materials.create') }}" class="btn btn-primary"><i class="bi bi-plus"></i> مادة جديدة</a>
 </div>
 
-<form class="row g-2 mb-3">
+<form class="row g-2 mb-3" method="GET">
   <div class="col-md-2">
     <select name="scope" class="form-select" onchange="this.form.submit()">
       <option value="">النطاق</option>
@@ -42,13 +43,14 @@
     <input type="number" name="level" class="form-control" value="{{ request('level') }}" placeholder="المستوى">
   </div>
 
-  {{-- جديد: فلتر الفصل الأكاديمي عبر term_id --}}
+  {{-- فلتر الفصل الأكاديمي عبر term_id --}}
   <div class="col-md-2">
     <select name="term_id" class="form-select" onchange="this.form.submit()">
       <option value="">الفصل الأكاديمي</option>
       @foreach($terms as $t)
-        <option value="{{ $t->id }}" @selected(request('term_id')==$t->id)">
-          {{ $t->calendar?->year_label }} -
+        <option value="{{ $t->id }}" @selected(request('term_id')==$t->id)>
+          {{ $t->calendar?->year_label }}
+          -
           {{ ['first'=>'الأول','second'=>'الثاني','summer'=>'الصيفي'][$t->name] ?? $t->name }}
         </option>
       @endforeach
@@ -58,8 +60,11 @@
   <div class="col-md-3">
     <input type="text" name="q" class="form-control" value="{{ request('q') }}" placeholder="بحث بالاسم">
   </div>
-  <div class="col-md-2">
+  <div class="col-md-2 d-flex gap-2">
     <button class="btn btn-outline-secondary w-100">بحث</button>
+    @if(request()->query())
+      <a href="{{ route('admin.materials.index') }}" class="btn btn-outline-light text-danger border">مسح</a>
+    @endif
   </div>
 </form>
 
@@ -84,7 +89,7 @@
         @if($m->scope==='university')
           {{ optional($m->university)->name ?? '—' }}
           @if($m->college) / {{ $m->college->name }} @endif
-          @if($m->major)   / {{ $m->major->name }} @endif
+          @if($m->major)   / {{ $m->major->name }}   @endif
         @else — @endif
       </td>
       <td class="small">

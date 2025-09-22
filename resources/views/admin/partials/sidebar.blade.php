@@ -24,6 +24,14 @@
                 إدارة الجامعات
             </a>
         </div>
+          {{-- ✅ إدارة الفروع --}}
+        <div class="nav-item">
+            <a href="{{ route('admin.branches.index') }}"
+               class="nav-link {{ request()->is('admin/branches*') ? 'active' : '' }}">
+                <i class="bi bi-diagram-2"></i>
+                إدارة الفروع
+            </a>
+        </div>
         <div class="nav-item">
             <a href="{{ route('admin.colleges.index') }}"
                class="nav-link {{ request()->is('admin/colleges*') ? 'active' : '' }}">
@@ -31,6 +39,7 @@
                 إدارة الكليات
             </a>
         </div>
+       
         <div class="nav-item">
             <a href="{{ route('admin.majors.index') }}"
                class="nav-link {{ request()->is('admin/majors*') ? 'active' : '' }}">

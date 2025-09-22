@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use App\Models\{
     User,
     University,
+    UniversityBranch,
     College,
     Major,
     Doctor,
@@ -47,13 +48,12 @@ class DashboardController extends Controller
         $termActive   = AcademicTerm::where('is_active', 1)->count();
         $termInactive = $termTotal - $termActive;
 
-        // أحدث المدونات
+        // أحدث المدونات + إحصاءات المدونات
         $latestBlogs = Blog::with('doctor')
             ->orderByRaw('COALESCE(published_at, created_at) DESC')
             ->limit(5)
             ->get(['id', 'title', 'status', 'doctor_id', 'published_at', 'created_at']);
 
-        // إحصاءات المدونات
         $blogTotal     = Blog::count();
         $blogPublished = Blog::where('status', 'published')->count();
         $blogDraft     = Blog::where('status', 'draft')->count();
@@ -68,6 +68,11 @@ class DashboardController extends Controller
         $uniTotal    = University::count();
         $uniActive   = University::where('is_active', 1)->count();
         $uniInactive = $uniTotal - $uniActive;
+
+        // الفروع (جديد)
+        $branchTotal    = UniversityBranch::count();
+        $branchActive   = UniversityBranch::where('is_active', 1)->count();
+        $branchInactive = $branchTotal - $branchActive;
 
         // الكليات
         $colTotal    = College::count();
@@ -114,10 +119,21 @@ class DashboardController extends Controller
         $activeDevices   = $devActive;
         $activeContents  = Content::where('is_active', 1)->count();
 
-        // توزيع الطلاب على الجامعات (Top 10)
+        // توزيع الطلاب: Top 10 لكل جامعة
         $studentsPerUniversity = User::select('universities.name as uname', DB::raw('COUNT(users.id) as c'))
             ->leftJoin('universities', 'universities.id', '=', 'users.university_id')
             ->groupBy('universities.name')
+            ->orderByDesc('c')
+            ->limit(10)->get();
+
+        // توزيع الطلاب: Top 10 لكل فرع (جديد)
+        $studentsPerBranch = User::select(
+            DB::raw("CONCAT(universities.name, ' - ', university_branches.name) as ub_name"),
+            DB::raw('COUNT(users.id) as c')
+        )
+            ->leftJoin('university_branches', 'university_branches.id', '=', 'users.branch_id')
+            ->leftJoin('universities', 'universities.id', '=', 'users.university_id')
+            ->groupBy('ub_name')
             ->orderByDesc('c')
             ->limit(10)->get();
 
@@ -133,9 +149,9 @@ class DashboardController extends Controller
             ->get();
 
         // أحدث السجلات
-        $latestStudents = User::latest()->limit(5)->get(['id', 'name', 'student_number', 'university_id', 'created_at']);
-        $latestDoctors  = Doctor::latest()->limit(5)->get(['id', 'name', 'university_id', 'created_at']);
-        $latestContent  = Content::latest()->limit(5)->get(['id', 'title', 'type', 'university_id', 'created_at']);
+        $latestStudents = User::latest()->limit(5)->get(['id', 'name', 'student_number', 'university_id', 'branch_id', 'created_at']);
+        $latestDoctors  = Doctor::latest()->limit(5)->get(['id', 'name', 'university_id', 'branch_id', 'created_at']);
+        $latestContent  = Content::latest()->limit(5)->get(['id', 'title', 'type', 'university_id', 'branch_id', 'created_at']);
 
         // ملخص سريع للجامعات
         $universitiesQuick = University::orderBy('name')->get(['id', 'name']);
@@ -146,8 +162,10 @@ class DashboardController extends Controller
             'suspended' => $stdSuspended,
             'graduated' => $stdGrad,
         ];
+
         $genderAgg = User::select('gender', DB::raw('COUNT(*) as c'))
             ->groupBy('gender')->pluck('c', 'gender')->toArray();
+
         $pieGender = [
             'male'   => $genderAgg['male']   ?? 0,
             'female' => $genderAgg['female'] ?? 0,
@@ -182,21 +200,26 @@ class DashboardController extends Controller
                 ->from('contents')
                 ->whereColumn('contents.material_id', 'materials.id');
         })->count();
+
         $majNoDoctorsCount = Major::whereNotExists(function ($q) {
             $q->select(DB::raw(1))
                 ->from('doctor_major')
                 ->whereColumn('doctor_major.major_id', 'majors.id');
-        })->whereNotExists(function ($q) {
-            $q->select(DB::raw(1))
-                ->from('doctors')
-                ->whereColumn('doctors.major_id', 'majors.id');
-        })->count();
+        })
+            ->whereNotExists(function ($q) {
+                $q->select(DB::raw(1))
+                    ->from('doctors')
+                    ->whereColumn('doctors.major_id', 'majors.id');
+            })->count();
 
         return view('admin.dashboard', compact(
-            // جامعات / كليات / تخصصات
+            // جامعات / فروع / كليات / تخصصات
             'uniTotal',
             'uniActive',
             'uniInactive',
+            'branchTotal',
+            'branchActive',
+            'branchInactive',
             'colTotal',
             'colActive',
             'colInactive',
@@ -209,13 +232,13 @@ class DashboardController extends Controller
             'docUni',
             'docInd',
 
-            // الطلاب
+            // طلاب
             'stdTotal',
             'stdActive',
             'stdSuspended',
             'stdGrad',
 
-            // المواد / الأجهزة
+            // مواد / أجهزة
             'matTotal',
             'matActive',
             'matInactive',
@@ -223,7 +246,7 @@ class DashboardController extends Controller
             'devActive',
             'devInactive',
 
-            // المحتوى
+            // محتوى
             'contentTotal',
             'cntFile',
             'cntVideo',
@@ -235,6 +258,7 @@ class DashboardController extends Controller
             'activeDevices',
             'activeContents',
             'studentsPerUniversity',
+            'studentsPerBranch',
             'studentsMonthly',
             'latestStudents',
             'latestDoctors',
@@ -253,16 +277,6 @@ class DashboardController extends Controller
             'materialsWithoutContent',
             'majorsWithoutDoctors',
 
-            // المدونات والاشتراكات
-            'blogTotal',
-            'blogPublished',
-            'blogDraft',
-            'blogArchived',
-            'subTotal',
-            'subActive',
-            'subOther',
-            'latestBlogs',
-
             // المجالات / البرامج / التقاويم / الفصول
             'discTotal',
             'discActive',
@@ -275,7 +289,17 @@ class DashboardController extends Controller
             'calInactive',
             'termTotal',
             'termActive',
-            'termInactive'
+            'termInactive',
+            // متغيرات الاشتراكات
+            'subTotal',
+            'subActive',
+            'subOther',
+            // متغيرات المدونة
+            'blogTotal',
+            'blogPublished',
+            'blogDraft',
+            'blogArchived',
+            'latestBlogs'
         ));
     }
 }

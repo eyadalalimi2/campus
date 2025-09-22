@@ -1,45 +1,75 @@
 @extends('admin.layouts.app')
 @section('title','الدكاترة')
+
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-3">
   <h4 class="mb-0">الدكاترة</h4>
-  <a href="{{ route('admin.doctors.create') }}" class="btn btn-primary"><i class="bi bi-plus"></i> إضافة دكتور</a>
+  <a href="{{ route('admin.doctors.create') }}" class="btn btn-primary">
+    <i class="bi bi-plus"></i> إضافة دكتور
+  </a>
 </div>
 
-<form class="row g-2 mb-3">
+<form class="row g-2 mb-3" method="GET">
   <div class="col-md-2">
     <select name="type" class="form-select" onchange="this.form.submit()">
       <option value="">— الكل (النوع) —</option>
-      <option value="university" @selected(request('type')==='university')>جامعي</option>
+      <option value="university"  @selected(request('type')==='university')>جامعي</option>
       <option value="independent" @selected(request('type')==='independent')>مستقل</option>
     </select>
   </div>
+
   <div class="col-md-3">
-    <select name="university_id" class="form-select" onchange="this.form.submit()">
+    <select name="university_id" id="flt_uni" class="form-select" onchange="docCascadeFilters(); this.form.submit()">
       <option value="">— كل الجامعات —</option>
-      @foreach($universities as $u)
+      @foreach(\App\Models\University::orderBy('name')->get() as $u)
         <option value="{{ $u->id }}" @selected(request('university_id')==$u->id)>{{ $u->name }}</option>
       @endforeach
     </select>
   </div>
+
+  {{-- ✅ فرع الجامعة --}}
   <div class="col-md-3">
-    <select name="college_id" class="form-select" onchange="this.form.submit()">
+    @php $selUni = request('university_id'); @endphp
+    <select name="branch_id" id="flt_branch" class="form-select" onchange="docCascadeFilters(); this.form.submit()">
+      <option value="">— كل الفروع —</option>
+      @foreach(\App\Models\UniversityBranch::with('university')->orderBy('name')->get() as $b)
+        <option value="{{ $b->id }}"
+                data-university="{{ $b->university_id }}"
+                @selected(request('branch_id')==$b->id)>
+          {{ $b->name }} ({{ $b->university?->name }})
+        </option>
+      @endforeach
+    </select>
+  </div>
+
+  <div class="col-md-2">
+    <select name="college_id" id="flt_college" class="form-select" onchange="docCascadeFilters(); this.form.submit()">
       <option value="">— كل الكليات —</option>
-      @foreach($colleges as $c)
-        <option value="{{ $c->id }}" @selected(request('college_id')==$c->id)>{{ $c->name }} ({{ $c->university->name }})</option>
+      @foreach(\App\Models\College::with('university')->orderBy('name')->get() as $c)
+        <option value="{{ $c->id }}"
+                data-university="{{ $c->university_id }}"
+                @selected(request('college_id')==$c->id)>
+          {{ $c->name }} ({{ $c->university?->name }})
+        </option>
       @endforeach
     </select>
   </div>
-  <div class="col-md-3">
-    <select name="major_id" class="form-select" onchange="this.form.submit()">
+
+  <div class="col-md-2">
+    <select name="major_id" id="flt_major" class="form-select" onchange="this.form.submit()">
       <option value="">— كل التخصصات —</option>
-      @foreach($majors as $m)
-        <option value="{{ $m->id }}" @selected(request('major_id')==$m->id)>{{ $m->name }}</option>
+      @foreach(\App\Models\Major::with('college')->orderBy('name')->get() as $m)
+        <option value="{{ $m->id }}"
+                data-college="{{ $m->college_id }}"
+                @selected(request('major_id')==$m->id)>
+          {{ $m->name }}
+        </option>
       @endforeach
     </select>
   </div>
-  <div class="col-md-1">
-    <input type="text" name="q" class="form-control" value="{{ request('q') }}" placeholder="بحث">
+
+  <div class="col-md-2">
+    <input type="text" name="q" class="form-control" value="{{ request('q') }}" placeholder="بحث بالاسم">
   </div>
 </form>
 
@@ -47,35 +77,59 @@
   <table class="table table-hover bg-white align-middle">
     <thead class="table-light">
       <tr>
-        <th>الصورة</th><th>الاسم</th><th>النوع</th><th>الانتماء</th><th>التخصصات</th><th>الهاتف</th><th>الحالة</th><th class="text-center">إجراءات</th>
+        <th>الصورة</th>
+        <th>الاسم</th>
+        <th>النوع</th>
+        <th>الانتماء</th>
+        <th>التخصصات</th>
+        <th>الهاتف</th>
+        <th>الحالة</th>
+        <th class="text-center">إجراءات</th>
       </tr>
     </thead>
     <tbody>
       @forelse($doctors as $d)
       <tr>
-        <td>@if($d->photo_url)<img src="{{ $d->photo_url }}" style="height:40px;border-radius:8px">@endif</td>
-        <td>{{ $d->name }}</td>
-        <td>{!! $d->type==='university' ? '<span class="badge bg-primary">جامعي</span>' : '<span class="badge bg-info text-dark">مستقل</span>' !!}</td>
         <td>
-          @if($d->type==='university')
-            <div class="small text-muted">
-              {{ optional($d->university)->name }} / {{ optional($d->college)->name }} / {{ optional($d->major)->name }}
+          @if($d->photo_url)
+            <img src="{{ $d->photo_url }}" style="height:40px;border-radius:8px" alt="photo">
+          @else
+            <div class="rounded bg-light d-inline-flex align-items-center justify-content-center" style="height:40px;width:40px">
+              <i class="bi bi-person text-muted"></i>
             </div>
-          @else
-            <span class="text-muted small">—</span>
           @endif
         </td>
+        <td class="fw-semibold">{{ $d->name }}</td>
         <td>
+          {!! $d->type==='university'
+              ? '<span class="badge bg-primary">جامعي</span>'
+              : '<span class="badge bg-info text-dark">مستقل</span>' !!}
+        </td>
+        <td class="small text-muted">
           @if($d->type==='university')
-            <span class="badge bg-light text-dark">{{ optional($d->major)->name }}</span>
+            {{ optional($d->university)->name ?? '—' }}
+            @if($d->branch)  / {{ $d->branch->name }} @endif
+            @if($d->college) / {{ $d->college->name }} @endif
+            @if($d->major)   / {{ $d->major->name }}   @endif
           @else
-            @foreach($d->majors as $m)
-              <span class="badge bg-light text-dark">{{ $m->name }}</span>
-            @endforeach
+            —
           @endif
         </td>
-        <td>{{ $d->phone }}</td>
-        <td>{!! $d->is_active ? '<span class="badge bg-success">مفعل</span>' : '<span class="badge bg-secondary">موقوف</span>' !!}</td>
+        <td class="small">
+          @if($d->type==='university')
+            <span class="badge bg-light text-dark">{{ optional($d->major)->name ?? '—' }}</span>
+          @else
+            @forelse($d->majors as $m)
+              <span class="badge bg-light text-dark">{{ $m->name }}</span>
+            @empty
+              <span class="text-muted">—</span>
+            @endforelse
+          @endif
+        </td>
+        <td>{{ $d->phone ?: '—' }}</td>
+        <td>
+          {!! $d->is_active ? '<span class="badge bg-success">مفعل</span>' : '<span class="badge bg-secondary">موقوف</span>' !!}
+        </td>
         <td class="text-center">
           <a href="{{ route('admin.doctors.edit',$d) }}" class="btn btn-sm btn-outline-primary">تعديل</a>
           <form action="{{ route('admin.doctors.destroy',$d) }}" method="POST" class="d-inline">
@@ -93,3 +147,47 @@
 
 {{ $doctors->links('vendor.pagination.bootstrap-custom') }}
 @endsection
+
+@push('scripts')
+<script>
+function docCascadeFilters(){
+  const uni = document.getElementById('flt_uni')?.value || '';
+  const br  = document.getElementById('flt_branch');
+  const col = document.getElementById('flt_college');
+  const maj = document.getElementById('flt_major');
+
+  // الفروع حسب الجامعة
+  if(br){
+    [...br.options].forEach(o=>{
+      if(!o.value) return;
+      const show = !uni || (o.dataset.university === uni);
+      o.hidden = !show;
+      if(!show && o.selected) o.selected = false;
+    });
+  }
+
+  // الكليات حسب الجامعة
+  if(col){
+    [...col.options].forEach(o=>{
+      if(!o.value) return;
+      const show = !uni || (o.dataset.university === uni);
+      o.hidden = !show;
+      if(!show && o.selected) o.selected = false;
+    });
+  }
+
+  // التخصصات تُفلتر لاحقًا اختياريًا حسب الكلية (إن رغبت)
+  const colVal = col?.value || '';
+  if(maj){
+    [...maj.options].forEach(o=>{
+      if(!o.value) return;
+      const show = !colVal || (o.dataset.college === colVal);
+      o.hidden = !show;
+      if(!show && o.selected) o.selected = false;
+    });
+  }
+}
+// init
+document.addEventListener('DOMContentLoaded', docCascadeFilters);
+</script>
+@endpush

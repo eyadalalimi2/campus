@@ -9,11 +9,11 @@
   </a>
 </div>
 
-{{-- تلميح تشغيلي: المحتوى خاص بالجامعة دائماً --}}
 <div class="alert alert-warning d-flex align-items-start gap-2">
   <i class="bi bi-shield-lock fs-5"></i>
   <div>
-    هذا المحتوى **خاص بالجامعة**: يجب اختيار <strong>جامعة</strong>، ويمكن (اختياريًا) تقييده بـ <strong>كلية/تخصص/مادة</strong>.  
+    هذا المحتوى <strong>خاص بالجامعة</strong>: يجب اختيار <strong>جامعة</strong>، ويمكن (اختياريًا) تقييده بـ
+    <strong>فرع/كلية/تخصص/مادة</strong>.
     عند اختيار حالة <strong>منشور</strong> سيتم تعيين الناشر وتاريخ النشر تلقائيًا.
   </div>
 </div>
@@ -21,10 +21,8 @@
 <form action="{{ route('admin.contents.store') }}" method="POST" enctype="multipart/form-data" class="card p-3">
   @csrf
 
-  {{-- حقول المحتوى الرئيسية (تشمل النوع/الملف/الرابط/الجامعة والتدرّج) --}}
   @include('admin.contents.form', ['content'=>null])
 
-  {{-- مذكرة الإصدار (اختياري) --}}
   <div class="mt-3">
     <label class="form-label">مذكرة الإصدار (اختياري)</label>
     <textarea name="changelog" rows="3" class="form-control"

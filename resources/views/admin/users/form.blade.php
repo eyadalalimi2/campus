@@ -1,19 +1,21 @@
 @php
   $isEdit = isset($user);
 
-  // حالة الارتباط بجامعة (كسلسلة '1' أو '0' لتفادي truthy/falsey)
   $linkedInitial = old(
     'is_linked_to_university',
     (!empty($user?->university_id) || !empty($user?->college_id) || !empty($user?->major_id)) ? '1' : '0'
   );
 
-  // تحميل الكيانات العامة عند اللزوم (fallback)
-  $publicColleges = $publicColleges
-      ?? \App\Models\PublicCollege::active()->orderBy('name')->get();
-  $publicMajors = $publicMajors
-      ?? \App\Models\PublicMajor::active()->with('publicCollege')->orderBy('name')->get();
+  // مصادر السلاسل (مع بدائل في حال عدم تمريرها من الـ Controller)
+  $universities = $universities ?? \App\Models\University::orderBy('name')->get();
+  $branches     = $branches     ?? \App\Models\UniversityBranch::with('university:id,name')->orderBy('name')->get();  {{-- ✅ جديد --}}
+  $colleges     = $colleges     ?? \App\Models\College::with('university:id,name')->orderBy('name')->get();
+  $majors       = $majors       ?? \App\Models\Major::with('college:id,name')->orderBy('name')->get();
+  $countries    = $countries    ?? \App\Models\Country::orderBy('name_ar')->get();
 
-  // قيم افتراضية للعام (إن وُجد مابّينغ major->public_major)
+  $publicColleges = $publicColleges ?? \App\Models\PublicCollege::active()->orderBy('name')->get();
+  $publicMajors   = $publicMajors   ?? \App\Models\PublicMajor::active()->with('publicCollege')->orderBy('name')->get();
+
   $oldPublicCollege = old('public_college_id', $user->major?->publicMajor?->public_college_id ?? '');
   $oldPublicMajor   = old('public_major_id',   $user->major?->public_major_id ?? '');
 @endphp
@@ -45,7 +47,7 @@
     @endif
   </div>
 
-  {{-- مبدّل الارتباط بجامعة --}}
+  {{-- مبدّل الارتباط --}}
   <div class="col-12">
     <div class="form-check form-switch">
       <input class="form-check-input" type="checkbox" role="switch" id="is_linked_to_university"
@@ -60,9 +62,10 @@
     </div>
   </div>
 
-  {{-- الكتلة المؤسسية (جامعة/كلية/تخصص + رقم أكاديمي/مستوى) --}}
+  {{-- الكتلة المؤسسية --}}
   <div id="institutional_block" class="row g-3">
-    <div class="col-md-4">
+    {{-- الجامعة --}}
+    <div class="col-md-3">
       <label class="form-label">الجامعة</label>
       <select name="university_id" id="university_id" class="form-select">
         <option value="">— اختر —</option>
@@ -72,21 +75,38 @@
       </select>
     </div>
 
-    <div class="col-md-4">
-      <label class="form-label">الكلية</label>
-      <select name="college_id" id="college_id" class="form-select">
+    {{-- الفرع ✅ جديد --}}
+    <div class="col-md-3">
+      <label class="form-label">الفرع</label>
+      <select name="branch_id" id="branch_id" class="form-select">
         <option value="">— اختر —</option>
-        @foreach ($colleges as $c)
-          <option value="{{ $c->id }}"
-                  data-university="{{ $c->university_id }}"
-                  @selected(old('college_id', $user->college_id ?? '') == $c->id)>
-            {{ $c->name }} ({{ $c->university?->name }})
+        @foreach ($branches as $b)
+          <option value="{{ $b->id }}"
+                  data-university="{{ $b->university_id }}"
+                  @selected(old('branch_id', $user->branch_id ?? '') == $b->id)>
+            {{ $b->name }} ({{ $b->university?->name }})
           </option>
         @endforeach
       </select>
     </div>
 
-    <div class="col-md-4">
+    {{-- الكلية (مرتبطة بالفرع) --}}
+    <div class="col-md-3">
+      <label class="form-label">الكلية</label>
+      <select name="college_id" id="college_id" class="form-select">
+        <option value="">— اختر —</option>
+        @foreach ($colleges as $c)
+          <option value="{{ $c->id }}"
+                  data-branch="{{ $c->branch_id }}"
+                  @selected(old('college_id', $user->college_id ?? '') == $c->id)>
+            {{ $c->name }}
+          </option>
+        @endforeach
+      </select>
+    </div>
+
+    {{-- التخصص --}}
+    <div class="col-md-3">
       <label class="form-label">التخصص</label>
       <select name="major_id" id="major_id" class="form-select">
         <option value="">— اختر —</option>
@@ -100,12 +120,12 @@
       </select>
     </div>
 
+    {{-- الأكاديمي: رقم/مستوى --}}
     <div id="academic_fields_block" class="row g-3">
       <div class="col-md-6">
         <label class="form-label">الرقم الأكاديمي</label>
         <input type="text" name="student_number" class="form-control" value="{{ old('student_number', $user->student_number ?? '') }}">
       </div>
-
       <div class="col-md-6">
         <label class="form-label">المستوى</label>
         <input type="number" name="level" class="form-control" min="1" max="20" value="{{ old('level', $user->level ?? '') }}">
@@ -113,7 +133,7 @@
     </div>
   </div>
 
-  {{-- الكتلة العامة (كلية عامة/تخصص عام) --}}
+  {{-- الكتلة العامة --}}
   <div id="public_taxonomy_block" class="row g-3">
     <div class="col-md-6">
       <label class="form-label">الكلية العامة</label>
@@ -142,7 +162,7 @@
     </div>
   </div>
 
-  {{-- الجنس والدولة والحالة --}}
+  {{-- الجنس/الدولة/الحالة --}}
   <div class="col-md-3">
     <label class="form-label">الجنس</label>
     @php $g = old('gender', $user->gender ?? ''); @endphp
@@ -181,7 +201,6 @@
     <label class="form-label">كلمة المرور {{ $isEdit ? '(اتركها فارغة إن لم ترد تغييرها)' : '' }}</label>
     <input type="password" name="password" class="form-control" {{ $isEdit ? '' : 'required' }} minlength="8">
   </div>
-
   <div class="col-md-6">
     <label class="form-label">تأكيد كلمة المرور</label>
     <input type="password" name="password_confirmation" class="form-control" {{ $isEdit ? '' : 'required' }} minlength="8">
@@ -197,6 +216,7 @@
   // مؤسسي
   const $instBlk = document.getElementById('institutional_block');
   const $uni     = document.getElementById('university_id');
+  const $br      = document.getElementById('branch_id');   // ✅ جديد
   const $col     = document.getElementById('college_id');
   const $maj     = document.getElementById('major_id');
 
@@ -205,10 +225,19 @@
   const $pubCol  = document.getElementById('public_college_id');
   const $pubMaj  = document.getElementById('public_major_id');
 
-  function filterCollegesByUniversity() {
+  function filterBranchesByUniversity() {
     const uniId = $uni.value;
-    document.querySelectorAll('#college_id option[data-university]').forEach(o => {
+    document.querySelectorAll('#branch_id option[data-university]').forEach(o => {
       const show = !uniId || (o.dataset.university === uniId);
+      o.hidden = !show;
+      if(!show && o.selected) o.selected = false;
+    });
+  }
+
+  function filterCollegesByBranch() {
+    const brId = $br.value;
+    document.querySelectorAll('#college_id option[data-branch]').forEach(o => {
+      const show = !brId || (o.dataset.branch === brId);
       o.hidden = !show;
       if(!show && o.selected) o.selected = false;
     });
@@ -223,12 +252,11 @@
     });
   }
 
-  // ترشيح التخصصات العامة حسب الكلية العامة
   function filterPublicMajorsByPublicCollege() {
     const pc = $pubCol.value;
     [...$pubMaj.options].forEach(o => {
-      if (!o.value) { o.hidden = false; return; } // "اختر" يبقى ظاهرًا
-      const match = !pc || (o.dataset.publicCollege === pc); // data-public-college => dataset.publicCollege
+      if (!o.value) { o.hidden = false; return; }
+      const match = !pc || (o.dataset.publicCollege === pc);
       o.hidden = !match;
       if (!match && o.selected) o.selected = false;
     });
@@ -237,19 +265,19 @@
   function toggleModeUI() {
     const linked = $linked.checked;
 
-    // مؤسسي: يظهر عند linked
+    // مؤسسي
     $instBlk.style.display = linked ? '' : 'none';
-    [$uni,$col,$maj].forEach(el => { el.disabled = !linked; if(!linked){ el.value=''; } });
+    [$uni,$br,$col,$maj].forEach(el => { el.disabled = !linked; if(!linked){ el.value=''; } });
 
-    // العام: يظهر عند !linked
+    // عام
     $pubBlk.style.display = linked ? 'none' : '';
     [$pubCol,$pubMaj].forEach(el => { el.disabled = linked; if(linked){ el.value=''; } });
 
-    // إظهار/إخفاء الرقم الأكاديمي والمستوى وفق الارتباط
     document.getElementById('academic_fields_block').style.display = linked ? '' : 'none';
 
     if (linked) {
-      filterCollegesByUniversity();
+      filterBranchesByUniversity();
+      filterCollegesByBranch();
       filterMajorsByCollege();
     } else {
       filterPublicMajorsByPublicCollege();
@@ -258,14 +286,20 @@
 
   // init
   toggleModeUI();
-  filterCollegesByUniversity();
+  filterBranchesByUniversity();
+  filterCollegesByBranch();
   filterMajorsByCollege();
   filterPublicMajorsByPublicCollege();
 
   // listeners
   $linked.addEventListener('change', toggleModeUI);
   $uni.addEventListener('change', function(){
-    filterCollegesByUniversity();
+    filterBranchesByUniversity();
+    filterCollegesByBranch();
+    filterMajorsByCollege();
+  });
+  $br.addEventListener('change', function(){
+    filterCollegesByBranch();
     filterMajorsByCollege();
   });
   $col.addEventListener('change', filterMajorsByCollege);

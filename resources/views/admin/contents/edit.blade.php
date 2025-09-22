@@ -6,10 +6,8 @@
   <div>
     <h4 class="mb-1">تعديل محتوى: {{ $content->title }}</h4>
     <div class="d-flex gap-2 small">
-      {{-- الإصدار --}}
       <span class="badge bg-warning-subtle text-dark border">v{{ $content->version ?? 1 }}</span>
 
-      {{-- الحالة --}}
       @switch($content->status)
         @case('draft')     <span class="badge bg-secondary">مسودة</span> @break
         @case('in_review') <span class="badge bg-info text-dark">قيد المراجعة</span> @break
@@ -18,12 +16,10 @@
         @default           <span class="badge bg-light text-dark">{{ $content->status }}</span>
       @endswitch
 
-      {{-- التفعيل --}}
       {!! $content->is_active
         ? '<span class="badge bg-success">مفعل</span>'
         : '<span class="badge bg-secondary">موقوف</span>' !!}
 
-      {{-- معلومات النشر --}}
       @if($content->published_at)
         <span class="text-muted">
           <i class="bi bi-clock"></i> {{ $content->published_at->format('Y-m-d') }}
@@ -43,16 +39,14 @@
 <form action="{{ route('admin.contents.update',$content) }}" method="POST" enctype="multipart/form-data" class="card p-3">
   @csrf @method('PUT')
 
-  {{-- حقول المحتوى الرئيسية من الـ partial --}}
   @include('admin.contents.form', ['content'=>$content])
 
-  {{-- مذكرة الإصدار (اختياري) --}}
   <div class="mt-3">
     <label class="form-label">مذكرة الإصدار (اختياري)</label>
     <textarea name="changelog" rows="3" class="form-control"
       placeholder="وصف مختصر لما تغيّر في هذا الإصدار (يظهر للمراجعة الداخلية)">{{ old('changelog', $content->changelog ?? '') }}</textarea>
     <div class="form-text">
-      * سيتم **رفع رقم الإصدار تلقائياً** عند تغيير الملف أو رابط المصدر. يمكنك توثيق التغييرات هنا.
+      * سيتم <strong>رفع رقم الإصدار تلقائياً</strong> عند تغيير الملف أو رابط المصدر. يمكنك توثيق التغييرات هنا.
     </div>
   </div>
 

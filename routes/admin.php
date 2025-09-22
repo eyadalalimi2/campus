@@ -32,7 +32,7 @@ use App\Http\Controllers\Admin\ActivationCodesController;
 use App\Http\Controllers\Admin\ActivationCodeBatchesController;
 use App\Http\Controllers\Admin\PublicCollegeController;
 use App\Http\Controllers\Admin\PublicMajorController;
-
+use App\Http\Controllers\Admin\UniversityBranchController;
 /*
 |--------------------------------------------------------------------------
 | Admin Routes (prefix=admin, name=admin.) via RouteServiceProvider
@@ -55,6 +55,7 @@ Route::middleware('auth:admin')->group(function () {
     Route::resource('users',         UserController::class);
     Route::resource('contents',      ContentController::class)->except(['show']);
     Route::resource('universities',  UniversityController::class)->except(['show']);
+    Route::resource('branches',      UniversityBranchController::class)->except(['show']);
     Route::resource('colleges',      CollegeController::class)->except(['show']);
     Route::resource('majors',        MajorController::class)->except(['show']);
     Route::resource('doctors',       DoctorController::class)->except(['show']);
@@ -65,6 +66,8 @@ Route::middleware('auth:admin')->group(function () {
     Route::resource('subscriptions', SubscriptionController::class)->except(['show']);
     Route::resource('public-colleges', PublicCollegeController::class)->except(['show']);
     Route::resource('public-majors', PublicMajorController::class)->except(['show']);
+    
+
     // الموارد المضافة: الدول/التخصصات/البرامج/التقويمات/الفصول
     Route::resource('countries',          CountryController::class)->except(['show']);
     Route::resource('disciplines',        DisciplineController::class)->except(['show']);

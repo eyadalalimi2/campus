@@ -1,12 +1,15 @@
 @extends('admin.layouts.app')
 @section('title','التخصصات')
+
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-3">
   <h4 class="mb-0">التخصصات</h4>
-  <a href="{{ route('admin.majors.create') }}" class="btn btn-primary"><i class="bi bi-plus"></i> تخصص جديد</a>
+  <a href="{{ route('admin.majors.create') }}" class="btn btn-primary">
+    <i class="bi bi-plus"></i> تخصص جديد
+  </a>
 </div>
 
-<form class="row g-2 mb-3">
+<form class="row g-2 mb-3" method="GET">
   <div class="col-md-4">
     <select name="university_id" class="form-select" onchange="this.form.submit()">
       <option value="">— كل الجامعات —</option>
@@ -26,37 +29,52 @@
   <div class="col-md-3">
     <input type="text" name="q" value="{{ request('q') }}" class="form-control" placeholder="بحث بالاسم">
   </div>
-  <div class="col-md-1">
+  <div class="col-md-1 d-flex gap-2">
     <button class="btn btn-outline-secondary w-100">بحث</button>
+    @if(request()->query())
+      <a href="{{ route('admin.majors.index') }}" class="btn btn-outline-light text-danger border" title="مسح الفلاتر">مسح</a>
+    @endif
   </div>
 </form>
 
 <div class="table-responsive">
   <table class="table table-hover bg-white">
     <thead class="table-light">
-      <tr><th>التخصص</th><th>الكلية</th><th>الجامعة</th><th>الحالة</th><th class="text-center">إجراءات</th></tr>
+      <tr>
+        <th>التخصص</th>
+        <th>الكلية</th>
+        <th>الجامعة</th>
+        <th>الحالة</th>
+        <th class="text-center">إجراءات</th>
+      </tr>
     </thead>
     <tbody>
       @forelse($majors as $m)
       <tr>
-        <td>{{ $m->name }}</td>
+        <td class="fw-semibold">{{ $m->name }}</td>
         <td>{{ $m->college->name }}</td>
         <td>{{ $m->college->university->name }}</td>
-        <td>{!! $m->is_active ? '<span class="badge bg-success">مفعل</span>' : '<span class="badge bg-secondary">موقوف</span>' !!}</td>
+        <td>
+          {!! $m->is_active
+            ? '<span class="badge bg-success">مفعل</span>'
+            : '<span class="badge bg-secondary">موقوف</span>' !!}
+        </td>
         <td class="text-center">
           <a class="btn btn-sm btn-outline-primary" href="{{ route('admin.majors.edit',$m) }}">تعديل</a>
-          <form action="{{ route('admin.majors.destroy',$m) }}" method="POST" class="d-inline">@csrf @method('DELETE')
+          <form action="{{ route('admin.majors.destroy',$m) }}" method="POST" class="d-inline">
+            @csrf @method('DELETE')
             <button class="btn btn-sm btn-outline-danger" onclick="return confirm('حذف التخصص؟')">حذف</button>
           </form>
         </td>
       </tr>
       @empty
-      <tr><td colspan="6" class="text-center text-muted">لا توجد بيانات.</td></tr>
+      <tr>
+        {{-- لدينا 5 أعمدة في الجدول --}}
+        <td colspan="5" class="text-center text-muted">لا توجد بيانات.</td>
+      </tr>
       @endforelse
     </tbody>
   </table>
-  
-
 </div>
 
 {{ $majors->links('vendor.pagination.bootstrap-custom') }}

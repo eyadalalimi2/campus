@@ -9,9 +9,7 @@
   </a>
 </div>
 
-{{-- نموذج الفلاتر --}}
 <form class="row g-2 mb-3" method="GET">
-  {{-- النوع --}}
   <div class="col-md-2">
     <select name="type" id="flt_type" class="form-select" onchange="this.form.submit()">
       <option value="">— كل الأنواع —</option>
@@ -21,7 +19,6 @@
     </select>
   </div>
 
-  {{-- التفعيل --}}
   <div class="col-md-2">
     <select name="is_active" class="form-select" onchange="this.form.submit()">
       <option value="">— التفعيل —</option>
@@ -30,7 +27,6 @@
     </select>
   </div>
 
-  {{-- حالة النشر --}}
   <div class="col-md-2">
     @php $statusFilter = request('status'); @endphp
     <select name="status" class="form-select" onchange="this.form.submit()">
@@ -42,7 +38,7 @@
     </select>
   </div>
 
-  {{-- الجامعة --}}
+  {{-- جامعة / فرع / كلية / تخصص --}}
   <div class="col-md-2">
     <select name="university_id" id="flt_university" class="form-select" onchange="cascadeFilters(); this.form.submit()">
       <option value="">— كل الجامعات —</option>
@@ -52,18 +48,26 @@
     </select>
   </div>
 
-  {{-- الكلية --}}
+  <div class="col-md-2">
+    <select name="branch_id" id="flt_branch" class="form-select" onchange="cascadeFilters(); this.form.submit()">
+      <option value="">— كل الفروع —</option>
+      @foreach($branches as $b)
+        <option value="{{ $b->id }}" data-university="{{ $b->university_id }}"
+          @selected(request('branch_id') == $b->id)>{{ $b->name }}</option>
+      @endforeach
+    </select>
+  </div>
+
   <div class="col-md-2">
     <select name="college_id" id="flt_college" class="form-select" onchange="cascadeFilters(); this.form.submit()">
       <option value="">— كل الكليات —</option>
       @foreach($colleges as $c)
-        <option value="{{ $c->id }}" data-university="{{ $c->university_id }}"
+        <option value="{{ $c->id }}" data-branch="{{ $c->branch_id }}"
           @selected(request('college_id') == $c->id)>{{ $c->name }}</option>
       @endforeach
     </select>
   </div>
 
-  {{-- التخصص --}}
   <div class="col-md-2">
     <select name="major_id" id="flt_major" class="form-select" onchange="cascadeFilters(); this.form.submit()">
       <option value="">— كل التخصصات —</option>
@@ -74,7 +78,6 @@
     </select>
   </div>
 
-  {{-- المادة --}}
   <div class="col-md-3">
     <select name="material_id" id="flt_material" class="form-select" onchange="this.form.submit()">
       <option value="">— كل المواد —</option>
@@ -85,7 +88,6 @@
     </select>
   </div>
 
-  {{-- الدكتور --}}
   <div class="col-md-3">
     <select name="doctor_id" class="form-select" onchange="this.form.submit()">
       <option value="">— كل الدكاترة —</option>
@@ -95,7 +97,6 @@
     </select>
   </div>
 
-  {{-- البحث النصي --}}
   <div class="col-md-4">
     <div class="input-group">
       <input type="text" name="q" class="form-control" value="{{ request('q') }}" placeholder="بحث بالعنوان أو الوصف">
@@ -107,7 +108,6 @@
   </div>
 </form>
 
-{{-- جدول المحتوى --}}
 <div class="table-responsive">
 <table class="table table-hover bg-white align-middle">
   <thead class="table-light">
@@ -125,7 +125,6 @@
   <tbody>
     @forelse($contents as $c)
     <tr>
-      {{-- العنوان + الإصدار --}}
       <td class="fw-semibold">
         {{ $c->title }}
         @if(($c->version ?? 1) > 1)
@@ -133,7 +132,6 @@
         @endif
       </td>
 
-      {{-- النوع --}}
       <td>
         @if($c->type === 'file')
           <span class="badge bg-secondary">ملف</span>
@@ -144,14 +142,13 @@
         @endif
       </td>
 
-      {{-- النطاق: جامعة / كلية / تخصص --}}
       <td class="small text-muted">
         {{ $c->university->name ?? '—' }}
+        @if($c->branch)  / {{ $c->branch->name }} @endif
         @if($c->college) / {{ $c->college->name }} @endif
         @if($c->major)   / {{ $c->major->name }}   @endif
       </td>
 
-      {{-- المادة / الأجهزة --}}
       <td class="small">
         {{ $c->material->name ?? '—' }}
         @php $devCount = $c->devices()->count(); @endphp
@@ -160,7 +157,6 @@
         @endif
       </td>
 
-      {{-- المصدر أو الملف --}}
       <td class="small">
         @if($c->type === 'file' && $c->file_url)
           <a href="{{ $c->file_url }}" target="_blank" download>تحميل الملف</a>
@@ -171,7 +167,6 @@
         @endif
       </td>
 
-      {{-- حالة النشر + التاريخ + الناشر --}}
       <td class="small">
         @switch($c->status)
           @case('draft')     <span class="badge bg-secondary">مسودة</span> @break
@@ -191,14 +186,12 @@
         @endif
       </td>
 
-      {{-- التفعيل --}}
       <td>
         {!! $c->is_active
           ? '<span class="badge bg-success">مفعل</span>'
           : '<span class="badge bg-secondary">موقوف</span>' !!}
       </td>
 
-      {{-- الإجراءات --}}
       <td class="text-center">
         <a href="{{ route('admin.contents.edit', $c) }}" class="btn btn-sm btn-outline-primary">تعديل</a>
         <form action="{{ route('admin.contents.destroy', $c) }}" method="POST" class="d-inline">
@@ -214,7 +207,6 @@
 </table>
 </div>
 
-{{-- روابط الترقيم --}}
 {{ $contents->links('vendor.pagination.bootstrap-custom') }}
 
 @endsection
@@ -223,15 +215,26 @@
 <script>
 function cascadeFilters(){
   const uni = document.getElementById('flt_university')?.value || '';
+  const br  = document.getElementById('flt_branch');
   const col = document.getElementById('flt_college');
   const maj = document.getElementById('flt_major');
   const mat = document.getElementById('flt_material');
 
-  // الكليات حسب الجامعة
+  // الفروع حسب الجامعة
+  if(br){
+    [...br.options].forEach(o => {
+      if (!o.value) return;
+      const show = !uni || (o.dataset.university === uni);
+      o.hidden = !show; if (!show && o.selected) o.selected = false;
+    });
+  }
+
+  // الكليات حسب الفرع
+  const brVal = br?.value || '';
   if(col){
     [...col.options].forEach(o => {
       if (!o.value) return;
-      const show = !uni || (o.dataset.university === uni);
+      const show = !brVal || (o.dataset.branch === brVal);
       o.hidden = !show; if (!show && o.selected) o.selected = false;
     });
   }

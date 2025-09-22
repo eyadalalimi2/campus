@@ -3,7 +3,6 @@
 @section('content')
 <h4 class="mb-3">تعديل طالب: {{ $user->name }}</h4>
 
-{{-- عرض أخطاء التحقق (اختياري لكن مفيد) --}}
 @if ($errors->any())
   <div class="alert alert-danger">
     <div class="fw-bold mb-1">حدثت أخطاء أثناء الحفظ:</div>
@@ -19,8 +18,16 @@
   @csrf
   @method('PUT')
 
-  {{-- الجزئية الموحّدة للنموذج (تستخدم country_id + باقي الحقول) --}}
-  @include('admin.users.form', ['user'=>$user])
+  @include('admin.users.form', [
+    'user'           => $user,
+    'universities'   => $universities,
+    'branches'       => $branches,    {{-- ✅ جديد: تمريـر الفروع --}}
+    'colleges'       => $colleges,
+    'majors'         => $majors,
+    'countries'      => $countries,
+    'publicColleges' => $publicColleges ?? null,
+    'publicMajors'   => $publicMajors ?? null,
+  ])
 
   <div class="mt-3 d-flex gap-2">
     <button class="btn btn-primary">تحديث</button>

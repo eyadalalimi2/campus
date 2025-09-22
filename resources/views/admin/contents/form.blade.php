@@ -1,10 +1,14 @@
 @php
   $type   = old('type', $content->type ?? 'file');
-  $selUni = old('university_id', $content->university_id ?? '');
-  $selCol = old('college_id',    $content->college_id    ?? '');
-  $selMaj = old('major_id',      $content->major_id      ?? '');
-  $selMat = old('material_id',   $content->material_id   ?? '');
-  $selectedDevices = old('device_ids', $selectedDevices ?? []);
+
+  $selUni   = old('university_id', $content->university_id ?? '');
+  $selBr    = old('branch_id',     $content->branch_id     ?? '');
+  $selCol   = old('college_id',    $content->college_id    ?? '');
+  $selMaj   = old('major_id',      $content->major_id      ?? '');
+  $selMat   = old('material_id',   $content->material_id   ?? '');
+  $selDoc   = old('doctor_id',     $content->doctor_id     ?? '');
+  $selDev   = old('device_ids',    $selectedDevices ?? []);
+
   $statusVal = old('status', $content->status ?? 'draft');
 @endphp
 
@@ -47,7 +51,7 @@
     </select>
   </div>
 
-  {{-- معلومات النشر (عرض فقط إن كانت موجودة) --}}
+  {{-- معلومات النشر (قراءة فقط) --}}
   @if(!empty($content?->published_at))
     <div class="col-md-4">
       <label class="form-label">تاريخ النشر</label>
@@ -74,7 +78,7 @@
     <div class="form-text">الحد الأقصى 100MB. الصيغ: PDF/DOC(X)/XLS(X)/PPT(X)/TXT/ZIP/7Z/RAR/TAR/GZ</div>
   </div>
 
-  {{-- الرابط (لفيديو/رابط) --}}
+  {{-- الرابط --}}
   <div class="col-md-12 cnt-type-link">
     <label class="form-label">الرابط <span class="text-danger" id="req_link" style="display:none;">(مطلوب)</span></label>
     <input
@@ -117,13 +121,25 @@
     </select>
   </div>
 
+  {{-- الفرع --}}
+  <div class="col-md-3">
+    <label class="form-label">الفرع</label>
+    <select name="branch_id" id="branch_select" class="form-select">
+      <option value="">— اختر —</option>
+      @foreach($branches as $b)
+        <option value="{{ $b->id }}" data-university="{{ $b->university_id }}"
+          @selected($selBr == $b->id)>{{ $b->name }}</option>
+      @endforeach
+    </select>
+  </div>
+
   {{-- الكلية --}}
   <div class="col-md-3">
     <label class="form-label">الكلية</label>
     <select name="college_id" id="college_select" class="form-select">
       <option value="">— اختر —</option>
       @foreach($colleges as $c)
-        <option value="{{ $c->id }}" data-university="{{ $c->university_id }}"
+        <option value="{{ $c->id }}" data-branch="{{ $c->branch_id }}"
           @selected($selCol == $c->id)>{{ $c->name }}</option>
       @endforeach
     </select>
@@ -142,7 +158,7 @@
   </div>
 
   {{-- المادة --}}
-  <div class="col-md-3">
+  <div class="col-md-4">
     <label class="form-label">المادة</label>
     <select name="material_id" id="material_select" class="form-select">
       <option value="">— اختر —</option>
@@ -159,27 +175,26 @@
     <select name="doctor_id" class="form-select">
       <option value="">— بدون —</option>
       @foreach($doctors as $d)
-        <option value="{{ $d->id }}" @selected(old('doctor_id', $content->doctor_id ?? '') == $d->id)>{{ $d->name }}</option>
+        <option value="{{ $d->id }}" @selected($selDoc == $d->id)>{{ $d->name }}</option>
       @endforeach
     </select>
   </div>
 
-  {{-- الأجهزة المرتبطة بالمادة --}}
-  <div class="col-md-8">
+  {{-- الأجهزة --}}
+  <div class="col-md-4">
     <label class="form-label">الأجهزة المرتبطة بالمادة</label>
     <select name="device_ids[]" id="device_select" class="form-select" multiple size="6">
       @foreach($devices as $d)
         <option value="{{ $d->id }}" data-material="{{ $d->material_id }}"
-          @selected(in_array($d->id, $selectedDevices))>{{ $d->name }}</option>
+          @selected(in_array($d->id, $selDev))>{{ $d->name }}</option>
       @endforeach
     </select>
     <div class="form-text">اختر أجهزة تابعة للمادة المختارة.</div>
   </div>
 
-  {{-- تنبيه سلامة العلاقات (توضيحي فقط) --}}
   <div class="col-12">
     <div class="alert alert-info small mb-0">
-      ملاحظة: سيتم رفض الحفظ إذا لم تتبع (الكلية/التخصص) نفس الجامعة، وفق قيود السلامة في قاعدة البيانات.
+      ملاحظة: سيتم رفض الحفظ إذا لم تتبع (الفرع/الكلية/التخصص) التسلسل الصحيح ضمن الجامعة، وفق قيود السلامة في قاعدة البيانات.
     </div>
   </div>
 </div>
@@ -195,15 +210,11 @@ function cnt_switchType(){
   const reqFile   = document.getElementById('req_file');
   const reqLink   = document.getElementById('req_link');
 
-  // إظهار/إخفاء الأقسام
+  const isEditing = {!! json_encode(!empty($content?->id)) !!};
+  const hasOldFile = {!! json_encode(!empty($content?->file_path)) !!};
+
   fileWrap.style.display = (t === 'file') ? 'block' : 'none';
   linkWrap.style.display = (t === 'video' || t === 'link') ? 'block' : 'none';
-
-  // ضبط required ديناميكيًا:
-  // - عند الإنشاء مع نوع "ملف": الملف مطلوب
-  // - عند التعديل: الملف ليس مطلوبًا لو كان هناك ملف سابق
-  const isEditing = !!@json(!empty($content?->id));
-  const hasOldFile = !!@json(!empty($content?->file_path));
 
   if (t === 'file') {
     if (!isEditing || !hasOldFile) {
@@ -225,16 +236,27 @@ function cnt_switchType(){
 
 function cnt_cascade(){
   const uni = document.getElementById('university_select')?.value || '';
+  const br  = document.getElementById('branch_select');
   const col = document.getElementById('college_select');
   const maj = document.getElementById('major_select');
   const mat = document.getElementById('material_select');
   const dev = document.getElementById('device_select');
 
-  // الكليات حسب الجامعة
+  // الفروع حسب الجامعة
+  if(br){
+    [...br.options].forEach(o => {
+      if (!o.value) return;
+      const show = !uni || (o.dataset.university === uni);
+      o.hidden = !show; if (!show && o.selected) o.selected = false;
+    });
+  }
+
+  // الكليات حسب الفرع
+  const brVal = br?.value || '';
   if(col){
     [...col.options].forEach(o => {
       if (!o.value) return;
-      const show = !uni || (o.dataset.university === uni);
+      const show = !brVal || (o.dataset.branch === brVal);
       o.hidden = !show; if (!show && o.selected) o.selected = false;
     });
   }
@@ -273,7 +295,7 @@ function cnt_cascade(){
 document.addEventListener('DOMContentLoaded', function(){
   cnt_switchType();
   cnt_cascade();
-  ['type','university_select','college_select','major_select','material_select'].forEach(id => {
+  ['type','university_select','branch_select','college_select','major_select','material_select'].forEach(id => {
     const el = document.getElementById(id);
     if(!el) return;
     el.addEventListener('change', function(){

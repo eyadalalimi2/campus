@@ -1,19 +1,35 @@
 @php
+  use App\Models\University;
+  use App\Models\UniversityBranch;
+  use App\Models\College;
+  use App\Models\Major;
+
   $isEdit = isset($doctor) && $doctor;
+
+  $typeVal = old('type', $doctor->type ?? 'university');
+  $selUni  = old('university_id', $doctor->university_id ?? '');
+  $selBr   = old('branch_id',     $doctor->branch_id     ?? '');
+  $selCol  = old('college_id',    $doctor->college_id    ?? '');
+  $selMaj  = old('major_id',      $doctor->major_id      ?? '');
+
+  $universities = University::orderBy('name')->get();
+  $branches     = UniversityBranch::with('university')->orderBy('name')->get();
+  $colleges     = College::with('university')->orderBy('name')->get();
+  $majorsAll    = Major::with('college')->orderBy('name')->get();
 @endphp
 
 <div class="row g-3">
 
   <div class="col-md-6">
-    <label class="form-label">الاسم</label>
+    <label class="form-label">الاسم <span class="text-danger">*</span></label>
     <input type="text" name="name" class="form-control" required value="{{ old('name', $doctor->name ?? '') }}">
   </div>
 
   <div class="col-md-3">
-    <label class="form-label">النوع</label>
-    <select name="type" id="type_select" class="form-select" onchange="toggleType()" required>
-      <option value="university" @selected(old('type', $doctor->type ?? 'university')==='university')>جامعي</option>
-      <option value="independent" @selected(old('type', $doctor->type ?? '')==='independent')>مستقل/مشهور</option>
+    <label class="form-label">النوع <span class="text-danger">*</span></label>
+    <select name="type" id="type_select" class="form-select" onchange="doc_toggleType()" required>
+      <option value="university"  @selected($typeVal==='university')>جامعي</option>
+      <option value="independent" @selected($typeVal==='independent')>مستقل/مشهور</option>
     </select>
   </div>
 
@@ -34,65 +50,84 @@
 
   <div class="col-md-6">
     <label class="form-label">الصورة (اختياري)</label>
-    <input type="file" name="photo" class="form-control">
+    <input type="file" name="photo" class="form-control" accept=".jpg,.jpeg,.png,.webp">
     @if(!empty($doctor?->photo_url))
-      <img src="{{ $doctor->photo_url }}" class="mt-2" style="height:60px;border-radius:8px">
+      <img src="{{ $doctor->photo_url }}" class="mt-2" style="height:60px;border-radius:8px" alt="photo">
     @endif
   </div>
 
-  <!-- قسم الجامعي -->
+  {{-- ===== الجامعي ===== --}}
   <div class="col-12"><hr><strong>بيانات الجامعات (للنوع: جامعي)</strong></div>
 
-  <div class="col-md-4 type-university">
+  <div class="col-md-3 type-university">
     <label class="form-label">الجامعة</label>
     <select name="university_id" id="university_id" class="form-select">
       <option value="">— اختر —</option>
-      @foreach(\App\Models\University::orderBy('name')->get() as $u)
-        <option value="{{ $u->id }}" @selected(old('university_id', $doctor->university_id ?? '')==$u->id)>{{ $u->name }}</option>
+      @foreach($universities as $u)
+        <option value="{{ $u->id }}" @selected($selUni == $u->id)>{{ $u->name }}</option>
       @endforeach
     </select>
   </div>
 
-  <div class="col-md-4 type-university">
+  <div class="col-md-3 type-university">
+    <label class="form-label">الفرع</label>
+    <select name="branch_id" id="branch_id" class="form-select">
+      <option value="">— اختر —</option>
+      @foreach($branches as $b)
+        <option value="{{ $b->id }}"
+                data-university="{{ $b->university_id }}"
+                @selected($selBr == $b->id)>
+          {{ $b->name }} ({{ $b->university?->name }})
+        </option>
+      @endforeach
+    </select>
+  </div>
+
+  <div class="col-md-3 type-university">
     <label class="form-label">الكلية</label>
     <select name="college_id" id="college_id" class="form-select">
       <option value="">— اختر —</option>
-      @foreach(\App\Models\College::orderBy('name')->get() as $c)
-        <option value="{{ $c->id }}" @selected(old('college_id', $doctor->college_id ?? '')==$c->id) data-university="{{ $c->university_id }}">
-          {{ $c->name }} ({{ $c->university->name }})
+      @foreach($colleges as $c)
+        <option value="{{ $c->id }}"
+                data-university="{{ $c->university_id }}"
+                @selected($selCol == $c->id)>
+          {{ $c->name }} ({{ $c->university?->name }})
         </option>
       @endforeach
     </select>
   </div>
 
-  <div class="col-md-4 type-university">
+  <div class="col-md-3 type-university">
     <label class="form-label">التخصص</label>
     <select name="major_id" id="major_id" class="form-select">
       <option value="">— اختر —</option>
-      @foreach(\App\Models\Major::with('college')->orderBy('name')->get() as $m)
-        <option value="{{ $m->id }}" @selected(old('major_id', $doctor->major_id ?? '')==$m->id) data-college="{{ $m->college_id }}">
-          {{ $m->name }} ({{ $m->college->name }})
+      @foreach($majorsAll as $m)
+        <option value="{{ $m->id }}"
+                data-college="{{ $m->college_id }}"
+                @selected($selMaj == $m->id)>
+          {{ $m->name }} ({{ $m->college?->name }})
         </option>
       @endforeach
     </select>
   </div>
 
-  <!-- قسم المستقل -->
-  <div class="col-12"><hr><strong>تخصّصات الدكتور المستقل (يمكن اختيار عدة تخصّصات)</strong></div>
+  {{-- ===== المستقل ===== --}}
+  <div class="col-12"><hr><strong>تخصصات الدكتور المستقل (يمكن اختيار عدة تخصصات)</strong></div>
   <div class="col-md-12 type-independent">
     <label class="form-label">التخصصات</label>
     <select name="major_ids[]" id="independent_majors" class="form-select" multiple size="6">
-      @foreach(\App\Models\Major::orderBy('name')->get() as $m)
+      @foreach($majorsAll as $m)
         <option value="{{ $m->id }}" @selected(in_array($m->id, old('major_ids', $selectedMajors ?? [])))>
-          {{ $m->name }} ({{ $m->college->name }})
+          {{ $m->name }} ({{ $m->college?->name }})
         </option>
       @endforeach
     </select>
-    <div class="form-text">اضغط Ctrl/⌘ لاختيار أكثر من تخصّص.</div>
+    <div class="form-text">اضغط Ctrl/⌘ لاختيار أكثر من تخصص.</div>
   </div>
 
   <div class="col-md-3 d-flex align-items-end">
     <div class="form-check">
+      <input type="hidden" name="is_active" value="0">
       <input class="form-check-input" type="checkbox" name="is_active" value="1" id="is_active"
         {{ old('is_active', $doctor->is_active ?? true) ? 'checked':'' }}>
       <label class="form-check-label" for="is_active">مفعل</label>
@@ -102,33 +137,65 @@
 
 @push('scripts')
 <script>
-function toggleType(){
-  const type = document.getElementById('type_select').value;
-  document.querySelectorAll('.type-university').forEach(el => el.style.display = (type==='university' ? '' : 'none'));
-  document.querySelectorAll('.type-independent').forEach(el => el.style.display = (type==='independent' ? '' : 'none'));
-}
+(function(){
+  const $type = document.getElementById('type_select');
+  const $uni  = document.getElementById('university_id');
+  const $br   = document.getElementById('branch_id');
+  const $col  = document.getElementById('college_id');
+  const $maj  = document.getElementById('major_id');
 
-function filterCollegesByUniversity(){
-  const uniId = document.getElementById('university_id').value;
-  document.querySelectorAll('#college_id option[data-university]').forEach(o=>{
-    o.hidden = (uniId && o.dataset.university !== uniId);
+  function doc_toggleType(){
+    const t = $type.value;
+    document.querySelectorAll('.type-university').forEach(el => el.style.display = (t==='university' ? '' : 'none'));
+    document.querySelectorAll('.type-independent').forEach(el => el.style.display = (t==='independent' ? '' : 'none'));
+  }
+
+  function filterBranchesByUniversity(){
+    const uniId = $uni.value || '';
+    [...$br.options].forEach(o=>{
+      if(!o.value) return;
+      const show = !uniId || (o.dataset.university === uniId);
+      o.hidden = !show;
+      if(!show && o.selected) o.selected = false;
+    });
+  }
+
+  function filterCollegesByUniversity(){
+    const uniId = $uni.value || '';
+    [...$col.options].forEach(o=>{
+      if(!o.value) return;
+      const show = !uniId || (o.dataset.university === uniId);
+      o.hidden = !show;
+      if(!show && o.selected) o.selected = false;
+    });
+  }
+
+  function filterMajorsByCollege(){
+    const colId = $col.value || '';
+    [...$maj.options].forEach(o=>{
+      if(!o.value) return;
+      const show = !colId || (o.dataset.college === colId);
+      o.hidden = !show;
+      if(!show && o.selected) o.selected = false;
+    });
+  }
+
+  // cascade on change
+  $type.addEventListener('change', doc_toggleType);
+  $uni.addEventListener('change', function(){
+    // عند تغيير الجامعة: صفّر الفرع/الكلية/التخصص لتفادي أخطاء الاتساق
+    $br.value = ''; $col.value = ''; $maj.value = '';
+    filterBranchesByUniversity();
+    filterCollegesByUniversity();
+    filterMajorsByCollege();
   });
-}
+  $col.addEventListener('change', filterMajorsByCollege);
 
-function filterMajorsByCollege(){
-  const colId = document.getElementById('college_id').value;
-  document.querySelectorAll('#major_id option[data-college]').forEach(o=>{
-    o.hidden = (colId && o.dataset.college !== colId);
-  });
-}
-
-document.getElementById('type_select').addEventListener('change', toggleType);
-document.getElementById('university_id').addEventListener('change', filterCollegesByUniversity);
-document.getElementById('college_id').addEventListener('change', filterMajorsByCollege);
-
-// تفعيل الحالة عند التحميل
-toggleType();
-filterCollegesByUniversity();
-filterMajorsByCollege();
+  // init
+  doc_toggleType();
+  filterBranchesByUniversity();
+  filterCollegesByUniversity();
+  filterMajorsByCollege();
+})();
 </script>
 @endpush

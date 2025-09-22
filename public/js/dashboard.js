@@ -9,11 +9,31 @@
     console.error('Invalid dashboard JSON payload', e);
     return;
   }
-  // أدوات مساعدة آمنة
+
+  // أدوات مساعدة
   const byId = (id) => document.getElementById(id);
-  const mkChart = (el, cfg) => {
-    if (!el) return;
-    return new Chart(el.getContext ? el.getContext('2d') : el, cfg);
+  const mkChart = (el, cfg) => (el ? new Chart(el.getContext ? el.getContext('2d') : el, cfg) : null);
+  const nf = (n) => {
+    const v = Number(n);
+    if (!isFinite(v)) return '0';
+    try { return new Intl.NumberFormat('ar-EG').format(v); } catch { return String(v); }
+  };
+
+  // إعدادات عامة (اتجاه عربي عند الحاجة)
+  const baseOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    locale: 'ar',
+    layout: { padding: 0 },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: (ctx) => `${ctx.dataset.label || ''}${ctx.dataset.label ? ': ' : ''}${nf(ctx.parsed.y ?? ctx.parsed)}`
+        }
+      }
+    },
+    scales: { y: { beginAtZero: true, ticks: { callback: (v) => nf(v) } } }
   };
 
   // === عمودي: الطلاب لكل جامعة ===
@@ -27,11 +47,21 @@
         borderWidth: 1
       }]
     },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      scales: { y: { beginAtZero: true } }
-    }
+    options: baseOptions
+  });
+
+  // === عمودي: الطلاب لكل فرع (جديد) ===
+  mkChart(byId('chartStudentsPerBranch'), {
+    type: 'bar',
+    data: {
+      labels: payload.studentsPerBranch?.labels ?? [],
+      datasets: [{
+        label: 'عدد الطلاب',
+        data: payload.studentsPerBranch?.data ?? [],
+        borderWidth: 1
+      }]
+    },
+    options: baseOptions
   });
 
   // === خطّي: نمو الطلاب شهريًا ===
@@ -44,14 +74,11 @@
         data: payload.studentsMonthly?.data ?? [],
         tension: 0.3,
         fill: false,
-        borderWidth: 2
+        borderWidth: 2,
+        pointRadius: 2
       }]
     },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      scales: { y: { beginAtZero: true } }
-    }
+    options: baseOptions
   });
 
   // === Pie: الحالة ===
@@ -66,6 +93,7 @@
       labels: ['مفعل','موقوف','خريج'],
       datasets: [{
         data: statusArr,
+        // ألوان افتراضية بسيطة؛ يمكن تخصيصها من CSS متى شئت
         backgroundColor: ['#4CAF50', '#FF9800', '#2196F3'],
         borderColor: '#fff',
         borderWidth: 2,
@@ -74,7 +102,10 @@
     },
     options: {
       responsive: true,
-      plugins: { legend: { position: 'bottom', labels: { font: { size: 13 } } } }
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { size: 13 } } },
+        tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${nf(ctx.parsed)}` } }
+      }
     }
   });
 
@@ -97,7 +128,10 @@
     },
     options: {
       responsive: true,
-      plugins: { legend: { position: 'bottom', labels: { font: { size: 13 } } } }
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { size: 13 } } },
+        tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${nf(ctx.parsed)}` } }
+      }
     }
   });
 })();

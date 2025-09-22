@@ -1,37 +1,41 @@
 @php
   $isEdit = isset($material);
 
-  // القيم المختارة مسبقًا لفصول المادة
+  // القيم المختارة مسبقًا لفصول المادة (يُمكن تمريرها من الكنترولر)
   $selectedTermIds = old('term_ids',
-      $isEdit ? ($material->terms?->pluck('id')->all() ?? []) : []
+      $selectedTermIds
+      ?? ($isEdit ? ($material->terms?->pluck('id')->all() ?? []) : [])
   );
 
-  // جلب الفصول مع التقويم لعرض السنة + اسم الفصل
-  $terms = \App\Models\AcademicTerm::with('calendar')
-            ->orderByDesc('starts_on')->get();
+  // إن لم تُمرَّر $terms من الكنترولر، سنجلبها هنا كسقوط آمن (ويُفضّل تمريرها لتجنب استعلام داخل الـview)
+  $terms = $terms
+      ?? \App\Models\AcademicTerm::with('calendar')->orderByDesc('starts_on')->get();
 
   // خريطة التعريب لاسم الفصل
   $termNameMap = ['first'=>'الأول','second'=>'الثاني','summer'=>'الصيفي'];
+
+  $scopeValue = old('scope', $material->scope ?? 'university');
 @endphp
 
 <div class="row g-3">
   <div class="col-md-6">
-    <label class="form-label">اسم المادة</label>
+    <label class="form-label">اسم المادة <span class="text-danger">*</span></label>
     <input type="text" name="name" class="form-control" required
            value="{{ old('name',$material->name ?? '') }}">
   </div>
 
   <div class="col-md-3">
-    <label class="form-label">النطاق</label>
-    @php $sc = old('scope',$material->scope ?? 'university'); @endphp
+    <label class="form-label">النطاق <span class="text-danger">*</span></label>
     <select name="scope" id="scope_select" class="form-select" onchange="toggleScope()" required>
-      <option value="university" @selected($sc==='university')>خاص بجامعة</option>
-      <option value="global"     @selected($sc==='global')>عام (كل الجامعات)</option>
+      <option value="university" @selected($scopeValue==='university')>خاص بجامعة</option>
+      <option value="global"     @selected($scopeValue==='global')>عام (كل الجامعات)</option>
     </select>
   </div>
 
   <div class="col-md-3 d-flex align-items-end">
     <div class="form-check">
+      {{-- لضمان إرسال 0 عند إلغاء التحديد --}}
+      <input type="hidden" name="is_active" value="0">
       <input class="form-check-input" type="checkbox" name="is_active" value="1" id="is_active"
              {{ old('is_active',$material->is_active ?? true) ? 'checked':'' }}>
       <label class="form-check-label" for="is_active">مفعل</label>
@@ -87,7 +91,7 @@
            value="{{ old('level',$material->level ?? '') }}">
   </div>
 
-  {{-- جديد: اختيار فصول أكاديمية متعددة بدلاً من عمود term المحذوف --}}
+  {{-- اختيار فصول أكاديمية متعددة --}}
   <div class="col-md-9">
     <label class="form-label">الفصول الأكاديمية المرتبطة بالمادة (يمكن اختيار أكثر من فصل)</label>
     <select name="term_ids[]" id="term_ids" class="form-select" multiple size="6">
@@ -133,16 +137,17 @@ function filterMajorsByCollege(){
     });
 }
 
-document.getElementById('scope_select').addEventListener('change', toggleScope);
-document.getElementById('university_id').addEventListener('change', function(){
+document.addEventListener('DOMContentLoaded', function(){
+  toggleScope();
   filterCollegesByUniversity();
   filterMajorsByCollege();
-});
-document.getElementById('college_id').addEventListener('change', filterMajorsByCollege);
 
-// تهيئة أولية
-toggleScope();
-filterCollegesByUniversity();
-filterMajorsByCollege();
+  document.getElementById('scope_select').addEventListener('change', toggleScope);
+  document.getElementById('university_id').addEventListener('change', function(){
+    filterCollegesByUniversity();
+    filterMajorsByCollege();
+  });
+  document.getElementById('college_id').addEventListener('change', filterMajorsByCollege);
+});
 </script>
 @endpush

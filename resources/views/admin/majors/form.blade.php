@@ -5,17 +5,15 @@
     <select class="form-select" id="university_select" onchange="filterColleges()">
       <option value="">— اختر —</option>
       @foreach($universities as $u)
-        <option value="{{ $u->id }}"
-          @selected(old('university_id') == $u->id)>
-          {{ $u->name }}
-        </option>
+        <option value="{{ $u->id }}" @selected(old('university_id') == $u->id)>{{ $u->name }}</option>
       @endforeach
     </select>
+    <div class="form-text">لا يتم حفظ هذا الحقل، يستخدم فقط لتصفية الكليات أدناه.</div>
   </div>
 
   {{-- الكلية (المطلوبة للحفظ) --}}
   <div class="col-md-6">
-    <label class="form-label">الكلية</label>
+    <label class="form-label">الكلية <span class="text-danger">*</span></label>
     <select name="college_id" class="form-select" id="college_select" required>
       <option value="">— اختر —</option>
       @foreach($colleges as $c)
@@ -32,9 +30,8 @@
 
   {{-- اسم التخصص --}}
   <div class="col-md-8">
-    <label class="form-label">اسم التخصص</label>
-    <input type="text" name="name" class="form-control" required
-           value="{{ old('name', $major->name ?? '') }}">
+    <label class="form-label">اسم التخصص <span class="text-danger">*</span></label>
+    <input type="text" name="name" class="form-control" required value="{{ old('name', $major->name ?? '') }}">
   </div>
 
   {{-- الحالة --}}
@@ -67,7 +64,7 @@
     });
   };
 
-  // اختيار الجامعة تلقائياً بناءً على الكلية المحددة عند التحميل
+  // عند التحميل: لو الكلية محددة سلفًا، اضبط الجامعة تلقائيًا لتلك الكلية
   document.addEventListener('DOMContentLoaded', function(){
     const selectedCollege = collegeSelect.querySelector('option[data-university][selected]');
     if (selectedCollege && !uniSelect.value) {

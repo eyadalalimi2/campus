@@ -37,6 +37,21 @@
             <a class="stretched-link" href="{{ route('admin.universities.index') }}"></a>
         </div>
     </div>
+
+    {{-- الفروع (جديد) --}}
+    <div class="col-12 col-md-6 col-xl-3">
+        <div class="card kpi-card grad-col p-3 h-100 position-relative">
+            <div class="icon-wrap"><i class="bi bi-diagram-3-fill"></i></div>
+            <div class="muted">عدد الفروع</div>
+            <div class="value">{{ number_format($branchTotal) }}</div>
+            <div class="d-flex gap-3 mt-2 small">
+                <span class="badge bg-light text-dark">مفعل: {{ number_format($branchActive) }}</span>
+                <span class="badge bg-dark">موقوف: {{ number_format($branchInactive) }}</span>
+            </div>
+            <a class="stretched-link" href="{{ route('admin.branches.index') }}"></a>
+        </div>
+    </div>
+
     {{-- الكليات --}}
     <div class="col-12 col-md-6 col-xl-3">
         <div class="card kpi-card grad-col p-3 h-100 position-relative">
@@ -50,6 +65,7 @@
             <a class="stretched-link" href="{{ route('admin.colleges.index') }}"></a>
         </div>
     </div>
+
     {{-- التخصصات --}}
     <div class="col-12 col-md-6 col-xl-3">
         <div class="card kpi-card grad-maj p-3 h-100 position-relative">
@@ -63,6 +79,7 @@
             <a class="stretched-link" href="{{ route('admin.majors.index') }}"></a>
         </div>
     </div>
+
     {{-- الدكاترة --}}
     <div class="col-12 col-md-6 col-xl-3">
         <div class="card kpi-card grad-doc p-3 h-100 position-relative">
@@ -95,6 +112,7 @@
             <a class="stretched-link" href="{{ route('admin.materials.index') }}"></a>
         </div>
     </div>
+
     {{-- الأجهزة --}}
     <div class="col-12 col-md-6 col-xl-3">
         <div class="card kpi-card grad-dev p-3 h-100 position-relative">
@@ -108,6 +126,7 @@
             <a class="stretched-link" href="{{ route('admin.devices.index') }}"></a>
         </div>
     </div>
+
     {{-- المدونات --}}
     <div class="col-12 col-md-6 col-xl-3">
         <div class="card kpi-card grad-blog p-3 h-100 position-relative">
@@ -122,6 +141,7 @@
             <a class="stretched-link" href="{{ route('admin.blogs.index') }}"></a>
         </div>
     </div>
+
     {{-- الاشتراكات --}}
     <div class="col-12 col-md-6 col-xl-3">
         <div class="card kpi-card grad-sub p-3 h-100 position-relative">
@@ -135,7 +155,7 @@
             <a class="stretched-link" href="{{ route('admin.subscriptions.index') }}"></a>
         </div>
     </div>
-    
+
     {{-- المجالات --}}
     <div class="col-12 col-md-6 col-xl-3">
         <div class="card kpi-card grad-sub p-3 h-100 position-relative">
@@ -191,6 +211,7 @@
             <a class="stretched-link" href="{{ route('admin.academic-terms.index') }}"></a>
         </div>
     </div>
+
     {{-- المحتوى --}}
     <div class="col-12">
         <div class="card kpi-card grad-cnt p-3 position-relative">
@@ -210,6 +231,7 @@
         </div>
     </div>
 </div>
+
 {{-- التنبيهات --}}
 <div class="row g-3 mt-1">
     <div class="col-12">
@@ -295,14 +317,16 @@
             </div>
         </div>
     </div>
+
+    {{-- مخطط الفروع (جديد) --}}
     <div class="col-lg-6">
         <div class="card card-soft p-3 h-100">
             <div class="d-flex justify-content-between align-items-center">
-                <h6 class="mb-0">نمو عدد الطلاب (آخر 12 شهرًا)</h6>
-                <i class="bi bi-graph-up"></i>
+                <h6 class="mb-0">توزيع الطلاب على الفروع (Top 10)</h6>
+                <i class="bi bi-bar-chart"></i>
             </div>
             <div style="height: 220px">
-                <canvas id="chartStudentsMonthly"></canvas>
+                <canvas id="chartStudentsPerBranch"></canvas>
             </div>
         </div>
     </div>
@@ -402,13 +426,31 @@
     </div>
 </div>
 
-{{-- ملخص سريع للجامعات وأحدث المدونات --}}
+{{-- ملخص سريع للجامعات --}}
 <div class="row g-3 mt-3">
-    {{-- ملخص الجامعات --}}
     <div class="col-lg-6">
         <div class="card card-soft h-100">
             <div class="card-header bg-white"><strong>ملخص سريع للجامعات</strong></div>
             <div class="table-responsive">
+
+                {{-- خرائط مجمّعة لتفادي N+1 وتصحيح الكليات (جامعات ← فروع ← كليات) --}}
+                @php
+                    $uStudents = \App\Models\User::selectRaw('university_id, COUNT(*) as c')
+                        ->whereNotNull('university_id')
+                        ->groupBy('university_id')
+                        ->pluck('c','university_id');
+
+                    $uColleges = \App\Models\College::selectRaw('university_branches.university_id as uid, COUNT(colleges.id) as c')
+                        ->join('university_branches','university_branches.id','=','colleges.branch_id')
+                        ->groupBy('university_branches.university_id')
+                        ->pluck('c','uid');
+
+                    $uMaterials = \App\Models\Material::selectRaw('university_id, COUNT(*) as c')
+                        ->whereNotNull('university_id')
+                        ->groupBy('university_id')
+                        ->pluck('c','university_id');
+                @endphp
+
                 <table class="table table-sm mb-0 align-middle">
                     <thead class="table-light">
                         <tr>
@@ -422,15 +464,9 @@
                         @forelse($universitiesQuick as $u)
                             <tr>
                                 <td class="fw-semibold">{{ $u->name }}</td>
-                                <td class="text-muted">
-                                    {{ number_format(\App\Models\User::where('university_id', $u->id)->count()) }}
-                                </td>
-                                <td class="text-muted">
-                                    {{ number_format(\App\Models\College::where('university_id', $u->id)->count()) }}
-                                </td>
-                                <td class="text-muted">
-                                    {{ number_format(\App\Models\Material::where('university_id', $u->id)->count()) }}
-                                </td>
+                                <td class="text-muted">{{ number_format($uStudents[$u->id] ?? 0) }}</td>
+                                <td class="text-muted">{{ number_format($uColleges[$u->id] ?? 0) }}</td>
+                                <td class="text-muted">{{ number_format($uMaterials[$u->id] ?? 0) }}</td>
                             </tr>
                         @empty
                             <tr><td colspan="4" class="text-center text-muted">—</td></tr>
@@ -440,6 +476,7 @@
             </div>
         </div>
     </div>
+
     {{-- أحدث المدونات --}}
     <div class="col-lg-6">
         <div class="card card-soft h-100">
@@ -486,11 +523,17 @@
 
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
 <script id="dashboard-data" type="application/json">
 {!! json_encode([
     'studentsPerUniversity' => [
         'labels' => $studentsPerUniversity->pluck('uname')->map(fn($n) => $n ?: '—'),
         'data'   => $studentsPerUniversity->pluck('c'),
+    ],
+    // جديد: بيانات الفروع
+    'studentsPerBranch' => [
+        'labels' => $studentsPerBranch->pluck('ub_name')->map(fn($n) => $n ?: '—'),
+        'data'   => $studentsPerBranch->pluck('c'),
     ],
     'studentsMonthly' => [
         'labels' => $studentsMonthly->pluck('ym'),
@@ -507,5 +550,6 @@
     ]
 ], JSON_UNESCAPED_UNICODE) !!}
 </script>
+
 <script src="{{ asset('js/dashboard.js') }}"></script>
 @endpush
