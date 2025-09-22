@@ -94,9 +94,9 @@
           <option value="">— اختر —</option>
           @foreach($colleges as $c)
             <option value="{{ $c->id }}"
-                    data-university="{{ $c->university_id ?? ($c->branch?->university_id) }}"
+                    data-branch="{{ $c->branch_id ?? '' }}"
                     @selected($selCol == $c->id)>
-              {{ $c->name }} ({{ optional($c->university)->name ?? '—' }})
+              {{ $c->name }} ({{ optional($c->branch)->name ?? '—' }})
             </option>
           @endforeach
         </select>
@@ -179,11 +179,11 @@
     });
   }
 
-  function filterCollegesByUniversity(){
-    const uniId = $uni.value || '';
+  function filterCollegesByBranch(){
+    const branchId = $br.value || '';
     [...$col.options].forEach(o=>{
       if(!o.value) return;
-      const show = !uniId || (o.dataset.university === uniId);
+      const show = !branchId || (o.dataset.branch === branchId);
       o.hidden = !show;
       if(!show && o.selected) o.selected = false;
     });
@@ -216,7 +216,12 @@
   $uni.addEventListener('change', function(){
     $br.value = ''; $col.value = ''; $maj.value = '';
     filterBranchesByUniversity();
-    filterCollegesByUniversity();
+    filterCollegesByBranch();
+    filterMajorsByCollege();
+  });
+  $br.addEventListener('change', function(){
+    $col.value = ''; $maj.value = '';
+    filterCollegesByBranch();
     filterMajorsByCollege();
   });
   $col.addEventListener('change', filterMajorsByCollege);
@@ -225,7 +230,7 @@
   // init
   doc_toggleType();
   filterBranchesByUniversity();
-  filterCollegesByUniversity();
+  filterCollegesByBranch();
   filterMajorsByCollege();
   filterPublicMajorsByCollege();
 })();

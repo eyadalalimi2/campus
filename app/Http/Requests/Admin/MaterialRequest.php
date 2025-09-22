@@ -23,6 +23,7 @@ class MaterialRequest extends FormRequest
 
             // مفاتيح النطاق الخاص
             'university_id' => ['nullable','required_if:scope,university','integer','exists:universities,id'],
+                'branch_id'     => ['nullable','required_if:scope,university','integer','exists:branches,id'],
             // التحقق الأساسي، والتحقق العميق سيتم في withValidator
             'college_id'    => ['nullable','integer','exists:colleges,id'],
             'major_id'      => ['nullable','integer','exists:majors,id'],
@@ -41,22 +42,33 @@ class MaterialRequest extends FormRequest
     public function withValidator($validator): void
     {
         $validator->after(function ($v) {
-            $scope        = $this->input('scope');
-            $universityId = $this->input('university_id');
-            $collegeId    = $this->input('college_id');
-            $majorId      = $this->input('major_id');
+            $scope        = $this->get('scope');
+            $universityId = $this->get('university_id');
+            $branchId     = $this->get('branch_id');
+            $collegeId    = $this->get('college_id');
+            $majorId      = $this->get('major_id');
 
             // تحقق متسلسل عند النطاق الخاص
             if ($scope === 'university') {
+                    // 0) الفرع يجب أن يتبع الجامعة
+                    if ($branchId) {
+                        $ok = DB::table('branches')
+                            ->where('id', $branchId)
+                            ->where('university_id', $universityId)
+                            ->exists();
+                        if (!$ok) {
+                            $v->errors()->add('branch_id', 'الفرع لا يتبع الجامعة المحددة.');
+                        }
+                    }
                 // 1) الكلية (إن وُجدت) يجب أن تتبع الجامعة المختارة
                 if ($collegeId) {
-                    $ok = DB::table('colleges')
-                        ->where('id', $collegeId)
-                        ->where('university_id', $universityId)
-                        ->exists();
-                    if (!$ok) {
-                        $v->errors()->add('college_id', 'الكلية لا تتبع الجامعة المحددة.');
-                    }
+                        $ok = DB::table('colleges')
+                            ->where('id', $collegeId)
+                            ->where('branch_id', $branchId)
+                            ->exists();
+                        if (!$ok) {
+                            $v->errors()->add('college_id', 'الكلية لا تتبع الفرع المحدد.');
+                        }
                 }
 
                 // 2) التخصص (إن وُجد) يجب أن يتبع الكلية/الجامعة
@@ -70,14 +82,14 @@ class MaterialRequest extends FormRequest
                             $v->errors()->add('major_id', 'التخصص لا يتبع الكلية المحددة.');
                         } else {
                             // بدون كلية: نتحقق على مستوى الجامعة عبر join مع الكليات
-                            $ok = DB::table('majors as m')
-                                ->join('colleges as c', 'c.id', '=', 'm.college_id')
-                                ->where('m.id', $majorId)
-                                ->where('c.university_id', $universityId)
-                                ->exists();
-                            if (!$ok) {
-                                $v->errors()->add('major_id', 'التخصص لا يتبع الجامعة المحددة.');
-                            }
+                                $ok = DB::table('majors as m')
+                                    ->join('colleges as c', 'c.id', '=', 'm.college_id')
+                                    ->where('m.id', $majorId)
+                                    ->where('c.branch_id', $branchId)
+                                    ->exists();
+                                if (!$ok) {
+                                    $v->errors()->add('major_id', 'التخصص لا يتبع الفرع المحدد.');
+                                }
                         }
                     }
                 }

@@ -57,16 +57,30 @@
     </select>
   </div>
 
+    <div class="col-md-4 scope-university">
+      <label class="form-label">الفرع (اختياري)</label>
+      <select name="branch_id" id="branch_id" class="form-select">
+        <option value="">— اختر —</option>
+    @foreach(\App\Models\UniversityBranch::with('university')->orderBy('name')->get() as $b)
+          <option value="{{ $b->id }}"
+                  data-university="{{ $b->university_id }}"
+                  @selected(old('branch_id',$material->branch_id ?? '')==$b->id)>
+            {{ $b->name }} ({{ $b->university->name ?? '—' }})
+          </option>
+        @endforeach
+      </select>
+    </div>
+
   <div class="col-md-4 scope-university">
     <label class="form-label">الكلية (اختياري)</label>
     <select name="college_id" id="college_id" class="form-select">
       <option value="">— اختر —</option>
       @foreach(\App\Models\College::orderBy('name')->get() as $c)
-        <option value="{{ $c->id }}"
-                data-university="{{ $c->university_id ?? ($c->branch?->university_id) }}"
-                @selected(old('college_id',$material->college_id ?? '')==$c->id)>
-          {{ $c->name }} ({{ optional($c->university)->name ?? '—' }})
-        </option>
+          <option value="{{ $c->id }}"
+                  data-branch="{{ $c->branch_id }}"
+                  @selected(old('college_id',$material->college_id ?? '')==$c->id)>
+            {{ $c->name }} ({{ $c->branch->name ?? '—' }})
+          </option>
       @endforeach
     </select>
   </div>
@@ -118,11 +132,20 @@ function toggleScope(){
   document.querySelectorAll('.scope-university')
     .forEach(el => el.style.display = (sc==='university' ? '' : 'none'));
 }
-function filterCollegesByUniversity(){
+function filterBranchesByUniversity(){
   const uniId = document.getElementById('university_id').value;
-  document.querySelectorAll('#college_id option[data-university]')
+  document.querySelectorAll('#branch_id option[data-university]')
     .forEach(o => {
       const show = !uniId || (o.dataset.university === uniId);
+      o.hidden = !show;
+      if(!show && o.selected) o.selected = false;
+    });
+}
+function filterCollegesByUniversity(){
+  const branchId = document.getElementById('branch_id').value;
+  document.querySelectorAll('#college_id option[data-branch]')
+    .forEach(o => {
+      const show = !branchId || (o.dataset.branch === branchId);
       o.hidden = !show;
       if(!show && o.selected) o.selected = false;
     });
@@ -139,11 +162,17 @@ function filterMajorsByCollege(){
 
 document.addEventListener('DOMContentLoaded', function(){
   toggleScope();
+  filterBranchesByUniversity();
   filterCollegesByUniversity();
   filterMajorsByCollege();
 
   document.getElementById('scope_select').addEventListener('change', toggleScope);
   document.getElementById('university_id').addEventListener('change', function(){
+    filterBranchesByUniversity();
+    filterCollegesByUniversity();
+    filterMajorsByCollege();
+  });
+  document.getElementById('branch_id').addEventListener('change', function(){
     filterCollegesByUniversity();
     filterMajorsByCollege();
   });
