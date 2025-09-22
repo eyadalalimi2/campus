@@ -127,11 +127,22 @@
 
 <body>
     @include('admin.partials.navbar')
+    
     <div class="container-fluid my-4">
         <div class="row g-4">
+            <!-- القائمة الجانبية كـ offcanvas للشاشات الصغيرة و aside للشاشات الكبيرة -->
             <aside class="col-lg-2 d-none d-lg-block">
                 @include('admin.partials.sidebar')
             </aside>
+            <div class="offcanvas offcanvas-start d-lg-none" tabindex="-1" id="adminSidebar" aria-labelledby="adminSidebarLabel">
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title" id="adminSidebarLabel">القائمة الجانبية</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="إغلاق"></button>
+                </div>
+                <div class="offcanvas-body p-0">
+                    @include('admin.partials.sidebar')
+                </div>
+            </div>
 
             @include('admin.partials.flash')
             <main class="col-lg-10">

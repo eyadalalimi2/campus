@@ -1,6 +1,10 @@
 <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top" style="min-height:70px;">
     <div class="container-fluid">
 
+        <!-- زر القائمة الجانبية للشاشات الصغيرة قبل اللوجو والاسم -->
+        <button class="btn btn-outline-primary d-lg-none me-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#adminSidebar" aria-controls="adminSidebar">
+            <i class="bi bi-list"></i>
+        </button>
         {{-- Brand + Logo + Current University Badge --}}
         <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="{{ route('admin.dashboard') }}">
             <img src="{{ Storage::url('images/logo.png') }}" style="height:36px;width:auto;">
