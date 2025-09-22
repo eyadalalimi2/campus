@@ -21,7 +21,7 @@
   @include('admin.users.form', [
     'user'         => null,
     'universities' => $universities,
-    'branches'     => $branches,     {{-- ✅ جديد: تمريـر الفروع --}}
+    'branches'     => $branches,     
     'colleges'     => $colleges,
     'majors'       => $majors,
     'countries'    => $countries,
