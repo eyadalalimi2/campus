@@ -36,7 +36,12 @@ class MaterialController extends Controller
 
         $universities = University::orderBy('name')->get();
         $colleges     = College::orderBy('name')->get();
-        $majors       = Major::orderBy('name')->get();
+        // جلب التخصصات المرتبطة بالكلية المختارة فقط
+        if ($r->filled('college_id')) {
+            $majors = Major::where('college_id', $r->college_id)->orderBy('name')->get();
+        } else {
+            $majors = Major::orderBy('name')->get();
+        }
         $terms        = AcademicTerm::with('calendar')->active()->orderBy('starts_on')->get();
 
         return view('admin.materials.index', compact('materials','universities','colleges','majors','terms'));

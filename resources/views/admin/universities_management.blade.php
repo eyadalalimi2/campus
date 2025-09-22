@@ -38,6 +38,43 @@
                     <i class="bi bi-link"></i> ربط التخصص بالبرنامج
                 </a>
             </div>
+            <div class="col-md-4">
+                <div class="nav-item mb-2">
+                    <a href="{{ route('admin.countries.index') }}" class="btn btn-outline-secondary w-100 mb-2">
+                        <i class="bi bi-globe2"></i> إدارة الدول
+                    </a>
+                </div>
+                <div class="nav-item mb-2">
+                    <a href="{{ route('admin.materials.index') }}" class="btn btn-outline-secondary w-100 mb-2">
+                        <i class="bi bi-journal-text"></i> إدارة المواد
+                    </a>
+                </div>
+                <div class="nav-item mb-2">
+                    <a href="{{ route('admin.devices.index') }}" class="btn btn-outline-secondary w-100 mb-2">
+                        <i class="bi bi-cpu"></i> إدارة الأجهزة
+                    </a>
+                </div>
+                <div class="nav-item mb-2">
+                    <a href="{{ route('admin.plans.index') }}" class="btn btn-outline-secondary w-100 mb-2">
+                        <i class="bi bi-card-checklist"></i> الخطط
+                    </a>
+                </div>
+                <div class="nav-item mb-2">
+                    <a href="{{ route('admin.subscriptions.index') }}" class="btn btn-outline-secondary w-100 mb-2">
+                        <i class="bi bi-credit-card-2-front"></i> الاشتراكات
+                    </a>
+                </div>
+                <div class="nav-item mb-2">
+                    <a href="{{ route('admin.activation_code_batches.index') }}" class="btn btn-outline-secondary w-100 mb-2">
+                        <i class="bi bi-boxes"></i> دفعات الأكواد
+                    </a>
+                </div>
+                <div class="nav-item mb-2">
+                    <a href="{{ route('admin.activation_codes.index') }}" class="btn btn-outline-secondary w-100 mb-2">
+                        <i class="bi bi-qr-code"></i> الأكواد الفردية
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 </div>
