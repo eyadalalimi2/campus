@@ -100,17 +100,17 @@ class UserController extends Controller
     $linked = ($req->input('is_linked_to_university') === '1');
 
         if ($linked) {
-            // مرتبط: نُبقي الحقول المؤسسية كما هي (حسب التحقق في FormRequest)
-            // يمكن جعل student_number/level مطلوبة/اختيارية وفق سياستك.
-            // الحقول العامة تُحفظ إذا أرسلت.
+            // مرتبط: نُبقي المؤسسي ونُهمل العام
+            $data['public_college_id'] = null;
+            $data['public_major_id'] = null;
         } else {
-            // غير مرتبط: نظّف الروابط المؤسسية + الحقول الأكاديمية
+            // غير مرتبط: ننظّف المؤسسي + الحقول الأكاديمية
             $data['university_id']  = null;
+            $data['branch_id']      = null;
             $data['college_id']     = null;
             $data['major_id']       = null;
             $data['student_number'] = null;
             $data['level']          = null;
-            // public_college_id و public_major_id تُحفظ كما أرسلت
         }
 
         // country_id: إن لم يُرسل، استخدم اليمن كافتراضي (إن وجد)
@@ -169,15 +169,15 @@ class UserController extends Controller
     $linked = ($req->input('is_linked_to_university') === '1');
 
         if ($linked) {
-            // مرتبط: نُبقي المؤسسي ونُهمل العام إذا لم يُرسل
+            $data['public_college_id'] = null;
+            $data['public_major_id'] = null;
         } else {
-            // غير مرتبط: ننظّف المؤسسي + الحقول الأكاديمية
             $data['university_id']  = null;
+            $data['branch_id']      = null;
             $data['college_id']     = null;
             $data['major_id']       = null;
             $data['student_number'] = null;
             $data['level']          = null;
-            // public_college_id و public_major_id تُحفظ كما أرسلت
         }
 
         // country_id افتراضي لليمن إن لم يُرسل

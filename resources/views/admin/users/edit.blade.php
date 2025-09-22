@@ -19,14 +19,14 @@
   @method('PUT')
 
   @include('admin.users.form', [
-    'user'           => $user,
-    'universities'   => $universities,
-    'branches'       => $branches,    
-    'colleges'       => $colleges,
-    'majors'         => $majors,
-    'countries'      => $countries,
-    'publicColleges' => $publicColleges ?? null,
-    'publicMajors'   => $publicMajors ?? null,
+     'user'           => $user,
+     'universities'   => $universities,
+     'branches'       => $branches,    
+     'colleges'       => $colleges,
+     'majors'         => $majors,
+     'countries'      => $countries,
+     'publicColleges' => $publicColleges,
+     'publicMajors'   => $publicMajors,
   ])
 
   <div class="mt-3 d-flex gap-2">

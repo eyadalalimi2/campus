@@ -74,15 +74,25 @@
                     <div class="row mb-3">
                         <div class="col-md-12">
                             <div class="text-muted small">الجامعة / الكلية / التخصص</div>
-                            <div class="fw-semibold">
-                                {{ $user->university->name ?? '—' }}
-                                @if ($user->college)
-                                    / {{ $user->college->name }}
-                                @endif
-                                @if ($user->major)
-                                    / {{ $user->major->name }}
-                                @endif
-                            </div>
+                                <div class="fw-semibold">
+                                    @if ($user->university)
+                                        {{ $user->university->name }}
+                                        @if ($user->college)
+                                            / {{ $user->college->name }}
+                                        @endif
+                                        @if ($user->major)
+                                            / {{ $user->major->name }}
+                                        @endif
+                                    @else
+                                        غير مرتبط بجامعة
+                                        @if ($user->publicCollege)
+                                            / {{ $user->publicCollege->name }}
+                                        @endif
+                                        @if ($user->publicMajor)
+                                            / {{ $user->publicMajor->name }}
+                                        @endif
+                                    @endif
+                                </div>
                         </div>
                     </div>
 

@@ -19,14 +19,14 @@
   @csrf
 
   @include('admin.users.form', [
-    'user'         => null,
-    'universities' => $universities,
-    'branches'     => $branches,     
-    'colleges'     => $colleges,
-    'majors'       => $majors,
-    'countries'    => $countries,
-    'publicColleges' => $publicColleges ?? null,
-    'publicMajors'   => $publicMajors ?? null,
+     'user'         => null,
+     'universities' => $universities,
+     'branches'     => $branches,     
+     'colleges'     => $colleges,
+     'majors'       => $majors,
+     'countries'    => $countries,
+     'publicColleges' => $publicColleges,
+     'publicMajors'   => $publicMajors,
   ])
 
   <div class="mt-3 d-flex gap-2">

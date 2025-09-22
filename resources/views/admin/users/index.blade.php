@@ -117,8 +117,12 @@
                                 @if ($u->major)   / {{ $u->major->name }}   @endif
                             @else
                                 <span class="text-danger">غير مرتبط بجامعة</span>
-                                @if ($u->publicCollege) / {{ $u->publicCollege->name }} @endif
-                                @if ($u->publicMajor) / {{ $u->publicMajor->name }} @endif
+                                @if ($u->publicCollege)
+                                    / {{ $u->publicCollege->name }}
+                                @endif
+                                @if ($u->publicMajor)
+                                    / {{ $u->publicMajor->name }}
+                                @endif
                             @endif
                         </td>
 
