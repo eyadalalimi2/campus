@@ -90,7 +90,14 @@ class DoctorController extends Controller
                 ->orderBy('name')->get();
         }
 
-        return view('admin.doctors.create', compact('universities','branches','colleges','majors'));
+        // جلب الكليات العامة والتخصصات العامة
+        $publicColleges = \App\Models\PublicCollege::orderBy('name')->get();
+        $publicMajors   = \App\Models\PublicMajor::orderBy('name')->get();
+
+        return view('admin.doctors.create', compact(
+            'universities','branches','colleges','majors',
+            'publicColleges','publicMajors'
+        ));
     }
 
     public function store(Request $r)
@@ -123,7 +130,7 @@ class DoctorController extends Controller
         $this->validateHierarchy($r);
 
         $data = $r->only([
-            'name','type','university_id','branch_id','college_id','major_id','degree','degree_year','phone'
+            'name','type','university_id','branch_id','college_id','major_id','degree','degree_year','phone','public_college_id','public_major_id'
         ]);
         $data['is_active'] = (bool)$r->boolean('is_active');
 
@@ -197,7 +204,7 @@ class DoctorController extends Controller
         // تحقق هرمي إضافي
         $this->validateHierarchy($r);
 
-        $data = $r->only(['name','type','university_id','branch_id','college_id','major_id','degree','degree_year','phone']);
+    $data = $r->only(['name','type','university_id','branch_id','college_id','major_id','degree','degree_year','phone','public_college_id','public_major_id']);
         $data['is_active'] = (bool)$r->boolean('is_active');
 
         if ($r->hasFile('photo')) {

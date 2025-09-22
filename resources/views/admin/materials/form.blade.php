@@ -61,11 +61,11 @@
     <label class="form-label">الكلية (اختياري)</label>
     <select name="college_id" id="college_id" class="form-select">
       <option value="">— اختر —</option>
-      @foreach(\App\Models\College::with('university')->orderBy('name')->get() as $c)
+      @foreach(\App\Models\College::orderBy('name')->get() as $c)
         <option value="{{ $c->id }}"
-                data-university="{{ $c->university_id }}"
+                data-university="{{ $c->university_id ?? ($c->branch?->university_id) }}"
                 @selected(old('college_id',$material->college_id ?? '')==$c->id)>
-          {{ $c->name }} ({{ $c->university->name }})
+          {{ $c->name }} ({{ optional($c->university)->name ?? '—' }})
         </option>
       @endforeach
     </select>

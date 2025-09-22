@@ -16,7 +16,6 @@
                 <th>الاسم بالعربية</th>
                 <th>الرمز ISO2</th>
                 <th>رمز الهاتف</th>
-                <th>العملة</th>
                 <th>نشط؟</th>
                 <th class="text-center">إجراءات</th>
             </tr>
@@ -28,7 +27,6 @@
                 <td>{{ $country->name_ar }}</td>
                 <td>{{ $country->iso2 ?: '—' }}</td>
                 <td>{{ $country->phone_code ?: '—' }}</td>
-                <td>{{ $country->currency_code ?: '—' }}</td>
                 <td>
                     {!! $country->is_active
                         ? '<span class="badge bg-success">نعم</span>'

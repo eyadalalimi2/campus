@@ -112,18 +112,16 @@
             @if($d->college) / {{ $d->college->name }} @endif
             @if($d->major)   / {{ $d->major->name }}   @endif
           @else
-            —
+            {{-- عرض الكلية العامة فقط للدكتور المستقل --}}
+            {{ $d->public_college?->name ?? '—' }}
           @endif
         </td>
         <td class="small">
           @if($d->type==='university')
             <span class="badge bg-light text-dark">{{ optional($d->major)->name ?? '—' }}</span>
           @else
-            @forelse($d->majors as $m)
-              <span class="badge bg-light text-dark">{{ $m->name }}</span>
-            @empty
-              <span class="text-muted">—</span>
-            @endforelse
+            {{-- عرض التخصص العام فقط للدكتور المستقل --}}
+            <span class="badge bg-light text-dark">{{ $d->public_major?->name ?? '—' }}</span>
           @endif
         </td>
         <td>{{ $d->phone ?: '—' }}</td>

@@ -22,12 +22,23 @@ class Doctor extends Model
         'branch_id',
         'college_id',
         'major_id',
+        'public_college_id',
+        'public_major_id',
         'degree',
         'degree_year',
         'phone',
         'photo_path',
         'is_active',
     ];
+    public function public_college(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\PublicCollege::class, 'public_college_id');
+    }
+
+    public function public_major(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\PublicMajor::class, 'public_major_id');
+    }
 
     protected $hidden = [
         'password',

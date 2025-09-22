@@ -22,10 +22,10 @@
 </div>
 
 <div class="mb-3">
-    <label for="currency_code" class="form-label">رمز العملة (اختياري)</label>
+    {{-- <label for="currency_code" class="form-label">رمز العملة (اختياري)</label>
     <input type="text" name="currency_code" id="currency_code" class="form-control @error('currency_code') is-invalid @enderror"
-           value="{{ old('currency_code', $country->currency_code ?? '') }}" maxlength="3" placeholder="مثلاً: YER">
-    @error('currency_code') <div class="invalid-feedback">{{ $message }}</div> @enderror
+        value="{{ old('currency_code', $country->currency_code ?? '') }}" maxlength="3" placeholder="مثلاً: YER">
+    @error('currency_code') <div class="invalid-feedback">{{ $message }}</div> @enderror --}}
 </div>
 
 <div class="form-check mb-3">

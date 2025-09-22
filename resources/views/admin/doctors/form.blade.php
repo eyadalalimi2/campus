@@ -3,6 +3,8 @@
   use App\Models\UniversityBranch;
   use App\Models\College;
   use App\Models\Major;
+  use App\Models\PublicCollege;
+  use App\Models\PublicMajor;
 
   $isEdit = isset($doctor) && $doctor;
 
@@ -11,11 +13,15 @@
   $selBr   = old('branch_id',     $doctor->branch_id     ?? '');
   $selCol  = old('college_id',    $doctor->college_id    ?? '');
   $selMaj  = old('major_id',      $doctor->major_id      ?? '');
+  $selPubCol = old('public_college_id', $doctor->public_college_id ?? '');
+  $selPubMaj = old('public_major_id',   $doctor->public_major_id   ?? '');
 
   $universities = University::orderBy('name')->get();
   $branches     = UniversityBranch::with('university')->orderBy('name')->get();
   $colleges     = College::orderBy('name')->get();
   $majorsAll    = Major::with('college')->orderBy('name')->get();
+  $publicColleges = $publicColleges ?? App\Models\PublicCollege::orderBy('name')->get();
+  $publicMajors   = $publicMajors   ?? App\Models\PublicMajor::orderBy('name')->get();
 @endphp
 
 <div class="row g-3">
@@ -58,71 +64,82 @@
 
   {{-- ===== الجامعي ===== --}}
   <div class="col-12"><hr><strong>بيانات الجامعات (للنوع: جامعي)</strong></div>
-
-  <div class="col-md-3 type-university">
-    <label class="form-label">الجامعة</label>
-    <select name="university_id" id="university_id" class="form-select">
-      <option value="">— اختر —</option>
-      @foreach($universities as $u)
-        <option value="{{ $u->id }}" @selected($selUni == $u->id)>{{ $u->name }}</option>
-      @endforeach
-    </select>
+  <div class="type-university">
+    <div class="row">
+      <div class="col-md-3">
+        <label class="form-label">الجامعة</label>
+        <select name="university_id" id="university_id" class="form-select">
+          <option value="">— اختر —</option>
+          @foreach($universities as $u)
+            <option value="{{ $u->id }}" @selected($selUni == $u->id)>{{ $u->name }}</option>
+          @endforeach
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">الفرع</label>
+        <select name="branch_id" id="branch_id" class="form-select">
+          <option value="">— اختر —</option>
+          @foreach($branches as $b)
+            <option value="{{ $b->id }}"
+                    data-university="{{ $b->university_id }}"
+                    @selected($selBr == $b->id)>
+              {{ $b->name }} ({{ $b->university?->name }})
+            </option>
+          @endforeach
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">الكلية</label>
+        <select name="college_id" id="college_id" class="form-select">
+          <option value="">— اختر —</option>
+          @foreach($colleges as $c)
+            <option value="{{ $c->id }}"
+                    data-university="{{ $c->university_id ?? ($c->branch?->university_id) }}"
+                    @selected($selCol == $c->id)>
+              {{ $c->name }} ({{ optional($c->university)->name ?? '—' }})
+            </option>
+          @endforeach
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">التخصص</label>
+        <select name="major_id" id="major_id" class="form-select">
+          <option value="">— اختر —</option>
+          @foreach($majorsAll as $m)
+            <option value="{{ $m->id }}"
+                    data-college="{{ $m->college_id }}"
+                    @selected($selMaj == $m->id)>
+              {{ $m->name }} ({{ $m->college?->name }})
+            </option>
+          @endforeach
+        </select>
+      </div>
+    </div>
   </div>
 
-  <div class="col-md-3 type-university">
-    <label class="form-label">الفرع</label>
-    <select name="branch_id" id="branch_id" class="form-select">
-      <option value="">— اختر —</option>
-      @foreach($branches as $b)
-        <option value="{{ $b->id }}"
-                data-university="{{ $b->university_id }}"
-                @selected($selBr == $b->id)>
-          {{ $b->name }} ({{ $b->university?->name }})
-        </option>
-      @endforeach
-    </select>
-  </div>
-
-  <div class="col-md-3 type-university">
-    <label class="form-label">الكلية</label>
-    <select name="college_id" id="college_id" class="form-select">
-      <option value="">— اختر —</option>
-      @foreach($colleges as $c)
-        <option value="{{ $c->id }}"
-                data-university="{{ $c->university_id ?? ($c->branch?->university_id) }}"
-                @selected($selCol == $c->id)>
-          {{ $c->name }} ({{ optional($c->university)->name ?? '—' }})
-        </option>
-      @endforeach
-    </select>
-  </div>
-
-  <div class="col-md-3 type-university">
-    <label class="form-label">التخصص</label>
-    <select name="major_id" id="major_id" class="form-select">
-      <option value="">— اختر —</option>
-      @foreach($majorsAll as $m)
-        <option value="{{ $m->id }}"
-                data-college="{{ $m->college_id }}"
-                @selected($selMaj == $m->id)>
-          {{ $m->name }} ({{ $m->college?->name }})
-        </option>
-      @endforeach
-    </select>
-  </div>
-
-  {{-- ===== المستقل ===== --}}
-  <div class="col-12"><hr><strong>تخصصات الدكتور المستقل (يمكن اختيار عدة تخصصات)</strong></div>
-  <div class="col-md-12 type-independent">
-    <label class="form-label">التخصصات</label>
-    <select name="major_ids[]" id="independent_majors" class="form-select" multiple size="6">
-      @foreach($majorsAll as $m)
-        <option value="{{ $m->id }}" @selected(in_array($m->id, old('major_ids', $selectedMajors ?? [])))>
-          {{ $m->name }} ({{ $m->college?->name }})
-        </option>
-      @endforeach
-    </select>
-    <div class="form-text">اضغط Ctrl/⌘ لاختيار أكثر من تخصص.</div>
+  {{-- ===== المستقل/المشهور ===== --}}
+  <div class="col-12"><hr><strong>الكليات العامة والتخصصات العامة (للنوع: مستقل/مشهور)</strong></div>
+  <div class="type-independent">
+    <div class="row">
+      <div class="col-md-6">
+        <label class="form-label">الكلية العامة</label>
+        <select name="public_college_id" id="public_college_id" class="form-select">
+          <option value="">— اختر —</option>
+          @foreach($publicColleges as $pc)
+            <option value="{{ $pc->id }}" @selected($selPubCol == $pc->id)>{{ $pc->name }}</option>
+          @endforeach
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">التخصص العام</label>
+        <select name="public_major_id" id="public_major_id" class="form-select">
+          <option value="">— اختر —</option>
+          @foreach($publicMajors as $pm)
+            <option value="{{ $pm->id }}" data-college="{{ $pm->public_college_id }}" @selected($selPubMaj == $pm->id)>{{ $pm->name }}</option>
+          @endforeach
+        </select>
+      </div>
+    </div>
   </div>
 
   <div class="col-md-3 d-flex align-items-end">
@@ -143,6 +160,8 @@
   const $br   = document.getElementById('branch_id');
   const $col  = document.getElementById('college_id');
   const $maj  = document.getElementById('major_id');
+  const $pubCol = document.getElementById('public_college_id');
+  const $pubMaj = document.getElementById('public_major_id');
 
   function doc_toggleType(){
     const t = $type.value;
@@ -180,22 +199,35 @@
     });
   }
 
+  function filterPublicMajorsByCollege(){
+    const pubColId = $pubCol?.value || '';
+    if($pubMaj){
+      [...$pubMaj.options].forEach(o=>{
+        if(!o.value) return;
+        const show = !pubColId || (o.dataset.college === pubColId);
+        o.hidden = !show;
+        if(!show && o.selected) o.selected = false;
+      });
+    }
+  }
+
   // cascade on change
   $type.addEventListener('change', doc_toggleType);
   $uni.addEventListener('change', function(){
-    // عند تغيير الجامعة: صفّر الفرع/الكلية/التخصص لتفادي أخطاء الاتساق
     $br.value = ''; $col.value = ''; $maj.value = '';
     filterBranchesByUniversity();
     filterCollegesByUniversity();
     filterMajorsByCollege();
   });
   $col.addEventListener('change', filterMajorsByCollege);
+  if($pubCol) $pubCol.addEventListener('change', filterPublicMajorsByCollege);
 
   // init
   doc_toggleType();
   filterBranchesByUniversity();
   filterCollegesByUniversity();
   filterMajorsByCollege();
+  filterPublicMajorsByCollege();
 })();
 </script>
 @endpush
