@@ -23,7 +23,7 @@ class MaterialRequest extends FormRequest
 
             // مفاتيح النطاق الخاص
             'university_id' => ['nullable','required_if:scope,university','integer','exists:universities,id'],
-                'branch_id'     => ['nullable','required_if:scope,university','integer','exists:branches,id'],
+                'branch_id'     => ['nullable','required_if:scope,university','integer','exists:university_branches,id'],
             // التحقق الأساسي، والتحقق العميق سيتم في withValidator
             'college_id'    => ['nullable','integer','exists:colleges,id'],
             'major_id'      => ['nullable','integer','exists:majors,id'],
@@ -52,7 +52,7 @@ class MaterialRequest extends FormRequest
             if ($scope === 'university') {
                     // 0) الفرع يجب أن يتبع الجامعة
                     if ($branchId) {
-                        $ok = DB::table('branches')
+                        $ok = DB::table('university_branches')
                             ->where('id', $branchId)
                             ->where('university_id', $universityId)
                             ->exists();

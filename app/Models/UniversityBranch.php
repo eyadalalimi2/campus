@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class UniversityBranch extends Model
 {
     use HasFactory;
+    
 
     protected $fillable = [
         'university_id',
