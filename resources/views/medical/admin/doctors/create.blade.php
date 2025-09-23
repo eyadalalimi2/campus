@@ -1,0 +1,38 @@
+
+@extends('admin.layouts.app')
+@section('title','دكتور جديد')
+@section('content')
+<div class="row justify-content-center">
+	<div class="col-md-7 col-lg-6">
+		<div class="card">
+			<div class="card-header"><i class="bi bi-person-badge"></i> إضافة دكتور جديد</div>
+			<div class="card-body">
+				<form method="post" action="{{ route('medical.doctors.store') }}">
+					@csrf
+					<div class="mb-3">
+						<label class="form-label">الاسم</label>
+						<input name="name" class="form-control" required>
+					</div>
+					<div class="mb-3">
+						<label class="form-label">رابط القناة</label>
+						<input name="channel_url" type="url" class="form-control" required>
+					</div>
+					<div class="mb-3">
+						<label class="form-label">الدولة</label>
+						<input name="country" maxlength="2" placeholder="YE" class="form-control">
+					</div>
+					<div class="mb-3 form-check">
+						<input type="checkbox" name="verified" class="form-check-input" id="verifiedCheck">
+						<label class="form-check-label" for="verifiedCheck">معتمد</label>
+					</div>
+					<div class="mb-3">
+						<label class="form-label">Score</label>
+						<input name="score" type="number" step="0.01" min="0" max="99.99" class="form-control">
+					</div>
+					<button class="btn btn-primary"><i class="bi bi-save"></i> حفظ</button>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+@endsection

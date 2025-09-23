@@ -1,0 +1,34 @@
+
+@extends('admin.layouts.app')
+@section('title','جامعة جديدة')
+@section('content')
+<div class="row justify-content-center">
+	<div class="col-md-7 col-lg-6">
+		<div class="card">
+			<div class="card-header"><i class="bi bi-building"></i> جامعة جديدة</div>
+			<div class="card-body">
+				<form method="post" action="{{ route('medical.universities.store') }}">
+					@csrf
+					<div class="mb-3">
+						<label class="form-label">الاسم</label>
+						<input name="name" class="form-control" required>
+					</div>
+					<div class="mb-3">
+						<label class="form-label">الكود</label>
+						<input name="code" class="form-control" required maxlength="50">
+					</div>
+					<div class="mb-3">
+						<label class="form-label">الدولة</label>
+						<input name="country" class="form-control" required maxlength="2" placeholder="YE">
+					</div>
+					<div class="form-check mb-3">
+						<input type="checkbox" class="form-check-input" name="is_active" id="is_active" checked>
+						<label class="form-check-label" for="is_active">فعال</label>
+					</div>
+					<button class="btn btn-primary"><i class="bi bi-save"></i> حفظ</button>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+@endsection
