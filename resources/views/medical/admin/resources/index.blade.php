@@ -80,5 +80,5 @@
   </tr>
   @endforeach
 </table>
-{{ $items->links() }}
+{{ $items->links('vendor.pagination.bootstrap-custom') }}
 @endsection

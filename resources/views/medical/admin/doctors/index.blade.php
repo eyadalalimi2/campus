@@ -40,6 +40,6 @@
       </tbody>
     </table>
   </div>
-  <div class="card-footer">{{ $items->links() }}</div>
+  <div class="card-footer">{{ $items->links('vendor.pagination.bootstrap-custom') }}</div>
 </div>
 @endsection
