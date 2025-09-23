@@ -22,7 +22,7 @@ class UserController extends Controller
     public function index(Request $r)
     {
         $q = User::query()
-            ->with(['country', 'university', 'college', 'major'])
+              ->with(['country', 'university', 'branch', 'college', 'major', 'publicCollege', 'publicMajor'])
             ->orderBy('name');
 
         // بحث حر: الاسم/البريد/الهاتف/الرقم الأكاديمي + اسم الدولة (عربي)
@@ -102,7 +102,7 @@ class UserController extends Controller
         if ($linked) {
             // مرتبط: نُبقي المؤسسي ونُهمل العام
             $data['public_college_id'] = null;
-            $data['public_major_id'] = null;
+            $data['public_major_id']   = null;
         } else {
             // غير مرتبط: ننظّف المؤسسي + الحقول الأكاديمية
             $data['university_id']  = null;
@@ -111,6 +111,8 @@ class UserController extends Controller
             $data['major_id']       = null;
             $data['student_number'] = null;
             $data['level']          = null;
+            $data['public_college_id'] = $req->input('public_college_id') ?: null;
+            $data['public_major_id']   = $req->input('public_major_id') ?: null;
         }
 
         // country_id: إن لم يُرسل، استخدم اليمن كافتراضي (إن وجد)
@@ -126,7 +128,7 @@ class UserController extends Controller
         }
 
         // تحقق البريد الإلكتروني
-        $data['email_verified_at'] = ($req->get('email_verified') == '1') ? now() : null;
+        $data['email_verified_at'] = ($req->input('email_verified') == '1') ? now() : null;
         User::create($data);
 
         return redirect()->route('admin.users.index')->with('success', 'تم إضافة الطالب.');
@@ -163,7 +165,7 @@ class UserController extends Controller
             unset($data['password']);
         }
         // تحقق البريد الإلكتروني
-        $data['email_verified_at'] = ($req->get('email_verified') == '1') ? now() : null;
+            $data['email_verified_at'] = ($req->input('email_verified') == '1') ? now() : null;
 
         // منطق “مرتبط/غير مرتبط بجامعة”
     $linked = ($req->input('is_linked_to_university') === '1');
@@ -178,6 +180,8 @@ class UserController extends Controller
             $data['major_id']       = null;
             $data['student_number'] = null;
             $data['level']          = null;
+                $data['public_college_id'] = $req->input('public_college_id') ?: null;
+                $data['public_major_id']   = $req->input('public_major_id') ?: null;
         }
 
         // country_id افتراضي لليمن إن لم يُرسل
