@@ -11,7 +11,6 @@
         <table class="table table-bordered align-middle mb-0">
             <thead class="table-light">
                 <tr>
-                    <th>الكود</th>
                     <th>الاسم</th>
                     <th>النطاق</th>
                     <th>فعال</th>
@@ -21,7 +20,7 @@
             <tbody>
                 @forelse($items as $x)
                 <tr>
-                    <td>{{ $x->code }}</td>
+
                     <td>{{ $x->name_ar }}</td>
                     <td>{{ $x->track_scope }}</td>
                     <td>{!! $x->is_active ? '<span class="badge bg-success">نعم</span>' : '<span class="badge bg-danger">لا</span>' !!}</td>

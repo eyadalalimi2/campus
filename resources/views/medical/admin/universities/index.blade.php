@@ -12,7 +12,6 @@
       <thead class="table-light">
         <tr>
           <th>الاسم</th>
-          <th>الكود</th>
           <th>الدولة</th>
           <th>فعال</th>
           <th>إجراءات</th>
@@ -22,7 +21,7 @@
         @forelse($items as $x)
         <tr>
           <td>{{ $x->name }}</td>
-          <td>{{ $x->code }}</td>
+
           <td>{{ $x->country }}</td>
           <td>{!! $x->is_active ? '<span class="badge bg-success">نعم</span>' : '<span class="badge bg-danger">لا</span>' !!}</td>
           <td>

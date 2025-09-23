@@ -9,10 +9,7 @@
 			<div class="card-body">
 				<form method="post" action="{{ route('medical.systems.update',$system) }}">
 					@csrf @method('PUT')
-					<div class="mb-3">
-						<label class="form-label">الكود</label>
-						<input name="code" class="form-control" value="{{ $system->code }}" required>
-					</div>
+					
 					<div class="mb-3">
 						<label class="form-label">الاسم (عربي)</label>
 						<input name="name_ar" class="form-control" value="{{ $system->name_ar }}" required>

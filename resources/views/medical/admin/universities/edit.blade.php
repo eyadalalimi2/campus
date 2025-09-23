@@ -14,10 +14,6 @@
 						<input name="name" class="form-control" value="{{ $university->name }}" required>
 					</div>
 					<div class="mb-3">
-						<label class="form-label">الكود</label>
-						<input name="code" class="form-control" value="{{ $university->code }}" required maxlength="50">
-					</div>
-					<div class="mb-3">
 						<label class="form-label">الدولة</label>
 						<input name="country" class="form-control" value="{{ $university->country }}" required maxlength="2">
 					</div>

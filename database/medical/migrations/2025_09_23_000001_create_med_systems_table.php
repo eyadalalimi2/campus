@@ -8,7 +8,7 @@ return new class extends Migration {
     public function up(): void {
         Schema::create('med_systems', function (Blueprint $t) {
             $t->bigIncrements('id');
-            $t->string('code', 50)->unique();   // CARDIO, RESP, ...
+
             $t->string('name_ar', 191);
             $t->string('name_en', 191)->nullable();
             $t->string('icon_url', 255)->nullable();

@@ -5,7 +5,7 @@ return new class extends Migration {
         Schema::create('med_universities', function (Blueprint $t) {
             $t->bigIncrements('id');
             $t->string('name',191);
-            $t->string('code',50)->unique();
+
             $t->char('country',2);
             $t->boolean('is_active')->default(true);
             $t->timestamps();
