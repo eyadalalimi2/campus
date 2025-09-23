@@ -7,7 +7,7 @@ class SubjectRequest extends FormRequest {
     public function rules(): array {
         $id = $this->route('subject')?->id;
         return [
-            'code' => 'required|string|max:50|unique:med_subjects,code,'.($id??'null'),
+
             'name_ar' => 'required|string|max:191',
             'name_en' => 'nullable|string|max:191',
             'track_scope' => 'required|in:BASIC,CLINICAL,BOTH',

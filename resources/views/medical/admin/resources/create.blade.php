@@ -72,6 +72,11 @@
             <p class="mb-1">YOUTUBE: channel_id, video_id, playlist_id</p>
             <p class="mb-0">REFERENCE: citation_text, doi, isbn, pmid, publisher, edition</p>
           </div>
+          <div class="form-check mb-3">
+            <input type="hidden" name="is_active" value="0">
+            <input type="checkbox" class="form-check-input" name="is_active" id="is_active" value="1" checked>
+            <label class="form-check-label" for="is_active">فعال</label>
+          </div>
           <button class="btn btn-primary mt-3"><i class="bi bi-save"></i> حفظ</button>
         </form>
       </div>

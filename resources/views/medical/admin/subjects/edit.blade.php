@@ -26,7 +26,8 @@
             </select>
           </div>
           <div class="form-check mb-3">
-            <input type="checkbox" class="form-check-input" name="is_active" id="is_active" {{ $subject->is_active?'checked':'' }}>
+            <input type="hidden" name="is_active" value="0">
+            <input type="checkbox" class="form-check-input" name="is_active" id="is_active" value="1" {{ $subject->is_active?'checked':'' }}>
             <label class="form-check-label" for="is_active">فعال</label>
           </div>
           <button class="btn btn-success"><i class="bi bi-save"></i> تحديث</button>

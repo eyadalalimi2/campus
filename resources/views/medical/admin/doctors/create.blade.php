@@ -21,10 +21,11 @@
 						<label class="form-label">الدولة</label>
 						<input name="country" maxlength="2" placeholder="YE" class="form-control">
 					</div>
-					<div class="mb-3 form-check">
-						<input type="checkbox" name="verified" class="form-check-input" id="verifiedCheck">
-						<label class="form-check-label" for="verifiedCheck">معتمد</label>
-					</div>
+								<div class="mb-3 form-check">
+									<input type="hidden" name="verified" value="0">
+									<input type="checkbox" name="verified" class="form-check-input" id="verifiedCheck" value="1">
+									<label class="form-check-label" for="verifiedCheck">معتمد</label>
+								</div>
 					<div class="mb-3">
 						<label class="form-label">Score</label>
 						<input name="score" type="number" step="0.01" min="0" max="99.99" class="form-control">

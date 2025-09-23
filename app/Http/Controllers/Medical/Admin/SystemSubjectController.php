@@ -19,7 +19,7 @@ class SystemSubjectController extends Controller
         return view('medical.admin.system_subjects.index', [
             'items'=>$items,
             'systems'=>System::orderBy('display_order')->get(),
-            'subjects'=>Subject::orderBy('code')->get(),
+            'subjects'=>Subject::orderBy('name_ar')->get(),
         ]);
     }
 
@@ -27,7 +27,7 @@ class SystemSubjectController extends Controller
     {
         return view('medical.admin.system_subjects.create', [
             'systems'=>System::orderBy('display_order')->get(),
-            'subjects'=>Subject::orderBy('code')->get(),
+            'subjects'=>Subject::orderBy('name_ar')->get(),
         ]);
     }
 
@@ -48,7 +48,7 @@ class SystemSubjectController extends Controller
         return view('medical.admin.system_subjects.edit', [
             'item'=>$system_subject,
             'systems'=>System::orderBy('display_order')->get(),
-            'subjects'=>Subject::orderBy('code')->get(),
+            'subjects'=>Subject::orderBy('name_ar')->get(),
         ]);
     }
 

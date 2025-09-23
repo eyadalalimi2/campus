@@ -11,6 +11,7 @@
     <table class="table table-bordered align-middle mb-0">
       <thead class="table-light">
         <tr>
+          <th>الأيقونة</th>
           <th>الاسم</th>
           <th>ترتيب</th>
           <th>فعال</th>
@@ -20,7 +21,13 @@
       <tbody>
         @forelse($items as $x)
         <tr>
-
+          <td>
+            @if($x->icon_url)
+              <img src="{{ $x->icon_url }}" alt="icon" style="width:32px;height:32px;object-fit:contain;">
+            @else
+              <span class="text-muted">—</span>
+            @endif
+          </td>
           <td>{{ $x->name_ar }}</td>
           <td>{{ $x->display_order }}</td>
           <td>{!! $x->is_active ? '<span class="badge bg-success">نعم</span>' : '<span class="badge bg-danger">لا</span>' !!}</td>

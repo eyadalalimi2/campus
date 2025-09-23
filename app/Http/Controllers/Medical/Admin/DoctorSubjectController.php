@@ -15,7 +15,7 @@ class DoctorSubjectController extends Controller {
     public function create(){
         return view('medical.admin.doctor_subjects.create', [
             'doctors'=>Doctor::orderBy('name')->get(),
-            'subjects'=>Subject::orderBy('code')->get()
+            'subjects'=>Subject::orderBy('name_ar')->get()
         ]);
     }
     public function store(Request $r){
@@ -33,7 +33,7 @@ class DoctorSubjectController extends Controller {
         return view('medical.admin.doctor_subjects.edit', [
             'item'=>$doctor_subject,
             'doctors'=>Doctor::orderBy('name')->get(),
-            'subjects'=>Subject::orderBy('code')->get()
+            'subjects'=>Subject::orderBy('name_ar')->get()
         ]);
     }
     public function update(Request $r, DoctorSubject $doctor_subject){

@@ -25,14 +25,14 @@ class ResourceController extends Controller {
         $items = $q->paginate(20)->appends($r->query());
         return view('medical.admin.resources.index', [
             'items'=>$items,
-            'subjects'=>Subject::orderBy('code')->get(),
+            'subjects'=>Subject::orderBy('name_ar')->get(),
             'systems'=>System::orderBy('display_order')->get()
         ]);
     }
 
     public function create(){
         return view('medical.admin.resources.create', [
-            'subjects'=>Subject::orderBy('code')->get(),
+            'subjects'=>Subject::orderBy('name_ar')->get(),
             'systems'=>System::orderBy('display_order')->get(),
             'doctors'=>Doctor::orderBy('name')->get(),
         ]);
@@ -73,7 +73,7 @@ class ResourceController extends Controller {
     public function edit(Resource $resource){
         return view('medical.admin.resources.edit', [
             'item'=>$resource->load(['files','youtube','reference','universities']),
-            'subjects'=>Subject::orderBy('code')->get(),
+            'subjects'=>Subject::orderBy('name_ar')->get(),
             'systems'=>System::orderBy('display_order')->get(),
             'doctors'=>Doctor::orderBy('name')->get(),
             'universities'=>University::orderBy('name')->get(),

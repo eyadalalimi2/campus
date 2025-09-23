@@ -20,13 +20,14 @@
           <div class="mb-3">
             <label class="form-label">النطاق</label>
             <select name="track_scope" class="form-select" required>
-              <option value="BASIC">BASIC</option>
-              <option value="CLINICAL">CLINICAL</option>
-              <option value="BOTH">BOTH</option>
+               <option value="CLINICAL">CLINICAL</option>
+               <option value="BASIC">BASIC</option>
+               <option value="BOTH">BOTH</option>
             </select>
           </div>
           <div class="form-check mb-3">
-            <input type="checkbox" class="form-check-input" name="is_active" id="is_active" checked>
+            <input type="hidden" name="is_active" value="0">
+            <input type="checkbox" class="form-check-input" name="is_active" id="is_active" value="1" checked>
             <label class="form-check-label" for="is_active">فعال</label>
           </div>
           <button class="btn btn-primary"><i class="bi bi-save"></i> حفظ</button>
