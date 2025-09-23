@@ -9,10 +9,14 @@
 			<div class="card-body">
 				<form method="post" action="{{ route('medical.universities.store') }}">
 					@csrf
-					<div class="mb-3">
-						<label class="form-label">الاسم</label>
-						<input name="name" class="form-control" required>
-					</div>
+								<div class="mb-3">
+									<label class="form-label">الكود</label>
+									<input name="code" class="form-control" required maxlength="50">
+								</div>
+								<div class="mb-3">
+									<label class="form-label">الاسم</label>
+									<input name="name" class="form-control" required>
+								</div>
 					<div class="mb-3">
 						<label class="form-label">الدولة</label>
 						<input name="country" class="form-control" required maxlength="2" placeholder="YE">

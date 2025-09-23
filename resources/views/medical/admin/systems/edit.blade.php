@@ -11,6 +11,10 @@
 					@csrf @method('PUT')
 					
 					<div class="mb-3">
+						<label class="form-label">الكود</label>
+						<input name="code" class="form-control" value="{{ $system->code }}" required maxlength="50">
+					</div>
+					<div class="mb-3">
 						<label class="form-label">الاسم (عربي)</label>
 						<input name="name_ar" class="form-control" value="{{ $system->name_ar }}" required>
 					</div>

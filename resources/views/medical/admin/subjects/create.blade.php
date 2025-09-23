@@ -10,6 +10,10 @@
         <form method="post" action="{{ route('medical.subjects.store') }}">
           @csrf
           <div class="mb-3">
+            <label class="form-label">الكود</label>
+            <input name="code" class="form-control" required maxlength="50">
+          </div>
+          <div class="mb-3">
             <label class="form-label">الاسم (عربي)</label>
             <input name="name_ar" class="form-control" required>
           </div>

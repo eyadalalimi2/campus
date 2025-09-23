@@ -5,5 +5,5 @@ use Illuminate\Database\Eloquent\Model;
 
 class University extends Model {
     protected $table = 'med_universities';
-    protected $fillable = ['name','country','is_active'];
+    protected $fillable = ['name','code','country','is_active'];
 }

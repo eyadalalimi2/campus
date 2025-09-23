@@ -11,6 +11,7 @@
     <table class="table table-bordered align-middle mb-0">
       <thead class="table-light">
         <tr>
+          <th>الكود</th>
           <th>الاسم</th>
           <th>الدولة</th>
           <th>فعال</th>
@@ -20,6 +21,7 @@
       <tbody>
         @forelse($items as $x)
         <tr>
+          <td>{{ $x->code }}</td>
           <td>{{ $x->name }}</td>
 
           <td>{{ $x->country }}</td>

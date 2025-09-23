@@ -10,6 +10,10 @@
 				<form method="post" action="{{ route('medical.universities.update',$university) }}">
 					@csrf @method('PUT')
 					<div class="mb-3">
+						<label class="form-label">الكود</label>
+						<input name="code" class="form-control" value="{{ $university->code }}" required maxlength="50">
+					</div>
+					<div class="mb-3">
 						<label class="form-label">الاسم</label>
 						<input name="name" class="form-control" value="{{ $university->name }}" required>
 					</div>

@@ -12,6 +12,7 @@
       <thead class="table-light">
         <tr>
           <th>الأيقونة</th>
+          <th>الكود</th>
           <th>الاسم</th>
           <th>ترتيب</th>
           <th>فعال</th>
@@ -28,6 +29,7 @@
               <span class="text-muted">—</span>
             @endif
           </td>
+          <td>{{ $x->code }}</td>
           <td>{{ $x->name_ar }}</td>
           <td>{{ $x->display_order }}</td>
           <td>{!! $x->is_active ? '<span class="badge bg-success">نعم</span>' : '<span class="badge bg-danger">لا</span>' !!}</td>
