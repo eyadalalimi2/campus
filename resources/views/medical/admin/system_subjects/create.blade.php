@@ -1,13 +1,4 @@
 @extends('admin.layouts.app')
-@section('title','ربط جهاز ↔ مادة (جديد)')
-@section('content')
-<h1>ربط جهاز ↔ مادة</h1>
-<form method="post" action="{{ route('medical.system-subjects.store') }}">
-@csrf
-<label>الجهاز</label>
-<select name="system_id" required>
-
-@extends('admin.layouts.app')
 @section('title','ربط جديد')
 @section('content')
 <div class="row justify-content-center">
