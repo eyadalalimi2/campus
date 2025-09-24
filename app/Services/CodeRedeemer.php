@@ -11,6 +11,29 @@ class CodeRedeemer
      * تفعيل كود من لوحة التحكم لطالب محدد.
      * يرجع [ok, message]
      */
+    public function redeemForUser(string $code, int $userId, int $adminId): array
+    {
+        return DB::transaction(function () use ($code, $userId, $adminId) {
+            $activationCode = ActivationCode::where('code', $code)->firstOrFail();
+
+            if ($activationCode->is_redeemed) {
+                throw new \Exception('This code has already been redeemed.');
+            }
+
+            $subscription = ActivationCode::create([
+                'user_id' => $userId,
+                'plan_id' => $activationCode->plan_id,
+                'admin_id' => $adminId,
+                'activation_code_id' => $activationCode->id,
+                'starts_at' => now(),
+                'ends_at' => now()->addMonth(),
+            ]);
+
+            $activationCode->update(['is_redeemed' => true]);
+
+            return [$subscription, 'Code redeemed successfully.'];
+        });
+    }
     public function redeemByAdmin(string $codeStr, int $userId, ?int $adminId = null): array
     {
         return DB::transaction(function () use ($codeStr, $userId, $adminId) {

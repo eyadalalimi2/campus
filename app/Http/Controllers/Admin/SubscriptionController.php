@@ -54,7 +54,7 @@ class SubscriptionController extends Controller
     {
         try {
             [$subscription, $msg] = $redeemer->redeemForUser(
-                code: $req->string('activation_code')->toString(),
+                code: (string) $req->input('activation_code'),
                 userId: (int)$req->user_id,
                 adminId: auth('admin')->id()
             );

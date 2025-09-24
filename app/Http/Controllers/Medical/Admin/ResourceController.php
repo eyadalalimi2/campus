@@ -72,7 +72,7 @@ class ResourceController extends Controller {
 
     public function edit(Resource $resource){
         return view('medical.admin.resources.edit', [
-            'item'=>$resource->load(['files','youtube','reference','universities']),
+            'item'=>$resource->load(['files','youtubeMeta','reference','universities']),
             'subjects'=>Subject::orderBy('name_ar')->get(),
             'systems'=>System::orderBy('display_order')->get(),
             'doctors'=>Doctor::orderBy('name')->get(),
@@ -84,7 +84,7 @@ class ResourceController extends Controller {
         return DB::transaction(function() use ($req,$resource){
             $resource->update($req->validated());
             if($resource->type==='YOUTUBE'){
-                $meta = $resource->youtube ?: new ResourceYoutubeMeta(['resource_id'=>$resource->id]);
+                $meta = $resource->youtubeMeta ?: new ResourceYoutubeMeta(['resource_id'=>$resource->id]);
                 $meta->fill([
                     'channel_id'=>$req->input('channel_id'),
                     'video_id'=>$req->input('video_id'),
