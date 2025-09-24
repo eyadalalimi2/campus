@@ -218,3 +218,5 @@ Route::prefix('v1')->group(function () {
         Route::put('me/visibility', [ApiVisibilityController::class, 'update']);
     });
 });
+
+require __DIR__.'/medical_api.php';

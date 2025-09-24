@@ -18,6 +18,6 @@ class Resource extends Model {
 
     public function files(){ return $this->hasMany(ResourceFile::class,'resource_id'); }
     public function universities(){ return $this->belongsToMany(University::class,'med_resource_universities','resource_id','university_id'); }
-    public function youtube(){ return $this->hasOne(ResourceYoutubeMeta::class,'resource_id'); }
+    public function youtubeMeta(){ return $this->hasOne(ResourceYoutubeMeta::class,'resource_id'); }
     public function reference(){ return $this->hasOne(ResourceReferenceMeta::class,'resource_id'); }
 }
