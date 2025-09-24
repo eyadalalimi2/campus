@@ -23,7 +23,7 @@ class DoctorSubjectController extends Controller {
             'doctor_id'=>'required|exists:med_doctors,id',
             'subject_id'=>'required|exists:med_subjects,id',
             'priority'=>'nullable|integer|min:0|max:9',
-            'featured'=>'nullable|boolean'
+            'featured'=>'nullable|in:0,1,true,false'
         ]);
         $data['featured'] = (bool)($data['featured'] ?? false);
         DoctorSubject::create($data);
@@ -41,7 +41,7 @@ class DoctorSubjectController extends Controller {
             'doctor_id'=>'required|exists:med_doctors,id',
             'subject_id'=>'required|exists:med_subjects,id',
             'priority'=>'nullable|integer|min:0|max:9',
-            'featured'=>'nullable|boolean'
+            'featured'=>'nullable|in:0,1,true,false'
         ]);
         $data['featured'] = (bool)($data['featured'] ?? false);
         $doctor_subject->update($data);

@@ -10,7 +10,8 @@ class DoctorRequest extends FormRequest {
             'channel_url'=>'required|url|max:255',
             'country'=>'nullable|string|size:2',
             'verified'=>'boolean',
-            'score'=>'nullable|numeric|min:0|max:99.99'
+            'score'=>'nullable|numeric|min:0|max:99.99',
+            'image'=>'nullable|image|mimes:jpg,jpeg,png,gif|max:2048'
         ];
     }
 }

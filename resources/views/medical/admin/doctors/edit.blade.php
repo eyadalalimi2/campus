@@ -7,7 +7,18 @@
 		<div class="card">
 			<div class="card-header"><i class="bi bi-person-badge"></i> تعديل دكتور</div>
 			<div class="card-body">
-				<form method="post" action="{{ route('medical.doctors.update',$doctor) }}">
+				<form method="post" action="{{ route('medical.doctors.update',$doctor) }}" enctype="multipart/form-data">
+				   <div class="mb-3">
+					   <label class="form-label">صورة البروفايل (اختياري)</label>
+					   <input type="file" name="image" class="form-control" accept="image/*">
+					   @if($doctor->image)
+						   <div class="mt-2">
+							   <img src="{{ asset('storage/'.$doctor->image) }}" alt="صورة الدكتور" class="img-thumbnail" style="max-width:120px">
+							   <div class="form-text">الصورة الحالية</div>
+						   </div>
+					   @endif
+					   <div class="form-text">يمكنك رفع صورة جديدة لاستبدال الصورة الحالية (jpg, png, gif, بحد أقصى 2MB).</div>
+				   </div>
 					@csrf @method('PUT')
 					<div class="mb-3">
 						<label class="form-label">الاسم</label>

@@ -26,10 +26,31 @@
             <input type="number" name="priority" value="5" min="0" max="9" class="form-control">
           </div>
           <div class="mb-3 form-check">
-            <input type="checkbox" name="featured" class="form-check-input" id="featuredCheck">
+            <input type="hidden" name="featured" value="0">
+            <input type="checkbox" name="featured" value="1" class="form-check-input" id="featuredCheck">
             <label class="form-check-label" for="featuredCheck">مميز</label>
           </div>
           <button class="btn btn-primary"><i class="bi bi-save"></i> حفظ</button>
+        </form>
+        @if ($errors->any())
+          <div class="alert alert-danger mt-3">
+            <ul class="mb-0">
+              @foreach ($errors->all() as $error)
+                <li>{{ str_replace([
+                  'The featured field must be true or false.',
+                  'The doctor id field is required.',
+                  'The subject id field is required.',
+                  'The priority field must be an integer.'
+                ], [
+                  'حقل التمييز يجب أن يكون نعم أو لا.',
+                  'حقل الدكتور مطلوب.',
+                  'حقل المادة مطلوب.',
+                  'حقل الأولوية يجب أن يكون رقمًا صحيحًا.'
+                ], $error) }}</li>
+              @endforeach
+            </ul>
+          </div>
+        @endif
         </form>
       </div>
     </div>

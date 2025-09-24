@@ -1,0 +1,518 @@
+حاضر. فيما يلي **دليل واجهة برمجة تطبيقات الطلاب (API v1)** النهائي — منسّق باحتراف للتسليم للمبرمج. يشمل الغرض، المصادقة، الرؤوس، القيود، الأخطاء، الترقيم، جميع المسارات، أمثلة الطلب/الاستجابة، وقواعد الرؤية (Visibility).
+
+# نظرة عامة
+
+* **النسخة**: v1
+* **نقطة الدخول** (اختَر واحدًا):
+
+  * `https://obdcodehub.com/api/v1`
+  * `https://api.obdcodehub.com/api/v1`
+* **التنسيق**: JSON فقط (يُفرض عبر Middleware `ForceJson`)
+* **الترميز**: UTF-8
+* **الوقت**: ISO8601 / `YYYY-MM-DDTHH:MM:SSZ`
+
+## الرؤوس القياسية
+
+* `Accept: application/json`
+* `Content-Type: application/json` (للعمليات ذات الجسم)
+* `Authorization: Bearer <token>` (للمسارات المحمية)
+* **Idempotency** (اختياري لكن مُوصى به للعمليات الحسّاسة):
+  `Idempotency-Key: <unique-string>` — تُحترم لمدّة تُعرَّف في الإعدادات (TTL).
+
+## المصادقة & الجلسات
+
+* **Sanctum Bearer Token** يتم إنشاؤه عند التسجيل/تسجيل الدخول.
+* الاسم التعريفي للتوكن يؤخذ من الحقل **`login_device`** (مثال: `android`, `ios-12-pro`).
+* إبطال التوكن يتم عبر: **DELETE /me/devices/{tokenId}** أو عبر **POST /auth/logout**.
+
+## الحدود & الخنق (Throttling)
+
+* افتراضيًا:
+
+  * **ضيوف**: \~30 طلب/دقيقة.
+  * **مستخدمون**: \~120 طلب/دقيقة.
+* قد يعادّلها مسؤول النظام. راقب رؤوس الاستجابة:
+  `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `Retry-After`.
+
+## الاستجابات القياسية
+
+### نجـاح
+
+```json
+{
+  "data": { /* النتيجة */ },
+  "meta": { /* معلومات إضافية اختيارية */ },
+  "links": { /* روابط تنقّل اختيارية */ }
+}
+```
+
+### خطأ
+
+```json
+{
+  "error": {
+    "code": "SOME_CODE",
+    "message": "شرح مختصر وواضح",
+    "fields": { "email": ["صيغة البريد غير صحيحة"] },
+    "trace_id": "اختياري للتتبّع"
+  }
+}
+```
+
+## الترقيم (Pagination) — Cursor
+
+* المعلمات: `limit` (1..50)، `cursor` (نص Base64).
+* الاستجابة قد تحتوي:
+  `links.next` = رابط يحوي `cursor` التالي.
+* أداة `Cursor` داخل النظام تحرّكك للأمام فقط.
+
+## الفرز (Sorting)
+
+* بعض القوائم تدعم `sort` بصيغة:
+  `?sort=column` أو `?sort=-column` (تنازلي).
+
+## قواعد الرؤية (Visibility) المختصرة
+
+* **الطالب غير المرتبط بجامعة**: يرى **الأصول العامة Assets** فقط (مع توجيه عبر `asset_audiences` أو برامج التخصص).
+* **الطالب المرتبط بجامعة**: يرى **Assets العامة** + **Contents الخاصة** بجامعته، وكلّية/تخصصه (مع دعم المحتوى العام داخل الجامعة: قيم NULL في الكلية/التخصص).
+
+---
+
+# الكيانات (Schemas) الموحّدة
+
+## User
+
+```json
+{
+  "id": 1, "student_number": "201900123",
+  "name": "طالب", "email": "student@example.com", "phone": "+9677...",
+  "country_id": 1, "university_id": 10, "college_id": 5, "major_id": 22,
+  "level": 3, "gender": "male",
+  "status": "active", "has_active_subscription": true,
+  "profile_photo_path": "/storage/profile/1.jpg",
+  "created_at": "...", "updated_at": "..."
+}
+```
+
+## Plan / Feature
+
+```json
+{ "id": 1, "code": "BASIC", "name": "خطة أساسية", "price_cents": 1000, "currency": "YER", "billing_cycle": "monthly", "is_active": true }
+```
+
+```json
+{ "id": 1, "plan_id": 1, "feature_key": "max_downloads", "feature_value": "100" }
+```
+
+## Material
+
+```json
+{ "id": 11, "name": "تشريح 1", "scope": "university", "university_id": 10, "college_id": 5, "major_id": 22, "level": 1, "is_active": true }
+```
+
+## Asset (عام)
+
+```json
+{
+  "id": 101, "category": "youtube|file|reference|question_bank|curriculum|book",
+  "title": "محاضرة تعريفية", "description": "نص...",
+  "status": "published", "published_at": "...", "is_active": 1,
+  "material_id": 11, "discipline_id": 2, "program_id": 8,
+  "media": { "video_url": "...", "file_path": "/files/...", "external_url": "..." }
+}
+```
+
+## Content (خاص بالجامعة)
+
+```json
+{
+  "id": 301, "type": "file|video|link", "title": "ملخص الأسبوع",
+  "description": "نص...", "status": "published", "published_at": "...",
+  "university_id": 10, "college_id": null, "major_id": 22, "material_id": 11,
+  "media": { "source_url": "...", "file_path": "/files/..." }
+}
+```
+
+## Subscription
+
+```json
+{
+  "id": 1, "user_id": 1, "plan_id": 2,
+  "status": "active|expired|canceled",
+  "started_at": "...", "ends_at": "...",
+  "auto_renew": 0, "price_cents": 1000, "currency": "YER",
+  "activation_code_id": 55
+}
+```
+
+## Feed Item
+
+```json
+{
+  "kind": "asset|content",
+  "id": 101,
+  "title": "عنوان",
+  "description": "وصف مختصر",
+  "published_at": "...",
+  "media": { /* حقول الوسائط وفق النوع */ },
+  "material_id": 11,
+  "discipline_id": 2, "program_id": 8,   // للأصول فقط
+  "university_id": 10, "college_id": null, "major_id": 22 // للمحتوى الخاص فقط
+}
+```
+
+---
+
+# المسارات (Endpoints)
+
+## 1) المصادقة (Public)
+
+### POST `/auth/register`
+
+**الغرض**: إنشاء مستخدم + إصدار توكن.
+**الجسم**:
+
+```json
+{
+  "name": "طالب",
+  "email": "student@example.com",
+  "password": "secret123",
+  "password_confirmation": "secret123",
+  "country_id": 1,
+  "university_id": 10, "college_id": 5, "major_id": 22, "level": 1, "gender": "male",
+  "phone": "+9677...",
+  "login_device": "android"
+}
+```
+
+**استجابة (200/201)**: `data.user` + `data.token` (Bearer).
+**أخطاء شائعة**: `email.unique`, علاقات الجامعة/الكلية/التخصص.
+
+### POST `/auth/login`
+
+**الغرض**: تسجيل الدخول وإصدار توكن جديد.
+**الجسم**:
+
+```json
+{ "email": "student@example.com", "password": "secret123", "login_device": "android" }
+```
+
+**استجابة**: `data.user` + `data.token`.
+
+### POST `/auth/email/resend`
+
+**الغرض**: إعادة إرسال رمز تحقق البريد.
+**الجسم**: `{ "email": "..." }`
+**استجابة**: رسالة نجاح.
+
+### POST `/auth/email/verify`
+
+**الغرض**: التحقق من البريد عبر كود (4–8 أرقام).
+**الجسم**:
+
+```json
+{ "email": "student@example.com", "code": "123456" }
+```
+
+**استجابة**: تثبيت التحقق.
+
+### POST `/auth/password/forgot`
+
+**الغرض**: إرسال رابط/رمز استعادة.
+**الجسم**: `{ "email": "..." }`
+
+### POST `/auth/password/reset`
+
+**الغرض**: تعيين كلمة مرور جديدة.
+**الجسم**:
+
+```json
+{
+  "email": "student@example.com",
+  "token": "RESET_TOKEN_FROM_EMAIL",
+  "password": "newSecret123",
+  "password_confirmation": "newSecret123"
+}
+```
+
+---
+
+## 2) ملفي (Protected)
+
+> جميع هذه المسارات تتطلب `Authorization: Bearer`.
+
+### GET `/auth/me`
+
+**الغرض**: جلب بيانات المستخدم الحالي.
+**استجابة**: `data` = User.
+
+### POST `/auth/logout`
+
+**الغرض**: إبطال التوكن الحالي.
+**رأس مُوصى به**: `Idempotency-Key`.
+**استجابة**: رسالة نجاح.
+
+### GET `/me/profile`
+
+**الغرض**: عرض ملف المستخدم.
+
+### PUT `/me/profile`
+
+**الغرض**: تحديث ملف المستخدم.
+**الجسم**: أي من الحقول الاختيارية:
+`student_number, name, phone, country_id, university_id, college_id, major_id, level (1..20), gender (male|female), profile_photo_path`
+**استجابة**: `data` = User محدث.
+
+### PUT `/me/security/change-password`
+
+**الغرض**: تغيير كلمة المرور (يتحقق من الحالية).
+**رأس مُوصى به**: `Idempotency-Key`.
+**الجسم**:
+
+```json
+{
+  "current_password": "oldPass123",
+  "new_password": "newPass123",
+  "new_password_confirmation": "newPass123"
+}
+```
+
+**استجابة**: رسالة نجاح.
+
+### GET `/me/visibility`
+
+**الغرض**: إرجاع سياسة الرؤية للمستخدم.
+**استجابة**:
+
+```json
+{
+  "linked_to_university": true,
+  "allowed_sources": ["assets","contents"],
+  "scope": { "university_id": 10, "college_id": 5, "major_id": 22 }
+}
+```
+
+### GET `/me/devices`
+
+**الغرض**: عرض قائمة التوكينات (الأجهزة) الخاصة بالمستخدم.
+**استجابة**: صفيف عناصر يحوي `id, name (login_device), abilities, last_used_at, created_at, expires_at`.
+
+### DELETE `/me/devices/{tokenId}`
+
+**الغرض**: إبطال توكن محدد.
+**استجابة**: رسالة نجاح.
+
+---
+
+## 3) المرجع البنيوي (Public)
+
+### GET `/countries`
+
+قائمة الدول.
+
+### GET `/universities`
+
+قائمة الجامعات.
+
+### GET `/universities/{id}/colleges`
+
+كليات جامعة معيّنة.
+
+### GET `/colleges/{id}/majors`
+
+تخصصات كلية معيّنة.
+
+### GET `/calendars`
+
+التقويمات الأكاديمية (مع `university_id`، `is_active`، تواريخ).
+
+### GET `/calendars/{id}/terms`
+
+الفصول في تقويم معيّن (`first|second|summer` + تواريخ).
+
+---
+
+## 4) الكتالوج (Public)
+
+### GET `/materials`
+
+قائمة المواد (تدعم فلاتر مستوى/جامعة/كلية/تخصص).
+**معلمات** (اختياري): `university_id, college_id, major_id, level, is_active`.
+
+### GET `/materials/{id}`
+
+تفاصيل مادة.
+
+---
+
+## 5) الأصول العامة (Public)
+
+> تظهر لكل المستخدمين، مع استهداف ذكي للجمهور عبر:
+>
+> * مطابقة `asset_audiences.major_id`، أو
+> * fallback عبر `major_program` لملاءمة برنامج الأصل مع تخصص الطالب (إذا مسجل دخوله ولديه تخصص).
+
+### GET `/assets`
+
+**المعلمات (اختيارية)**:
+`limit, cursor, sort, category, material_id, program_id, discipline_id, major_id`
+**استجابة**: قائمة Assets + `links.next` إذا وُجدت.
+
+### GET `/assets/{id}`
+
+تفاصيل أصل واحد.
+
+---
+
+## 6) المحتوى الخاص (Protected + u-scope)
+
+> لا يظهر إلا للطلبة **المرتبطين بجامعة**.
+> يشمل محتوى الجامعة، مع السماح بمحتوى عام داخل الجامعة (NULL في الكلية/التخصص).
+
+### GET `/contents`
+
+**معلمات**: `limit, cursor, sort, material_id`.
+**استجابة**: قائمة Contents مطابقة لنطاق المستخدم (University/College/Major).
+
+### GET `/contents/{id}`
+
+تفاصيل محتوى واحد، مع التحقق من الانتماء لنطاق المستخدم.
+
+---
+
+## 7) الخُطط والميزات (Protected)
+
+### GET `/plans`
+
+قائمة الخطط الفعّالة.
+
+### GET `/plans/{id}`
+
+تفاصيل خطة.
+
+### GET `/plans/{id}/features`
+
+ميزات الخطة.
+
+---
+
+## 8) الاشتراك والتفعيل (Protected)
+
+### GET `/me/subscription`
+
+الاشتراك النشط الحالي (إن وجد).
+
+### GET `/me/subscriptions`
+
+تاريخ الاشتراكات (أحدثًا فالأقدم).
+
+### POST `/me/activate-code`
+
+**الغرض**: تفعيل كود اشتراك (معالجة قيود الجامعات/الكليات/التخصصات، وصلاحية الكود وعدد مرات الاستخدام عبر تريغرز DB).
+**رأس مُوصى به**: `Idempotency-Key`.
+**الجسم**:
+
+```json
+{ "code": "ABCD-1234-..." }
+```
+
+**استجابة**: `data` = Subscription مُنشأ/مفعّل.
+**أخطاء محتملة (أكواد API)**:
+
+* `ACTIVATION_CODE_NOT_FOUND`
+* `ACTIVATION_CODE_NOT_ACTIVE`
+* `ACTIVATION_CODE_NOT_YET_VALID`
+* `ACTIVATION_CODE_EXPIRED`
+* `ACTIVATION_CODE_ALREADY_REDEEMED`
+* `RESTRICTED_UNIVERSITY|COLLEGE|MAJOR`
+* `ACTIVATION_FAILED`
+
+---
+
+## 9) الخلاصة (Feed) (Protected)
+
+### GET `/me/feed`
+
+**الغرض**: موجز موحّد يجمع أحدث **Assets** و**Contents** وفق أهلية رؤية المستخدم.
+**معلمات**: `limit, cursor`
+**استجابة**:
+
+```json
+{
+  "data": [ /* عناصر kind=asset|content مرتبة زمنياً */ ],
+  "links": { "next": "..." }
+}
+```
+
+---
+
+# أمثلة سريعة
+
+### مثال نجاح — تسجيل الدخول
+
+**طلب**
+
+```
+POST /api/v1/auth/login
+Authorization: (None)
+Content-Type: application/json
+
+{
+  "email": "student@example.com",
+  "password": "secret123",
+  "login_device": "android"
+}
+```
+
+**استجابة 200**
+
+```json
+{
+  "data": {
+    "user": { "...": "..." },
+    "token": "1|f0a9c...<redacted>"
+  }
+}
+```
+
+### مثال فشل — حقول غير صحيحة
+
+**استجابة 422**
+
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Validation failed.",
+    "fields": { "email": ["صيغة البريد الإلكتروني غير صحيحة."] },
+    "trace_id": null
+  }
+}
+```
+
+---
+
+# ملاحظات تنفيذية للمبرمج
+
+* استخدم **Bearer token** في كل الطلبات المحمية. خزّنه آمنًا، ووفّر خيار تسجيل الخروج وإبطال الأجهزة من داخل التطبيق.
+* التزم بإرسال **Idempotency-Key** في عمليات: تغيير كلمة المرور، تفعيل الكود، تسجيل الخروج — لمنع التكرار غير المقصود.
+* جهّز طبقة عرض تتعامل مع **Cursor Pagination** (عرض زر “تحميل المزيد” باستخدام `links.next`).
+* احترم **Visibility**: أخفِ تبويب المحتوى الخاص إذا **`linked_to_university=false`** من `/me/visibility`.
+* حمّل الملفات (إن لزم) عبر روابط `file_path`/`source_url` الظاهرة في الكيانات.
+* راقب **Throttle headers** وتصرّف بلطف عند بلوغ الحد.
+
+---
+
+# فهرس سريع (Cheat Sheet)
+
+* Auth: `/auth/register`, `/auth/login`, `/auth/logout`, `/auth/email/*`, `/auth/password/*`
+* Me: `/auth/me`, `/me/profile`, `/me/security/change-password`, `/me/visibility`, `/me/devices`
+* Structure: `/countries`, `/universities`, `/universities/{id}/colleges`, `/colleges/{id}/majors`, `/calendars`, `/calendars/{id}/terms`
+* Catalog: `/materials`, `/materials/{id}`
+* Assets: `/assets`, `/assets/{id}`
+* Contents: `/contents`, `/contents/{id}` (u-scope)
+* Plans: `/plans`, `/plans/{id}`, `/plans/{id}/features`
+* Subscription: `/me/subscription`, `/me/subscriptions`, `/me/activate-code`
+* Feed: `/me/feed`
+
+هل تريد نسخة PDF مُنسّقة من هذا الدليل لتسليمها للعميل/الفريق؟ أجهّزها لك فوراً بنفس البنية.

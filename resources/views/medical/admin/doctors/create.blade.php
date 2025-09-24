@@ -7,7 +7,12 @@
 		<div class="card">
 			<div class="card-header"><i class="bi bi-person-badge"></i> إضافة دكتور جديد</div>
 			<div class="card-body">
-				<form method="post" action="{{ route('medical.doctors.store') }}">
+				<form method="post" action="{{ route('medical.doctors.store') }}" enctype="multipart/form-data">
+				   <div class="mb-3">
+					   <label class="form-label">صورة البروفايل (اختياري)</label>
+					   <input type="file" name="image" class="form-control" accept="image/*">
+					   <div class="form-text">يمكنك رفع صورة شخصية للدكتور (jpg, png, gif, بحد أقصى 2MB).</div>
+				   </div>
 					@csrf
 					<div class="mb-3">
 						<label class="form-label">الاسم</label>

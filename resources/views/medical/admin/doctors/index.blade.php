@@ -14,6 +14,7 @@
           <th>الاسم</th>
           <th>القناة</th>
           <th>الدولة</th>
+          <th>الصورة</th>
           <th>معتمد</th>
           <th>Score</th>
           <th>إجراءات</th>
@@ -22,6 +23,13 @@
       <tbody>
         @forelse($items as $x)
         <tr>
+          <td>
+            @if($x->image)
+              <img src="{{ asset('storage/'.$x->image) }}" alt="صورة الدكتور" class="img-thumbnail" style="max-width:60px">
+            @else
+              <span class="text-muted">—</span>
+            @endif
+          </td>
           <td>{{ $x->name }}</td>
           <td><a href="{{ $x->channel_url }}" target="_blank"><i class="bi bi-box-arrow-up-right"></i> قناة</a></td>
           <td>{{ $x->country }}</td>

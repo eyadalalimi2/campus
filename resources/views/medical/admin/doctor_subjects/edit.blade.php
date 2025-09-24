@@ -30,7 +30,8 @@
             <input type="number" name="priority" class="form-control" value="{{ $item->priority }}" min="0" max="9">
           </div>
           <div class="mb-3 form-check">
-            <input type="checkbox" name="featured" class="form-check-input" id="featuredCheck" {{ $item->featured?'checked':'' }}>
+            <input type="hidden" name="featured" value="0">
+            <input type="checkbox" name="featured" value="1" class="form-check-input" id="featuredCheck" {{ $item->featured?'checked':'' }}>
             <label class="form-check-label" for="featuredCheck">مميز</label>
           </div>
           <button class="btn btn-success"><i class="bi bi-save"></i> تحديث</button>

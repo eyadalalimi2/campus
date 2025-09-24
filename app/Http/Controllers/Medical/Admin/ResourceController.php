@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Medical\Admin;
 
 use App\Http\Controllers\Controller;
@@ -109,6 +110,16 @@ class ResourceController extends Controller {
     public function destroy(Resource $resource){
         $resource->delete();
         return back()->with('ok','تم الحذف');
+    }
+       // عرض تفاصيل مورد
+    public function show(Resource $resource) {
+        return view('medical.admin.resources.show', [
+            'item' => $resource->load(['files','youtubeMeta','reference','universities','subject','system','doctor']),
+            'subjects' => Subject::orderBy('name_ar')->get(),
+            'systems' => System::orderBy('display_order')->get(),
+            'doctors' => Doctor::orderBy('name')->get(),
+            'universities' => University::orderBy('name')->get(),
+        ]);
     }
 
     // ملفات موارد (Books/Summaries)
