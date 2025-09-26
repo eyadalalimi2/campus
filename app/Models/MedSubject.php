@@ -7,12 +7,13 @@ use App\Models\MedTopic;
 use App\Models\MedDoctor;
 use App\Models\MedVideo;
 use App\Models\MedResource;
+use App\Models\Concerns\HasRandomSlug;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class MedSubject extends Model
 {
-    use HasFactory;
+    use HasFactory, HasRandomSlug;
     protected $table = 'med_subjects';
     protected $fillable = ['name','image_path','scope','academic_level','order_index','status','slug'];
 

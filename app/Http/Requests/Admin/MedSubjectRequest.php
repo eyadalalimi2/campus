@@ -20,7 +20,7 @@ class MedSubjectRequest extends FormRequest
             'academic_level' => ['nullable','string','max:255'],
             'order_index' => ['nullable','integer','min:0'],
             'status' => ['required','in:draft,published'],
-            'slug' => ['required','string','max:255','unique:med_subjects,slug,'.($id??'null')],
+            'slug' => ['nullable','string','size:8','unique:med_subjects,slug,'.($id??'null')],
             'device_ids' => ['array'],
             'device_ids.*' => ['integer','exists:med_devices,id'],
         ];

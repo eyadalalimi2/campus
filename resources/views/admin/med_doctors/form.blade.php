@@ -26,10 +26,7 @@
       @endforeach
     </select>
   </div>
-  <div class="col-md-6">
-    <label class="form-label">Slug *</label>
-    <input type="text" name="slug" class="form-control" value="{{ old('slug',$doctor->slug ?? '') }}">
-  </div>
+  
 
   <div class="col-12">
     <label class="form-label">مواد الدكتور</label>

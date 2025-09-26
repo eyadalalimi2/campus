@@ -19,7 +19,7 @@ class MedDoctorRequest extends FormRequest
             'bio' => ['nullable','string','max:2000'],
             'order_index' => ['nullable','integer','min:0'],
             'status' => ['required','in:draft,published'],
-            'slug' => ['required','string','max:255','unique:med_doctors,slug,'.($id??'null')],
+            'slug' => ['nullable','string','size:8','unique:med_doctors,slug,'.($id??'null')],
             'subject_ids' => ['array'],
             'subject_ids.*' => ['integer','exists:med_subjects,id'],
         ];

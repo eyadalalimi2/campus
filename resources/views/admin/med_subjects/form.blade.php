@@ -37,11 +37,6 @@
   </div>
 
   <div class="col-12">
-    <label class="form-label">Slug *</label>
-    <input type="text" name="slug" class="form-control" value="{{ old('slug',$subject->slug ?? '') }}">
-  </div>
-
-  <div class="col-12">
     <label class="form-label">ربط بالأجهزة</label>
     <select name="device_ids[]" class="form-select" multiple size="8">
       @foreach(\App\Models\MedDevice::orderBy('name')->get() as $d)

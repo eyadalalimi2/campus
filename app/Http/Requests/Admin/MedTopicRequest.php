@@ -19,7 +19,7 @@ class MedTopicRequest extends FormRequest
             'description' => ['nullable','string'],
             'order_index' => ['nullable','integer','min:0'],
             'status' => ['required','in:draft,published'],
-            'slug' => ['required','string','max:255','unique:med_topics,slug,'.($id??'null')],
+            'slug' => ['nullable','string','size:8','unique:med_topics,slug,'.($id??'null')],
         ];
     }
 }

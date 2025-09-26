@@ -27,8 +27,4 @@
       @endforeach
     </select>
   </div>
-  <div class="col-md-8">
-    <label class="form-label">Slug *</label>
-    <input type="text" name="slug" class="form-control" value="{{ old('slug',$topic->slug ?? '') }}">
-  </div>
 </div>

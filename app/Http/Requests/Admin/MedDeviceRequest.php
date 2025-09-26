@@ -18,7 +18,7 @@ class MedDeviceRequest extends FormRequest
             'image' => ['nullable','image','mimes:png,jpg,jpeg,webp','max:2048'],
             'order_index' => ['nullable','integer','min:0'],
             'status' => ['required','in:draft,published'],
-            'slug' => ['required','string','max:255','unique:med_devices,slug,'.($id??'null')],
+            'slug' => ['nullable','string','size:8','unique:med_devices,slug,'.($id??'null')],
             'subject_ids' => ['array'],
             'subject_ids.*' => ['integer','exists:med_subjects,id'],
         ];

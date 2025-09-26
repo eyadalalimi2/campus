@@ -79,28 +79,44 @@ Route::middleware('auth:admin')->group(function () {
     Route::resource('public-majors', PublicMajorController::class)->except(['show']);
     // Medical Education
     // Devices
-    Route::resource('med_devices', MedDeviceController::class)->except(['show']);
+    Route::resource('med_devices', MedDeviceController::class)
+        ->parameters(['med_devices' => 'device'])
+        ->except(['show']);
 
     // Subjects
-    Route::resource('med_subjects', MedSubjectController::class)->except(['show']);
+    Route::resource('med_subjects', MedSubjectController::class)
+        ->parameters(['med_subjects' => 'subject'])
+        ->except(['show']);
 
     // Topics
-    Route::resource('med_topics', MedTopicController::class)->except(['show']);
+    Route::resource('med_topics', MedTopicController::class)
+        ->parameters(['med_topics' => 'topic'])
+        ->except(['show']);
 
     // Doctors
-    Route::resource('med_doctors', MedDoctorController::class)->except(['show']);
+    Route::resource('med_doctors', MedDoctorController::class)
+        ->parameters(['med_doctors' => 'doctor'])
+        ->except(['show']);
 
     // Videos
-    Route::resource('med_videos', MedVideoController::class)->except(['show']);
+    Route::resource('med_videos', MedVideoController::class)
+        ->parameters(['med_videos' => 'video'])
+        ->except(['show']);
 
     // Resource Categories
-    Route::resource('med_resource-categories', MedResourceCategoryController::class)->except(['show']);
+    Route::resource('med_resource-categories', MedResourceCategoryController::class)
+        ->parameters(['med_resource-categories' => 'resource_category'])
+        ->except(['show']);
+
 
     // Resources (PDFs)
-    Route::resource('med_resources', MedResourceController::class)->except(['show']);
+    Route::resource('med_resources', MedResourceController::class)
+        ->parameters(['med_resources' => 'resource'])
+        ->except(['show']);
+
 
     // (اختياري) مسار Ajax لجلب مواضيع مادة معينة للفورمات الديناميكية:
-     Route::get('subjects/{subject}/topics', [MedTopicController::class, 'bySubject'])->name('subjects.topics');
+    Route::get('subjects/{subject}/topics', [MedTopicController::class, 'bySubject'])->name('subjects.topics');
     // الموارد المضافة: الدول/التخصصات/البرامج/التقويمات/الفصول
     Route::resource('countries',          CountryController::class)->except(['show']);
     Route::resource('disciplines',        DisciplineController::class)->except(['show']);

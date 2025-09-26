@@ -38,7 +38,7 @@ class MedDeviceController extends Controller
     public function edit(MedDevice $device)
     {
         $subjects = MedSubject::orderBy('name')->get();
-        $selected = $device->subjects()->pluck('id')->toArray();
+    $selected = $device->subjects()->pluck('med_subjects.id')->toArray();
         return view('admin.med_devices.edit', compact('device','subjects','selected'));
     }
 
