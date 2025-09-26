@@ -195,8 +195,6 @@ return [
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
 
-        // Medical Service Provider
-        App\Providers\MedicalServiceProvider::class,
 
     ],
 
