@@ -9,6 +9,37 @@
 
 @includeWhen(session('success'),'admin.partials.flash_success')
 @includeWhen($errors->any(),'admin.partials.flash_errors',['errors'=>$errors])
+<form method="GET" class="card card-body mb-3">
+  <div class="row g-2">
+    <div class="col-md-5">
+      <input type="text" name="q" value="{{ request('q') }}" class="form-control" placeholder="بحث بالاسم/الكود">
+    </div>
+    <div class="col-md-3">
+      <select name="active" class="form-select">
+        <option value="">الحالة — الكل</option>
+        <option value="1" @selected(request('active')==='1')>فعال</option>
+        <option value="0" @selected(request('active')==='0')>غير فعال</option>
+      </select>
+    </div>
+    <div class="col-md-2">
+      <select name="sort" class="form-select">
+        <option value="order_index" @selected(request('sort','order_index')==='order_index')>ترتيب</option>
+        <option value="name" @selected(request('sort')==='name')>الاسم</option>
+        <option value="id" @selected(request('sort')==='id')>#</option>
+      </select>
+    </div>
+    <div class="col-md-2">
+      <select name="dir" class="form-select">
+        <option value="asc" @selected(request('dir','asc')==='asc')>↑</option>
+        <option value="desc" @selected(request('dir')==='desc')>↓</option>
+      </select>
+    </div>
+  </div>
+  <div class="mt-2 d-flex gap-2">
+    <button class="btn btn-primary"><i class="bi bi-filter"></i> تصفية</button>
+    <a href="{{ route('admin.med_resource-categories.index') }}" class="btn btn-light"><i class="bi bi-x-lg"></i> تفريغ</a>
+  </div>
+</form>
 
 <div class="card">
   <div class="table-responsive">

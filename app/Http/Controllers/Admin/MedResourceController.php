@@ -14,10 +14,38 @@ class MedResourceController extends Controller
 {
     public function index()
     {
-        $resources = MedResource::with(['category','subject','topic'])
-            ->orderBy('order_index')->paginate(20);
-        return view('admin.med_resources.index', compact('resources'));
+        $q         = request('q');
+        $status    = request('status');
+        $subjectId = request('subject_id');
+        $topicId   = request('topic_id');
+        $categoryId = request('category_id');
+        $sort      = request('sort', 'order_index');
+        $dir       = request('dir', 'asc');
+
+        $resources = \App\Models\MedResource::with(['category', 'subject', 'topic'])
+            ->when(
+                $q,
+                fn($qr) =>
+                $qr->where(function ($w) use ($q) {
+                    $w->where('title', 'like', "%{$q}%")
+                        ->orWhere('description', 'like', "%{$q}%");
+                })
+            )
+            ->when($status,     fn($qr) => $qr->where('status', $status))
+            ->when($subjectId,  fn($qr) => $qr->where('subject_id', $subjectId))
+            ->when($topicId,    fn($qr) => $qr->where('topic_id', $topicId))
+            ->when($categoryId, fn($qr) => $qr->where('category_id', $categoryId))
+            ->orderBy($sort, $dir)
+            ->paginate(20)
+            ->withQueryString();
+
+        $subjects   = \App\Models\MedSubject::orderBy('name')->get();
+        $topics     = \App\Models\MedTopic::orderBy('title')->get();
+        $categories = \App\Models\MedResourceCategory::orderBy('order_index')->get();
+
+        return view('admin.med_resources.index', compact('resources', 'subjects', 'topics', 'categories'));
     }
+
 
     public function create()
     {
@@ -33,13 +61,13 @@ class MedResourceController extends Controller
         $data = $request->validated();
 
         if ($request->hasFile('file')) {
-            $path = $request->file('file')->store('med/files','public');
-            $data['file_url'] = asset('storage/'.$path);
+            $path = $request->file('file')->store('med/files', 'public');
+            $data['file_url'] = asset('storage/' . $path);
             $data['file_size_bytes'] = $request->file('file')->getSize();
         }
 
         MedResource::create($data);
-        return redirect()->route('admin.med_resources.index')->with('success','تم إنشاء الملف');
+        return redirect()->route('admin.med_resources.index')->with('success', 'تم إنشاء الملف');
     }
 
     public function edit(MedResource $resource)
@@ -57,18 +85,18 @@ class MedResourceController extends Controller
         $data = $request->validated();
 
         if ($request->hasFile('file')) {
-            $path = $request->file('file')->store('med/files','public');
-            $data['file_url'] = asset('storage/'.$path);
+            $path = $request->file('file')->store('med/files', 'public');
+            $data['file_url'] = asset('storage/' . $path);
             $data['file_size_bytes'] = $request->file('file')->getSize();
         }
 
         $resource->update($data);
-        return redirect()->route('admin.med_resources.index')->with('success','تم التحديث');
+        return redirect()->route('admin.med_resources.index')->with('success', 'تم التحديث');
     }
 
     public function destroy(MedResource $resource)
     {
         $resource->delete();
-        return back()->with('success','تم الحذف');
+        return back()->with('success', 'تم الحذف');
     }
 }

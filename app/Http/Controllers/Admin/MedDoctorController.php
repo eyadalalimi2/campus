@@ -12,9 +12,29 @@ class MedDoctorController extends Controller
 {
     public function index()
     {
-        $doctors = MedDoctor::orderBy('order_index')->paginate(20);
+        $q      = request('q');
+        $status = request('status');
+        $sort   = request('sort', 'order_index');
+        $dir    = request('dir', 'asc');
+
+        $doctors = \App\Models\MedDoctor::query()
+            ->when(
+                $q,
+                fn($qr) =>
+                $qr->where(function ($w) use ($q) {
+                    $w->where('name', 'like', "%{$q}%")
+                        ->orWhere('bio', 'like', "%{$q}%")
+                        ->orWhere('slug', 'like', "%{$q}%");
+                })
+            )
+            ->when($status, fn($qr) => $qr->where('status', $status))
+            ->orderBy($sort, $dir)
+            ->paginate(20)
+            ->withQueryString();
+
         return view('admin.med_doctors.index', compact('doctors'));
     }
+
 
     public function create()
     {
@@ -26,19 +46,19 @@ class MedDoctorController extends Controller
     {
         $data = $request->validated();
         if ($request->hasFile('avatar')) {
-            $data['avatar_path'] = $request->file('avatar')->store('med/images','public');
+            $data['avatar_path'] = $request->file('avatar')->store('med/images', 'public');
         }
         $doctor = MedDoctor::create($data);
-        $doctor->subjects()->sync($request->input('subject_ids',[]));
+        $doctor->subjects()->sync($request->input('subject_ids', []));
 
-        return redirect()->route('admin.med_doctors.index')->with('success','تم إنشاء الدكتور');
+        return redirect()->route('admin.med_doctors.index')->with('success', 'تم إنشاء الدكتور');
     }
 
     public function edit(MedDoctor $doctor)
     {
         $subjects = MedSubject::orderBy('name')->get();
         $selected = $doctor->subjects()->pluck('id')->toArray();
-        return view('admin.med_doctors.edit', compact('doctor','subjects','selected'));
+        return view('admin.med_doctors.edit', compact('doctor', 'subjects', 'selected'));
     }
 
     public function update(MedDoctorRequest $request, MedDoctor $doctor)
@@ -46,12 +66,12 @@ class MedDoctorController extends Controller
         $data = $request->validated();
         if ($request->hasFile('avatar')) {
             if ($doctor->avatar_path) Storage::disk('public')->delete($doctor->avatar_path);
-            $data['avatar_path'] = $request->file('avatar')->store('med/images','public');
+            $data['avatar_path'] = $request->file('avatar')->store('med/images', 'public');
         }
         $doctor->update($data);
-        $doctor->subjects()->sync($request->input('subject_ids',[]));
+        $doctor->subjects()->sync($request->input('subject_ids', []));
 
-        return redirect()->route('admin.med_doctors.index')->with('success','تم التحديث');
+        return redirect()->route('admin.med_doctors.index')->with('success', 'تم التحديث');
     }
 
     public function destroy(MedDoctor $doctor)
@@ -59,6 +79,6 @@ class MedDoctorController extends Controller
         if ($doctor->avatar_path) Storage::disk('public')->delete($doctor->avatar_path);
         $doctor->subjects()->detach();
         $doctor->delete();
-        return back()->with('success','تم الحذف');
+        return back()->with('success', 'تم الحذف');
     }
 }

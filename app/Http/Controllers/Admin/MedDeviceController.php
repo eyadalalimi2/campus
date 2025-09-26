@@ -13,9 +13,30 @@ class MedDeviceController extends Controller
 {
     public function index()
     {
-        $devices = MedDevice::orderBy('order_index')->paginate(20);
+        $q      = request('q');
+        $status = request('status');
+        $sort   = request('sort', 'order_index');
+        $dir    = request('dir', 'asc');
+
+        $devices = \App\Models\MedDevice::query()
+            ->when(
+                $q,
+                fn($qr) =>
+                $qr->where(function ($w) use ($q) {
+                    $w->where('name', 'like', "%{$q}%")
+                        ->orWhere('slug', 'like', "%{$q}%");
+                })
+            )
+            ->when($status, fn($qr) => $qr->where('status', $status))
+            ->orderBy($sort, $dir)
+            ->paginate(20)
+            ->withQueryString();
+
         return view('admin.med_devices.index', compact('devices'));
     }
+
+
+
 
     public function create()
     {
@@ -27,19 +48,19 @@ class MedDeviceController extends Controller
     {
         $data = $request->validated();
         if ($request->hasFile('image')) {
-            $data['image_path'] = $request->file('image')->store('med/images','public');
+            $data['image_path'] = $request->file('image')->store('med/images', 'public');
         }
         $device = MedDevice::create($data);
-        $device->subjects()->sync($request->input('subject_ids',[]));
+        $device->subjects()->sync($request->input('subject_ids', []));
 
-        return redirect()->route('admin.med_devices.index')->with('success','تم إنشاء الجهاز بنجاح');
+        return redirect()->route('admin.med_devices.index')->with('success', 'تم إنشاء الجهاز بنجاح');
     }
 
     public function edit(MedDevice $device)
     {
         $subjects = MedSubject::orderBy('name')->get();
-    $selected = $device->subjects()->pluck('med_subjects.id')->toArray();
-        return view('admin.med_devices.edit', compact('device','subjects','selected'));
+        $selected = $device->subjects()->pluck('med_subjects.id')->toArray();
+        return view('admin.med_devices.edit', compact('device', 'subjects', 'selected'));
     }
 
     public function update(MedDeviceRequest $request, MedDevice $device)
@@ -47,12 +68,12 @@ class MedDeviceController extends Controller
         $data = $request->validated();
         if ($request->hasFile('image')) {
             if ($device->image_path) Storage::disk('public')->delete($device->image_path);
-            $data['image_path'] = $request->file('image')->store('med/images','public');
+            $data['image_path'] = $request->file('image')->store('med/images', 'public');
         }
         $device->update($data);
-        $device->subjects()->sync($request->input('subject_ids',[]));
+        $device->subjects()->sync($request->input('subject_ids', []));
 
-        return redirect()->route('admin.med_devices.index')->with('success','تم تحديث الجهاز بنجاح');
+        return redirect()->route('admin.med_devices.index')->with('success', 'تم تحديث الجهاز بنجاح');
     }
 
     public function destroy(MedDevice $device)
@@ -60,6 +81,6 @@ class MedDeviceController extends Controller
         if ($device->image_path) Storage::disk('public')->delete($device->image_path);
         $device->subjects()->detach();
         $device->delete();
-        return back()->with('success','تم الحذف');
+        return back()->with('success', 'تم الحذف');
     }
 }
