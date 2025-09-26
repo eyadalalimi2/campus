@@ -33,12 +33,21 @@ use App\Http\Controllers\Admin\ActivationCodeBatchesController;
 use App\Http\Controllers\Admin\PublicCollegeController;
 use App\Http\Controllers\Admin\PublicMajorController;
 use App\Http\Controllers\Admin\UniversityBranchController;
+use App\Http\Controllers\Admin\MedDeviceController;
+use App\Http\Controllers\Admin\MedSubjectController;
+use App\Http\Controllers\Admin\MedTopicController;
+use App\Http\Controllers\Admin\MedDoctorController;
+use App\Http\Controllers\Admin\MedVideoController;
+use App\Http\Controllers\Admin\MedResourceCategoryController;
+use App\Http\Controllers\Admin\MedResourceController;
+use App\Http\Controllers\Admin\BannerController;
 /*
 |--------------------------------------------------------------------------
 | Admin Routes (prefix=admin, name=admin.) via RouteServiceProvider
 |--------------------------------------------------------------------------
 */
-Route::get('universities-management', function() {
+
+Route::get('universities-management', function () {
     return view('admin.universities_management');
 })->name('universities_management');
 // ضيوف الأدمن
@@ -68,8 +77,30 @@ Route::middleware('auth:admin')->group(function () {
     Route::resource('subscriptions', SubscriptionController::class)->except(['show']);
     Route::resource('public-colleges', PublicCollegeController::class)->except(['show']);
     Route::resource('public-majors', PublicMajorController::class)->except(['show']);
-    
+    // Medical Education
+    // Devices
+    Route::resource('med_devices', MedDeviceController::class)->except(['show']);
 
+    // Subjects
+    Route::resource('med_subjects', MedSubjectController::class)->except(['show']);
+
+    // Topics
+    Route::resource('med_topics', MedTopicController::class)->except(['show']);
+
+    // Doctors
+    Route::resource('med_doctors', MedDoctorController::class)->except(['show']);
+
+    // Videos
+    Route::resource('med_videos', MedVideoController::class)->except(['show']);
+
+    // Resource Categories
+    Route::resource('med_resource-categories', MedResourceCategoryController::class)->except(['show']);
+
+    // Resources (PDFs)
+    Route::resource('med_resources', MedResourceController::class)->except(['show']);
+
+    // (اختياري) مسار Ajax لجلب مواضيع مادة معينة للفورمات الديناميكية:
+     Route::get('subjects/{subject}/topics', [MedTopicController::class, 'bySubject'])->name('subjects.topics');
     // الموارد المضافة: الدول/التخصصات/البرامج/التقويمات/الفصول
     Route::resource('countries',          CountryController::class)->except(['show']);
     Route::resource('disciplines',        DisciplineController::class)->except(['show']);
@@ -102,27 +133,27 @@ Route::middleware('auth:admin')->group(function () {
      | أكواد التفعيل والدفعات
      |-----------------------------
      */
-    Route::resource('activation-code-batches', \App\Http\Controllers\Admin\ActivationCodeBatchesController::class)
+    Route::resource('activation-code-batches', ActivationCodeBatchesController::class)
         ->names('activation_code_batches');
 
-    Route::get('activation-code-batches/{batch}/export', [\App\Http\Controllers\Admin\ActivationCodeBatchesController::class, 'export'])
+    Route::get('activation-code-batches/{batch}/export', [ActivationCodeBatchesController::class, 'export'])
         ->name('activation_code_batches.export');
 
-    Route::post('activation-code-batches/{batch}/disable', [\App\Http\Controllers\Admin\ActivationCodeBatchesController::class, 'disable'])
+    Route::post('activation-code-batches/{batch}/disable', [ActivationCodeBatchesController::class, 'disable'])
         ->name('activation_code_batches.disable');
     // 1) ضع هذين المسارين أولاً
     Route::get(
         'activation-codes/redeem-form',
-        [\App\Http\Controllers\Admin\ActivationCodesController::class, 'redeemForm']
+        [ActivationCodesController::class, 'redeemForm']
     )->name('activation_codes.redeem_form');
 
     Route::post(
         'activation-codes/redeem',
-        [\App\Http\Controllers\Admin\ActivationCodesController::class, 'redeem']
+        [ActivationCodesController::class, 'redeem']
     )->name('activation_codes.redeem');
 
     // 2) ثم عرّف الـresource بدون show
-    Route::resource('activation-codes', \App\Http\Controllers\Admin\ActivationCodesController::class)
+    Route::resource('activation-codes', ActivationCodesController::class)
         ->except(['show'])
         ->names('activation_codes');
 
@@ -131,7 +162,7 @@ Route::middleware('auth:admin')->group(function () {
      | الثيمات + الاستيراد
      |-----------------------------
      */
-    Route::get('/themes',                   [ThemeController::class, 'index'])->name('themes.index');
+    Route::get('/themes',               [ThemeController::class, 'index'])->name('themes.index');
     Route::get('/themes/{university}/edit', [ThemeController::class, 'edit'])->name('themes.edit');
     Route::put('/themes/{university}',      [ThemeController::class, 'update'])->name('themes.update');
 
@@ -140,7 +171,7 @@ Route::middleware('auth:admin')->group(function () {
     Route::get('/import/sample/{type}', [ImportController::class, 'sample'])->name('import.sample');
 
     // Banners
-    Route::resource('banners', \App\Http\Controllers\Admin\BannerController::class);
+    Route::resource('banners', BannerController::class);
 
     // Student Requests
     Route::get('requests',              [StudentRequestsController::class, 'index'])->name('requests.index');

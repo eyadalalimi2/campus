@@ -75,6 +75,23 @@
                     </a>
                 </div>
             </div>
+                <div class="col-md-4">
+                        <a href="{{ route('admin.public-colleges.index') }}" class="btn btn-outline-secondary w-100 mb-2">
+                            <i class="bi bi-bank2"></i> الكليات العامة
+                        </a>
+                        <a href="{{ route('admin.public-majors.index') }}" class="btn btn-outline-secondary w-100 mb-2">
+                            <i class="bi bi-diagram-3-fill"></i> التخصصات العامة
+                        </a>
+                        <a href="{{ route('admin.doctors.index') }}" class="btn btn-outline-secondary w-100 mb-2">
+                            <i class="bi bi-person-badge"></i> إدارة الدكاترة
+                        </a>
+                        <a href="{{ route('admin.assets.index') }}" class="btn btn-outline-secondary w-100 mb-2">
+                            <i class="bi bi-collection"></i> إدارة المحتوى العام
+                        </a>
+                        <a href="{{ route('admin.contents.index') }}" class="btn btn-outline-secondary w-100 mb-2">
+                            <i class="bi bi-folder"></i> إدارة المحتوى الخاص
+                        </a>
+                </div>
         </div>
     </div>
 </div>

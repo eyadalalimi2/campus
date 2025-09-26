@@ -372,14 +372,16 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($latestStudents as $s)
+                        @forelse($latestStudents as $s)
                             <tr>
                                 <td>{{ $s->name ?? '—' }}</td>
                                 <td class="text-muted">{{ $s->student_number ?? '—' }}</td>
-                                <td class="small text-muted">{{ isset($s->university) ? $s->university->name : '—' }}</td>
-                                <td class="small text-muted">{{ \Carbon\Carbon::parse($s->created_at)->format('Y-m-d') }}</td>
+                                <td class="small text-muted">{{ optional($s->university)->name ?? '—' }}</td>
+                                <td class="small text-muted">{{ $s->created_at?->format('Y-m-d') }}</td>
                             </tr>
-                        @endforeach
+                        @empty
+                            <tr><td colspan="4" class="text-center text-muted">—</td></tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
@@ -399,7 +401,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($latestContent as $c)
+                        @forelse($latestContent as $c)
                             <tr>
                                 <td>{{ $c->title }}</td>
                                 <td class="small">
@@ -411,10 +413,12 @@
                                         <span class="badge bg-light text-dark">رابط</span>
                                     @endif
                                 </td>
-                                <td class="small text-muted">{{ isset($c->university) ? $c->university->name : '—' }}</td>
-                                <td class="small text-muted">{{ \Carbon\Carbon::parse($c->created_at)->format('Y-m-d') }}</td>
+                                <td class="small text-muted">{{ optional($c->university)->name ?? '—' }}</td>
+                                <td class="small text-muted">{{ $c->created_at?->format('Y-m-d') }}</td>
                             </tr>
-                        @endforeach
+                        @empty
+                            <tr><td colspan="4" class="text-center text-muted">—</td></tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
@@ -457,14 +461,16 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($universitiesQuick as $u)
+                        @forelse($universitiesQuick as $u)
                             <tr>
                                 <td class="fw-semibold">{{ $u->name }}</td>
-                                <td class="text-muted">{{ rand(50, 300) }}</td>
-                                <td class="text-muted">{{ rand(1, 10) }}</td>
-                                <td class="text-muted">{{ rand(1, 20) }}</td>
+                                <td class="text-muted">{{ number_format($uStudents[$u->id] ?? 0) }}</td>
+                                <td class="text-muted">{{ number_format($uColleges[$u->id] ?? 0) }}</td>
+                                <td class="text-muted">{{ number_format($uMaterials[$u->id] ?? 0) }}</td>
                             </tr>
-                        @endforeach
+                        @empty
+                            <tr><td colspan="4" class="text-center text-muted">—</td></tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
@@ -486,24 +492,23 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($latestBlogs as $b)
+                        @forelse($latestBlogs as $b)
                             <tr>
                                 <td class="fw-semibold">{{ $b->title }}</td>
-                                <td class="text-muted">{{ isset($b->doctor) ? $b->doctor->name : 'فريق التحرير' }}</td>
+                                <td class="text-muted">{{ $b->doctor?->name ?? 'فريق التحرير' }}</td>
                                 <td>
-                                    @if($b->status === 'published')
-                                        <span class="badge bg-success">منشورة</span>
-                                    @elseif($b->status === 'draft')
-                                        <span class="badge bg-secondary">مسودة</span>
-                                    @elseif($b->status === 'archived')
-                                        <span class="badge bg-dark">مؤرشفة</span>
-                                    @else
-                                        <span class="badge bg-light text-dark">{{ $b->status }}</span>
-                                    @endif
+                                    @switch($b->status)
+                                        @case('published') <span class="badge bg-success">منشورة</span> @break
+                                        @case('draft')     <span class="badge bg-secondary">مسودة</span> @break
+                                        @case('archived')  <span class="badge bg-dark">مؤرشفة</span> @break
+                                        @default           <span class="badge bg-light text-dark">{{ $b->status }}</span>
+                                    @endswitch
                                 </td>
-                                <td class="small text-muted">{{ \Carbon\Carbon::parse($b->published_at ?? $b->created_at)->format('Y-m-d') }}</td>
+                                <td class="small text-muted">{{ ($b->published_at ?? $b->created_at)?->format('Y-m-d') }}</td>
                             </tr>
-                        @endforeach
+                        @empty
+                            <tr><td colspan="4" class="text-center text-muted">لا توجد تدوينات بعد.</td></tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>

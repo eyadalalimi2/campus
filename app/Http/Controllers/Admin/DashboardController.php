@@ -28,122 +28,192 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        // بيانات وهمية
-        $uniTotal = 10;
-        $uniActive = 8;
-        $uniInactive = 2;
-        $branchTotal = 20;
-        $branchActive = 15;
-        $branchInactive = 5;
-        $colTotal = 30;
-        $colActive = 25;
-        $colInactive = 5;
-        $majTotal = 40;
-        $majActive = 35;
-        $majInactive = 5;
-        $docTotal = 50;
-        $docUni = 30;
-        $docInd = 20;
-        $stdTotal = 1000;
-        $stdActive = 800;
-        $stdSuspended = 100;
-        $stdGrad = 100;
-        $matTotal = 60;
-        $matActive = 50;
-        $matInactive = 10;
-        $devTotal = 15;
-        $devActive = 12;
-        $devInactive = 3;
-        $contentTotal = 200;
-        $cntFile = 120;
-        $cntVideo = 60;
-        $cntLink = 20;
+        // المجالات
+        $discTotal    = Discipline::count();
+        $discActive   = Discipline::where('is_active', 1)->count();
+        $discInactive = $discTotal - $discActive;
+
+        // البرامج
+        $progTotal    = Program::count();
+        $progActive   = Program::where('is_active', 1)->count();
+        $progInactive = $progTotal - $progActive;
+
+        // التقاويم الأكاديمية
+        $calTotal     = AcademicCalendar::count();
+        $calActive    = AcademicCalendar::where('is_active', 1)->count();
+        $calInactive  = $calTotal - $calActive;
+
+        // الفصول الأكاديمية
+        $termTotal    = AcademicTerm::count();
+        $termActive   = AcademicTerm::where('is_active', 1)->count();
+        $termInactive = $termTotal - $termActive;
+
+        // أحدث المدونات + إحصاءات المدونات
+        $latestBlogs = Blog::with('doctor')
+            ->orderByRaw('COALESCE(published_at, created_at) DESC')
+            ->limit(5)
+            ->get(['id', 'title', 'status', 'doctor_id', 'published_at', 'created_at']);
+
+        $blogTotal     = Blog::count();
+        $blogPublished = Blog::where('status', 'published')->count();
+        $blogDraft     = Blog::where('status', 'draft')->count();
+        $blogArchived  = Blog::where('status', 'archived')->count();
+
+        // الاشتراكات
+        $subTotal  = Subscription::count();
+        $subActive = Subscription::where('status', 'active')->count();
+        $subOther  = $subTotal - $subActive; // expired + canceled
+
+        // الجامعات
+        $uniTotal    = University::count();
+        $uniActive   = University::where('is_active', 1)->count();
+        $uniInactive = $uniTotal - $uniActive;
+
+        // الفروع (جديد)
+        $branchTotal    = UniversityBranch::count();
+        $branchActive   = UniversityBranch::where('is_active', 1)->count();
+        $branchInactive = $branchTotal - $branchActive;
+
+        // الكليات
+        $colTotal    = College::count();
+        $colActive   = College::where('is_active', 1)->count();
+        $colInactive = $colTotal - $colActive;
+
+        // التخصصات
+        $majTotal    = Major::count();
+        $majActive   = Major::where('is_active', 1)->count();
+        $majInactive = $majTotal - $majActive;
+
+        // الدكاترة
+        $docTotal  = Doctor::count();
+        $docUni    = Doctor::where('type', 'university')->count();
+        $docInd    = Doctor::where('type', 'independent')->count();
+
+        // الطلاب
+        $stdTotal     = User::count();
+        $stdActive    = User::where('status', 'active')->count();
+        $stdSuspended = User::where('status', 'suspended')->count();
+        $stdGrad      = User::where('status', 'graduated')->count();
+
+        // المواد
+        $matTotal    = Material::count();
+        $matActive   = Material::where('is_active', 1)->count();
+        $matInactive = $matTotal - $matActive;
+
+        // الأجهزة
+        $devTotal    = Device::count();
+        $devActive   = Device::where('is_active', 1)->count();
+        $devInactive = $devTotal - $devActive;
+
+        // المحتوى حسب النوع
+        $contentTotal   = Content::count();
+        $contentsByType = Content::select('type', DB::raw('COUNT(*) as c'))
+            ->groupBy('type')->pluck('c', 'type')->toArray();
+        $cntFile  = $contentsByType['file']  ?? 0;
+        $cntVideo = $contentsByType['video'] ?? 0;
+        $cntLink  = $contentsByType['link']  ?? 0;
+
+        // تفعيل العناصر الأخرى
         $activeMaterials = $matActive;
-        $activeDoctors = 40;
-        $activeDevices = $devActive;
-        $activeContents = 180;
-        $studentsPerUniversity = collect([
-            (object)[ 'uname' => 'جامعة 1', 'c' => 300 ],
-            (object)[ 'uname' => 'جامعة 2', 'c' => 250 ],
-            (object)[ 'uname' => 'جامعة 3', 'c' => 200 ],
-            (object)[ 'uname' => 'جامعة 4', 'c' => 150 ],
-            (object)[ 'uname' => 'جامعة 5', 'c' => 100 ],
-        ]);
-        $studentsPerBranch = collect([
-            (object)[ 'ub_name' => 'جامعة 1 - فرع أ', 'c' => 120 ],
-            (object)[ 'ub_name' => 'جامعة 2 - فرع ب', 'c' => 110 ],
-            (object)[ 'ub_name' => 'جامعة 3 - فرع ج', 'c' => 100 ],
-        ]);
-        $studentsMonthly = collect([
-            (object)[ 'ym' => '2025-01', 'c' => 80 ],
-            (object)[ 'ym' => '2025-02', 'c' => 90 ],
-            (object)[ 'ym' => '2025-03', 'c' => 100 ],
-            (object)[ 'ym' => '2025-04', 'c' => 110 ],
-            (object)[ 'ym' => '2025-05', 'c' => 120 ],
-            (object)[ 'ym' => '2025-06', 'c' => 130 ],
-            (object)[ 'ym' => '2025-07', 'c' => 140 ],
-            (object)[ 'ym' => '2025-08', 'c' => 150 ],
-            (object)[ 'ym' => '2025-09', 'c' => 160 ],
-            (object)[ 'ym' => '2025-10', 'c' => 170 ],
-            (object)[ 'ym' => '2025-11', 'c' => 180 ],
-            (object)[ 'ym' => '2025-12', 'c' => 190 ],
-        ]);
-        $latestStudents = collect([
-            (object)[ 'name' => 'طالب 1', 'student_number' => '1001', 'university' => (object)['name' => 'جامعة 1'], 'created_at' => now() ],
-            (object)[ 'name' => 'طالب 2', 'student_number' => '1002', 'university' => (object)['name' => 'جامعة 2'], 'created_at' => now() ],
-            (object)[ 'name' => 'طالب 3', 'student_number' => '1003', 'university' => (object)['name' => 'جامعة 3'], 'created_at' => now() ],
-        ]);
-        $latestDoctors = collect([
-            (object)[ 'name' => 'دكتور 1', 'university' => (object)['name' => 'جامعة 1'], 'created_at' => now() ],
-            (object)[ 'name' => 'دكتور 2', 'university' => (object)['name' => 'جامعة 2'], 'created_at' => now() ],
-        ]);
-        $latestContent = collect([
-            (object)[ 'title' => 'محتوى 1', 'type' => 'file', 'university' => (object)['name' => 'جامعة 1'], 'created_at' => now() ],
-            (object)[ 'title' => 'محتوى 2', 'type' => 'video', 'university' => (object)['name' => 'جامعة 2'], 'created_at' => now() ],
-        ]);
-        $universitiesQuick = collect([
-            (object)[ 'id' => 1, 'name' => 'جامعة 1' ],
-            (object)[ 'id' => 2, 'name' => 'جامعة 2' ],
-        ]);
+        $activeDoctors   = Doctor::where('is_active', 1)->count();
+        $activeDevices   = $devActive;
+        $activeContents  = Content::where('is_active', 1)->count();
+
+        // توزيع الطلاب: Top 10 لكل جامعة
+        $studentsPerUniversity = User::select('universities.name as uname', DB::raw('COUNT(users.id) as c'))
+            ->leftJoin('universities', 'universities.id', '=', 'users.university_id')
+            ->groupBy('universities.name')
+            ->orderByDesc('c')
+            ->limit(10)->get();
+
+        // توزيع الطلاب: Top 10 لكل فرع (جديد)
+        $studentsPerBranch = User::select(
+            DB::raw("CONCAT(universities.name, ' - ', university_branches.name) as ub_name"),
+            DB::raw('COUNT(users.id) as c')
+        )
+            ->leftJoin('university_branches', 'university_branches.id', '=', 'users.branch_id')
+            ->leftJoin('universities', 'universities.id', '=', 'users.university_id')
+            ->groupBy('ub_name')
+            ->orderByDesc('c')
+            ->limit(10)->get();
+
+        // نمو الطلاب خلال آخر 12 شهرًا
+        $start = Carbon::now()->startOfMonth()->subMonths(11);
+        $studentsMonthly = User::select(
+            DB::raw("DATE_FORMAT(created_at, '%Y-%m') as ym"),
+            DB::raw('COUNT(*) as c')
+        )
+            ->where('created_at', '>=', $start)
+            ->groupBy('ym')
+            ->orderBy('ym')
+            ->get();
+
+        // أحدث السجلات
+        $latestStudents = User::latest()->limit(5)->get(['id', 'name', 'student_number', 'university_id', 'branch_id', 'created_at']);
+        $latestDoctors  = Doctor::latest()->limit(5)->get(['id', 'name', 'university_id', 'branch_id', 'created_at']);
+        $latestContent  = Content::latest()->limit(5)->get(['id', 'title', 'type', 'university_id', 'branch_id', 'created_at']);
+
+        // ملخص سريع للجامعات
+        $universitiesQuick = University::orderBy('name')->get(['id', 'name']);
+
+        // بيانات المخططات الدائرية (Pie)
         $pieStatus = [
             'active'    => $stdActive,
             'suspended' => $stdSuspended,
             'graduated' => $stdGrad,
         ];
+
+        $genderAgg = User::select('gender', DB::raw('COUNT(*) as c'))
+            ->groupBy('gender')->pluck('c', 'gender')->toArray();
+
         $pieGender = [
-            'male'   => 600,
-            'female' => 400,
+            'male'   => $genderAgg['male']   ?? 0,
+            'female' => $genderAgg['female'] ?? 0,
         ];
-        $inactiveUniversities = collect(['جامعة 3', 'جامعة 4']);
-        $materialsWithoutContent = collect(['مادة 1', 'مادة 2']);
-        $majorsWithoutDoctors = collect(['تخصص 1', 'تخصص 2']);
-        $inactiveUniCount = $inactiveUniversities->count();
-        $matNoContentCount = $materialsWithoutContent->count();
-        $majNoDoctorsCount = $majorsWithoutDoctors->count();
-        $discTotal = 5;
-        $discActive = 4;
-        $discInactive = 1;
-        $progTotal = 6;
-        $progActive = 5;
-        $progInactive = 1;
-        $calTotal = 3;
-        $calActive = 2;
-        $calInactive = 1;
-        $termTotal = 4;
-        $termActive = 3;
-        $termInactive = 1;
-        $subTotal = 20;
-        $subActive = 15;
-        $subOther = 5;
-        $blogTotal = 10;
-        $blogPublished = 6;
-        $blogDraft = 3;
-        $blogArchived = 1;
-        $latestBlogs = collect([
-            (object)[ 'title' => 'مدونة 1', 'doctor' => (object)['name' => 'دكتور 1'], 'status' => 'published', 'published_at' => now(), 'created_at' => now() ],
-            (object)[ 'title' => 'مدونة 2', 'doctor' => (object)['name' => 'دكتور 2'], 'status' => 'draft', 'published_at' => null, 'created_at' => now() ],
-        ]);
+
+        // تنبيهات
+        $inactiveUniversities = University::where('is_active', 0)
+            ->orderBy('name')->limit(5)->pluck('name');
+
+        $materialsWithoutContent = Material::whereNotExists(function ($q) {
+            $q->select(DB::raw(1))
+                ->from('contents')
+                ->whereColumn('contents.material_id', 'materials.id');
+        })
+            ->orderBy('name')->limit(5)->pluck('name');
+
+        $majorsWithoutDoctors = Major::whereNotExists(function ($q) {
+            $q->select(DB::raw(1))
+                ->from('doctor_major')
+                ->whereColumn('doctor_major.major_id', 'majors.id');
+        })
+            ->whereNotExists(function ($q) {
+                $q->select(DB::raw(1))
+                    ->from('doctors')
+                    ->whereColumn('doctors.major_id', 'majors.id');
+            })
+            ->orderBy('name')->limit(5)->pluck('name');
+
+        $inactiveUniCount  = $inactiveUniversities->count();
+        $matNoContentCount = Material::whereNotExists(function ($q) {
+            $q->select(DB::raw(1))
+                ->from('contents')
+                ->whereColumn('contents.material_id', 'materials.id');
+        })->count();
+
+        $majNoDoctorsCount = Major::whereNotExists(function ($q) {
+            $q->select(DB::raw(1))
+                ->from('doctor_major')
+                ->whereColumn('doctor_major.major_id', 'majors.id');
+        })
+            ->whereNotExists(function ($q) {
+                $q->select(DB::raw(1))
+                    ->from('doctors')
+                    ->whereColumn('doctors.major_id', 'majors.id');
+            })->count();
+
         return view('admin.dashboard', compact(
+            // جامعات / فروع / كليات / تخصصات
             'uniTotal',
             'uniActive',
             'uniInactive',
@@ -156,23 +226,33 @@ class DashboardController extends Controller
             'majTotal',
             'majActive',
             'majInactive',
+
+            // دكاترة
             'docTotal',
             'docUni',
             'docInd',
+
+            // طلاب
             'stdTotal',
             'stdActive',
             'stdSuspended',
             'stdGrad',
+
+            // مواد / أجهزة
             'matTotal',
             'matActive',
             'matInactive',
             'devTotal',
             'devActive',
             'devInactive',
+
+            // محتوى
             'contentTotal',
             'cntFile',
             'cntVideo',
             'cntLink',
+
+            // إضافات
             'activeMaterials',
             'activeDoctors',
             'activeDevices',
@@ -184,14 +264,20 @@ class DashboardController extends Controller
             'latestDoctors',
             'latestContent',
             'universitiesQuick',
+
+            // Pie data
             'pieStatus',
             'pieGender',
+
+            // تنبيهات
             'inactiveUniCount',
             'matNoContentCount',
             'majNoDoctorsCount',
             'inactiveUniversities',
             'materialsWithoutContent',
             'majorsWithoutDoctors',
+
+            // المجالات / البرامج / التقاويم / الفصول
             'discTotal',
             'discActive',
             'discInactive',
@@ -204,9 +290,11 @@ class DashboardController extends Controller
             'termTotal',
             'termActive',
             'termInactive',
+            // متغيرات الاشتراكات
             'subTotal',
             'subActive',
             'subOther',
+            // متغيرات المدونة
             'blogTotal',
             'blogPublished',
             'blogDraft',
