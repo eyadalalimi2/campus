@@ -121,6 +121,7 @@
             font-weight: 600;
             font-size: .72rem;
         }
+        
     </style>
     @stack('styles')
 </head>
