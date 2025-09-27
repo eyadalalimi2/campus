@@ -20,7 +20,7 @@ class BlogRequest extends FormRequest
             'body'    => ['nullable','string'],
 
             'status'  => ['required', Rule::in(['draft','published','archived'])],
-            'published_at' => ['nullable','date_format:Y-m-d H:i'],
+            'published_at' => ['nullable','date'],
 
             'university_id' => ['nullable','exists:universities,id'],
             'doctor_id'     => ['nullable','exists:doctors,id'],
