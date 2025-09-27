@@ -33,13 +33,45 @@ use App\Http\Controllers\Api\V1\NotificationsController;
 use App\Http\Controllers\Api\V1\StudentRequestsController;
 use App\Http\Controllers\Api\V1\ComplaintController;
 use App\Http\Controllers\Api\V1\Me\VisibilityController as ApiVisibilityController;
+use App\Http\Controllers\Api\V1\{
+    MedDeviceController,
+    MedSubjectController,
+    MedTopicController,
+    MedDoctorController,
+    MedVideoController,
+    MedResourceController,
+};
 
 Route::prefix('v1')->group(function () {
 
     /* =========================
      * Auth (بدون مصادقة)
      * ========================= */
+    //المحتوى الطبي التعليمي العام
+    // Devices
+    Route::get('devices', [MedDeviceController::class, 'index']);
+    Route::get('devices/{device}/subjects', [MedSubjectController::class, 'byDevice']);
 
+    // Subjects
+    Route::get('subjects', [MedSubjectController::class, 'index']);
+    Route::get('subjects/{subject}/topics', [MedTopicController::class, 'bySubject']);
+    Route::get('subjects/{subject}/doctors', [MedDoctorController::class, 'bySubject']);
+    Route::get('subjects/{subject}/videos', [MedVideoController::class, 'bySubject']);
+    Route::get('subjects/{subject}/resources', [MedResourceController::class, 'bySubject']);
+
+    // Topics
+    Route::get('topics/{topic}/videos', [MedVideoController::class, 'byTopic']);
+    Route::get('topics/{topic}/resources', [MedResourceController::class, 'byTopic']);
+
+    // Doctors
+    Route::get('doctors', [MedDoctorController::class, 'index']);
+    Route::get('doctors/{doctor}/videos', [MedVideoController::class, 'byDoctor']);
+
+    // Videos
+    Route::get('videos', [MedVideoController::class, 'index']);
+
+    // Resources (PDFs)
+    Route::get('resources', [MedResourceController::class, 'index']);
     // عام: البنرات
     Route::get('banners', [BannerController::class, 'index']);
 
@@ -218,4 +250,3 @@ Route::prefix('v1')->group(function () {
         Route::put('me/visibility', [ApiVisibilityController::class, 'update']);
     });
 });
-
