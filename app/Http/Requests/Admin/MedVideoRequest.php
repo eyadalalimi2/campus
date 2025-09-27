@@ -38,7 +38,7 @@ class MedVideoRequest extends FormRequest
             ],
             'order_index' => ['nullable','integer','min:0'],
             'status' => ['required','in:draft,published'],
-            'published_at' => ['nullable','date'],
+            'published_at' => ['nullable','date_format:Y-m-d H:i'],
         ];
     }
 }

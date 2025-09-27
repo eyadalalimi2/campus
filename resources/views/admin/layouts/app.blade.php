@@ -6,6 +6,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', 'لوحة التحكم')</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <!-- Flatpickr -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <!-- التعريب العربي -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ar.js"></script>
+
+    <style>
+        /* تحسين العرض داخل RTL */
+        .date-input {
+            direction: ltr;
+            text-align: right;
+        }
+    </style>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <style>
         body {
@@ -121,21 +134,21 @@
             font-weight: 600;
             font-size: .72rem;
         }
-        
     </style>
     @stack('styles')
 </head>
 
 <body>
     @include('admin.partials.navbar')
-    
+
     <div class="container-fluid my-4">
         <div class="row g-4">
             <!-- القائمة الجانبية كـ offcanvas للشاشات الصغيرة و aside للشاشات الكبيرة -->
             <aside class="col-lg-2 d-none d-lg-block">
                 @include('admin.partials.sidebar')
             </aside>
-            <div class="offcanvas offcanvas-start d-lg-none" tabindex="-1" id="adminSidebar" aria-labelledby="adminSidebarLabel">
+            <div class="offcanvas offcanvas-start d-lg-none" tabindex="-1" id="adminSidebar"
+                aria-labelledby="adminSidebarLabel">
                 <div class="offcanvas-header">
                     <h5 class="offcanvas-title" id="adminSidebarLabel">القائمة الجانبية</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="إغلاق"></button>
@@ -157,6 +170,53 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    @push('scripts')
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // إعدادات أساسية عربية
+                const base = {
+                    locale: 'ar',
+                    disableMobile: true, // يجبر استخدام Flatpickr بدل UI الهاتف
+                    weekNumbers: true,
+                    position: 'auto right'
+                };
+
+                // مثال: حقل تاريخ/وقت واحد (published_at)
+                if (document.querySelector('#published_at')) {
+                    flatpickr('#published_at', {
+                        ...base,
+                        enableTime: true,
+                        time_24hr: true,
+                        dateFormat: 'Y-m-d H:i', // القيمة التي تُرسل للسيرفر
+                        altInput: true,
+                        altFormat: 'd F Y - H:i', // الشكل المعروض للمستخدم بالعربية
+                        minuteIncrement: 5
+                    });
+                }
+
+                // (اختياري) تفعيل جماعي حسب الكلاسات
+                document.querySelectorAll('.js-date').forEach(el => {
+                    flatpickr(el, {
+                        ...base,
+                        dateFormat: 'Y-m-d',
+                        altInput: true,
+                        altFormat: 'd F Y'
+                    });
+                });
+                document.querySelectorAll('.js-datetime').forEach(el => {
+                    flatpickr(el, {
+                        ...base,
+                        enableTime: true,
+                        time_24hr: true,
+                        dateFormat: 'Y-m-d H:i',
+                        altInput: true,
+                        altFormat: 'd F Y - H:i'
+                    });
+                });
+            });
+        </script>
+    @endpush
+
     <script>
         feather.replace();
     </script>

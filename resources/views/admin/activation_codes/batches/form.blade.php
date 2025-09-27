@@ -108,8 +108,10 @@
 
   <div class="col-md-3">
     <label class="form-label">تاريخ البدء (إن كان ثابتًا)</label>
-    <input type="date" name="starts_on" class="form-control"
-      value="{{ old('starts_on', optional($batch->starts_on ?? null)->format('Y-m-d')) }}">
+    <input type="text" name="starts_on" id="starts_on"
+       class="form-control js-date"
+       value="{{ old('starts_on', optional($batch->starts_on ?? null)->format('Y-m-d')) }}">
+
   </div>
 
   <div class="col-md-3">
