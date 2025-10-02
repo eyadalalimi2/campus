@@ -23,6 +23,20 @@ class Content extends Model
     public const TYPE_VIDEO = 'video';
     public const TYPE_LINK  = 'link';
 
+    /** قوائم مساعدة */
+    public const STATUSES = [
+        self::STATUS_DRAFT,
+        self::STATUS_IN_REVIEW,
+        self::STATUS_PUBLISHED,
+        self::STATUS_ARCHIVED,
+    ];
+
+    public const TYPES = [
+        self::TYPE_FILE,
+        self::TYPE_VIDEO,
+        self::TYPE_LINK,
+    ];
+
     protected $fillable = [
         'title',
         'description',
@@ -30,7 +44,7 @@ class Content extends Model
         'source_url',
         'file_path',
         'university_id',          // إلزامي (خاصة بالمحتوى الخاص)
-        'branch_id',              // ← جديد: دعم الفرع
+        'branch_id',              // دعم الفرع
         'college_id',             // اختياري ضمن نفس الجامعة/الفرع
         'major_id',               // اختياري ضمن نفس الكلية/الجامعة
         'material_id',
@@ -60,7 +74,7 @@ class Content extends Model
         return $this->belongsTo(University::class);
     }
 
-    public function branch(): BelongsTo  // ← جديد
+    public function branch(): BelongsTo
     {
         return $this->belongsTo(UniversityBranch::class);
     }
@@ -97,12 +111,28 @@ class Content extends Model
         return $this->belongsTo(Admin::class, 'published_by_admin_id');
     }
 
+    /**
+     * ربط المحتوى الخاص بالطب البشري عبر Pivot: MedicalSubjectContent
+     * ملاحظة: سنعتمد وجود الموديل \App\Models\Medical\MedicalSubject مع table=MedicalSubjects
+     */
+    public function medicalSubjects(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            \App\Models\Medical\MedicalSubject::class,
+            'MedicalSubjectContent',
+            'content_id',
+            'subject_id'
+        )
+        ->withPivot(['sort_order', 'is_primary', 'notes', 'created_at', 'updated_at'])
+        ->withTimestamps(); // لأن الجدول يحتوي created_at/updated_at
+    }
+
     /* ============================
      | Accessors
      |============================*/
     public function getFileUrlAttribute(): ?string
     {
-        return $this->file_path ? asset('storage/' . $this->file_path) : null;
+        return $this->file_path ? asset('storage/' . ltrim($this->file_path, '/')) : null;
     }
 
     public function getIsPublishedAttribute(): bool
@@ -118,12 +148,23 @@ class Content extends Model
         return $q->where('status', self::STATUS_PUBLISHED)->where('is_active', true);
     }
 
+    /**
+     * محتوى صالح للربط بمواد الطب (مطابق للـ Trigger في DB):
+     * منشور + مفعل + نوعه ملف أو رابط
+     */
+    public function scopeEligibleForMedicalLink($q)
+    {
+        return $q->where('is_active', 1)
+                 ->where('status', self::STATUS_PUBLISHED)
+                 ->whereIn('type', [self::TYPE_FILE, self::TYPE_LINK]);
+    }
+
     public function scopeForUniversity($q, ?int $universityId)
     {
         return $universityId ? $q->where('university_id', $universityId) : $q;
     }
 
-    public function scopeForBranch($q, ?int $branchId) // ← جديد
+    public function scopeForBranch($q, ?int $branchId)
     {
         return $branchId ? $q->where('branch_id', $branchId) : $q;
     }
@@ -209,12 +250,12 @@ class Content extends Model
             ->when(!empty($f['status']),                  fn($qq) => $qq->status($f['status']))
             ->when(!empty($f['type']),                    fn($qq) => $qq->type($f['type']))
             ->when(!empty($f['university_id']),           fn($qq) => $qq->forUniversity((int)$f['university_id']))
-            ->when(!empty($f['branch_id']),               fn($qq) => $qq->forBranch((int)$f['branch_id']))   // ← جديد
+            ->when(!empty($f['branch_id']),               fn($qq) => $qq->forBranch((int)$f['branch_id']))
             ->when(!empty($f['college_id']),              fn($qq) => $qq->forCollege((int)$f['college_id']))
             ->when(!empty($f['major_id']),                fn($qq) => $qq->forMajor((int)$f['major_id']))
             ->when(!empty($f['material_id']),             fn($qq) => $qq->where('material_id', (int)$f['material_id']))
             ->when(!empty($f['doctor_id']),               fn($qq) => $qq->where('doctor_id', (int)$f['doctor_id']))
-            ->when(isset($f['is_active']),                fn($qq) => $qq->where('is_active', (bool)$f['is_active']))
+            ->when(isset($f['is_active']) && $f['is_active'] !== '', fn($qq) => $qq->where('is_active', (bool)$f['is_active']))
             ->when(!empty($f['from']) || !empty($f['to']),fn($qq) => $qq->publishedBetween($f['from'] ?? null, $f['to'] ?? null));
     }
 

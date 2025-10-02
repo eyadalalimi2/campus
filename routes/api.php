@@ -1,7 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-
+use Illuminate\Http\Request;
+use App\Http\Controllers\Api\V1\MedicalPrivateController;
 use App\Http\Controllers\Api\V1\Auth\AuthController;
 use App\Http\Controllers\Api\V1\Me\ProfileController;
 use App\Http\Controllers\Api\V1\Me\SecurityController;
@@ -248,5 +249,17 @@ Route::prefix('v1')->group(function () {
         // Visibility (عرض/تحديث)
         Route::get('me/visibility', [ApiVisibilityController::class, 'show']);
         Route::put('me/visibility', [ApiVisibilityController::class, 'update']);
+        // هرم السنوات ← الفصول ← المواد
+        Route::get('medical/years',       [MedicalPrivateController::class, 'years']);        // ?major_id= (اختياري: إن لم يُمرر نستخدم major الخاص بالمستخدم)
+        Route::get('medical/years/{year}/terms', [MedicalPrivateController::class, 'terms']);
+        Route::get('medical/terms/{term}/subjects', [MedicalPrivateController::class, 'subjects']); // ?track=REQUIRED|SYSTEM|CLINICAL
+
+        // الأنظمة حسب السنة + مواد النظام
+        Route::get('medical/systems', [MedicalPrivateController::class, 'systems']); // ?year_id=
+        Route::get('medical/systems/{system}/subjects', [MedicalPrivateController::class, 'systemSubjects']);
+
+        // محتوى مادة (يرجع من contents عبر MedicalSubjectContent)
+        Route::get('medical/subjects/{subject}/contents', [MedicalPrivateController::class, 'subjectContents']); // ?type=file|link
+
     });
 });

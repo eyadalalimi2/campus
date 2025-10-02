@@ -67,17 +67,76 @@
                 الملفات
             </a>
         </div>
-         <div class="nav-item">
+
+        <div class="nav-item">
             <a href="{{ route('admin.users.index') }}"
                 class="nav-link {{ request()->is('admin/users*') ? 'active' : '' }}">
                 <i class="bi bi-people" style="color:#22c55e;"></i> إدارة الطلاب
             </a>
         </div>
+
         <div class="nav-item mb-2">
             <a href="{{ route('admin.universities_management') }}"
                 class="nav-link {{ request()->routeIs('admin.universities_management') ? 'active' : '' }}">
                 <i class="bi bi-building-fill-check" style="color:#f97316;"></i>
                 إدارة الجامعات والكليات
+            </a>
+        </div>
+
+        {{-- العناصر المضافة --}}
+        <div class="nav-item">
+            <a href="{{ route('admin.medical_years.index') }}"
+               class="nav-link {{ request()->is('admin/medical_years*') ? 'active' : '' }}">
+                <i class="bi bi-calendar" style="color:#06b6d4;"></i>
+                سنوات الطب (خاص)
+            </a>
+        </div>
+
+        <div class="nav-item">
+            <a href="{{ route('admin.medical_terms.index') }}"
+               class="nav-link {{ request()->is('admin/medical_terms*') ? 'active' : '' }}">
+                <i class="bi bi-journal" style="color:#0ea5e9;"></i>
+                الفصول (خاص)
+            </a>
+        </div>
+
+        <div class="nav-item">
+            <a href="{{ route('admin.medical_subjects.index') }}"
+               class="nav-link {{ request()->is('admin/medical_subjects*') ? 'active' : '' }}">
+                <i class="bi bi-journal-text" style="color:#22c55e;"></i>
+                مواد الطب (خاص)
+            </a>
+        </div>
+
+        <div class="nav-item">
+            <a href="{{ route('admin.medical_systems.index') }}"
+               class="nav-link {{ request()->is('admin/medical_systems*') ? 'active' : '' }}">
+                <i class="bi bi-diagram-3" style="color:#f97316;"></i>
+                الأنظمة (خاص)
+            </a>
+        </div>
+
+        <div class="nav-item">
+            <a href="{{ route('admin.medical_system_subjects.index') }}"
+               class="nav-link {{ request()->is('admin/medical_system_subjects*') ? 'active' : '' }}">
+                <i class="bi bi-link-45deg" style="color:#eab308;"></i>
+                ربط الأنظمة بالمواد
+            </a>
+        </div>
+
+        <div class="nav-item">
+            <a href="{{ route('admin.medical_subject_contents.index') }}"
+               class="nav-link {{ request()->is('admin/medical_subject_contents*') ? 'active' : '' }}">
+                <i class="bi bi-file-earmark-text" style="color:#ef4444;"></i>
+                محتوى المواد (خاص)
+            </a>
+        </div>
+        <div class="nav-item">
+            <a href="{{ route('admin.medical_contents.index') }}"
+   class="nav-link {{ request()->routeIs('admin.medical_contents.*') ? 'active' : '' }}">
+    <i class="bi bi-file-medical" style="color:#ef4444;"></i>
+    المحتوى الطبي (خاص)
+
             </a>
         </div>
     </nav>

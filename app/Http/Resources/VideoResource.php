@@ -21,23 +21,29 @@ class VideoResource extends JsonResource
             'youtube_url'  => $this->youtube_url,
             'published_at' => optional($this->published_at)->toDateTimeString(),
 
-            'doctor'  => $this->whenLoaded('doctor', fn()=>[
-                'id' => $this->doctor->id,
-                'name' => $this->doctor->name,
-                'slug' => $this->doctor->slug,
-            ]),
+            'doctor' => $this->whenLoaded('doctor', function () {
+                return [
+                    'id'   => $this->doctor->id,
+                    'name' => $this->doctor->name,
+                    'slug' => $this->doctor->slug,
+                ];
+            }),
 
-            'subject' => $this->whenLoaded('subject', fn()=>[
-                'id' => $this->subject->id,
-                'name' => $this->subject->name,
-                'slug' => $this->subject->slug,
-            ]),
+            'subject' => $this->whenLoaded('subject', function () {
+                return [
+                    'id'   => $this->subject->id,
+                    'name' => $this->subject->name,
+                    'slug' => $this->subject->slug,
+                ];
+            }),
 
-            'topic'   => $this->whenLoaded('topic', fn()=>[
-                'id' => $this->topic->id,
-                'title' => $this->topic->title,
-                'slug' => $this->topic->slug,
-            ]),
+            'topic' => $this->whenLoaded('topic', function () {
+                return [
+                    'id'    => $this->topic->id,
+                    'title' => $this->topic->title,
+                    'slug'  => $this->topic->slug,
+                ];
+            }),
         ];
     }
 }

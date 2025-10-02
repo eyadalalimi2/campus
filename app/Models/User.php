@@ -15,16 +15,6 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    public function publicCollege(): BelongsTo
-    {
-        return $this->belongsTo(\App\Models\PublicCollege::class, 'public_college_id');
-    }
-
-    public function publicMajor(): BelongsTo
-    {
-        return $this->belongsTo(\App\Models\PublicMajor::class, 'public_major_id');
-    }
-
     /** حالات المستخدم */
     public const STATUS_ACTIVE    = 'active';
     public const STATUS_SUSPENDED = 'suspended';
@@ -41,15 +31,24 @@ class User extends Authenticatable
         'phone',
         'country_id',
         'profile_photo_path',
+
+        // الهرم المؤسسي
         'university_id',
         'branch_id',
         'college_id',
         'major_id',
+
+        // الخرائط العامة (موجودة في الجدول)
         'public_college_id',
         'public_major_id',
+
+        // المستوى والفصل الحالي
         'level',
+        'current_term',
+
         'gender',
         'status',
+
         'password',
         'email_verified_at',
     ];
@@ -62,11 +61,19 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'level'             => 'integer',
+        'current_term'      => 'integer',
     ];
 
+    /**
+     * ملاحظات مهمة:
+     * - لدينا عمود فعلي باسم public_major_id في جدول users.
+     * - حتى لا نصطدم معه، سنُبقيه كما هو (قابل للحفظ)،
+     *   وسنقدم خاصية مشتقة اختيارية باسم derived_public_major_id
+     *   تُعيد Major->public_major_id في حال أردت احتسابها ديناميكياً.
+     */
     protected $appends = [
         'has_active_subscription',
-        'public_major_id',
+        'derived_public_major_id',
     ];
 
     /*=============================
@@ -97,6 +104,16 @@ class User extends Authenticatable
         return $this->belongsTo(Major::class);
     }
 
+    public function publicCollege(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\PublicCollege::class, 'public_college_id');
+    }
+
+    public function publicMajor(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\PublicMajor::class, 'public_major_id');
+    }
+
     /** اشتراكات الطالب */
     public function subscriptions(): HasMany
     {
@@ -122,6 +139,11 @@ class User extends Authenticatable
         $this->attributes['phone'] = $value ? trim($value) : null;
     }
 
+    public function setStudentNumberAttribute($value): void
+    {
+        $this->attributes['student_number'] = $value ? trim($value) : null;
+    }
+
     /*=============================
      | Accessors
      |=============================*/
@@ -131,11 +153,27 @@ class User extends Authenticatable
     }
 
     /**
-     * public_major_id (محسوب من Major->public_major_id)
+     * derived_public_major_id:
+     * قيمة مشتقة من علاقة Major->public_major_id (لا تستبدل العمود الفعلي).
      */
-    public function getPublicMajorIdAttribute(): ?int
+    public function getDerivedPublicMajorIdAttribute(): ?int
     {
         return $this->major?->public_major_id ? (int) $this->major->public_major_id : null;
+    }
+
+    /**
+     * مساعد لاستخراج المسار الهرمي كاملاً (للأندرويد مثلاً).
+     */
+    public function audiencePath(): array
+    {
+        return [
+            'university_id' => $this->university_id,
+            'branch_id'     => $this->branch_id,
+            'college_id'    => $this->college_id,
+            'major_id'      => $this->major_id,
+            'level'         => $this->level,
+            'current_term'  => $this->current_term,
+        ];
     }
 
     /*=============================
@@ -151,7 +189,7 @@ class User extends Authenticatable
         return $universityId ? $q->where('university_id', $universityId) : $q;
     }
 
-    public function scopeForBranch($q, ?int $branchId) // ← جديد
+    public function scopeForBranch($q, ?int $branchId)
     {
         return $branchId ? $q->where('branch_id', $branchId) : $q;
     }
@@ -188,6 +226,11 @@ class User extends Authenticatable
         return (isset($level) && $level !== '') ? $q->where('level', (int) $level) : $q;
     }
 
+    public function scopeCurrentTerm($q, $term)
+    {
+        return (isset($term) && $term !== '') ? $q->where('current_term', (int) $term) : $q;
+    }
+
     public function scopeSearch($q, ?string $term)
     {
         if (!$term) return $q;
@@ -204,7 +247,7 @@ class User extends Authenticatable
     /**
      * فلترة موحّدة للاستخدام في الكنترولرز:
      * يدعم: q, status, university_id, branch_id, college_id, major_id, country_id, level,
-     *       has_active_subscription, public_major_id (اختياري).
+     *       current_term, has_active_subscription, public_major_id (اختياري).
      */
     public function scopeFilter($q, array $f = [])
     {
@@ -212,11 +255,12 @@ class User extends Authenticatable
             ->when(isset($f['q']) && $f['q'] !== '', fn($qq) => $qq->search($f['q']))
             ->when(!empty($f['status']),          fn($qq) => $qq->status($f['status']))
             ->when(!empty($f['university_id']),   fn($qq) => $qq->forUniversity((int) $f['university_id']))
-            ->when(!empty($f['branch_id']),       fn($qq) => $qq->forBranch((int) $f['branch_id']))     // ← جديد
+            ->when(!empty($f['branch_id']),       fn($qq) => $qq->forBranch((int) $f['branch_id']))
             ->when(!empty($f['college_id']),      fn($qq) => $qq->forCollege((int) $f['college_id']))
             ->when(!empty($f['major_id']),        fn($qq) => $qq->forMajor((int) $f['major_id']))
             ->when(!empty($f['country_id']),      fn($qq) => $qq->forCountry((int) $f['country_id']))
             ->when(isset($f['level']) && $f['level'] !== '', fn($qq) => $qq->level($f['level']))
+            ->when(isset($f['current_term']) && $f['current_term'] !== '', fn($qq) => $qq->currentTerm($f['current_term']))
             ->when(!empty($f['public_major_id']), fn($qq) => $qq->forPublicMajor((int) $f['public_major_id']));
 
         // تصفية حسب وجود اشتراك نشط (اختياري)
