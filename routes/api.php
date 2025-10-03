@@ -26,7 +26,7 @@ use App\Http\Controllers\Api\V1\Plans\FeaturesController;
 
 use App\Http\Controllers\Api\V1\Subscription\ActivationController;
 use App\Http\Controllers\Api\V1\Subscription\SubscriptionsController;
-
+use App\Http\Controllers\MedicalSystemController;
 use App\Http\Controllers\Api\V1\Feed\FeedController;
 use App\Http\Controllers\Api\V1\Me\DevicesController;
 use App\Http\Controllers\Api\V1\BannerController;
@@ -257,7 +257,12 @@ Route::prefix('v1')->group(function () {
         // الأنظمة حسب السنة + مواد النظام
         Route::get('medical/systems', [MedicalPrivateController::class, 'systems']); // ?year_id=
         Route::get('medical/systems/{system}/subjects', [MedicalPrivateController::class, 'systemSubjects']);
-
+        Route::get(
+            'medical/years/{year}/terms/{term}/systems',
+            [MedicalSystemController::class, 'systemsByYearAndTerm']
+        )
+            ->whereNumber('year')
+            ->whereNumber('term'); // term_number أو id، سنحله مخصصًا
         // محتوى مادة (يرجع من contents عبر MedicalSubjectContent)
         Route::get('medical/subjects/{subject}/contents', [MedicalPrivateController::class, 'subjectContents']); // ?type=file|link
 
