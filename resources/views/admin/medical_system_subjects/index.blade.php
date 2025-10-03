@@ -24,7 +24,7 @@
             <option value="">-- اختر --</option>
             @foreach($systems as $s)
               <option value="{{ $s->id }}" @selected($systemId==$s->id)>
-                #{{ $s->id }} - {{ optional($s->year->major)->name }} / سنة {{ optional($s->year)->year_number }} - {{ $s->display_name ?? optional($s->device)->name }}
+                #{{ $s->id }} - {{ optional($s->year->major)->name }} / سنة {{ optional($s->year)->year_number }} / ترم {{ optional($s->term)->term_number }} - {{ $s->display_name ?? optional($s->device)->name }}
               </option>
             @endforeach
           </select>

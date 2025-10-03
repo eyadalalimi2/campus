@@ -1,4 +1,5 @@
 <div class="row g-3">
+
   <div class="col-lg-6">
     <label class="form-label">السنة</label>
     <select name="year_id" class="form-select">
@@ -8,6 +9,38 @@
     </select>
     @error('year_id')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
   </div>
+
+  <div class="col-lg-6">
+    <label class="form-label">الترم</label>
+    <select name="term_id" id="term_id_select" class="form-select">
+      <!-- سيتم تعبئتها بالجافاسكريبت -->
+    </select>
+    @error('term_id')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+  </div>
+
+  <script>
+    const termsByYear = @json($termsByYear);
+    const oldYear = '{{ old('year_id', optional($system)->year_id) }}';
+    const oldTerm = '{{ old('term_id', optional($system)->term_id) }}';
+    function updateTerms() {
+      const yearId = document.querySelector('[name=year_id]').value;
+      const termSelect = document.getElementById('term_id_select');
+      termSelect.innerHTML = '';
+      if (termsByYear[yearId]) {
+        termsByYear[yearId].forEach(function(term) {
+          const opt = document.createElement('option');
+          opt.value = term.id;
+          opt.textContent = 'ترم ' + term.number;
+          if (String(term.id) === oldTerm) opt.selected = true;
+          termSelect.appendChild(opt);
+        });
+      }
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelector('[name=year_id]').addEventListener('change', updateTerms);
+      updateTerms();
+    });
+  </script>
 
   <div class="col-lg-6">
     <label class="form-label">الجهاز العام (med_devices)</label>

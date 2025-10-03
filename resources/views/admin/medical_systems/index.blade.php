@@ -23,6 +23,7 @@
               <th>#</th>
               <th>التخصص</th>
               <th>السنة</th>
+              <th>الترم</th>
               <th>الجهاز العام</th>
               <th>الاسم الظاهر</th>
               <th>مفعل</th>
@@ -36,6 +37,7 @@
                 <td>{{ $sys->id }}</td>
                 <td>{{ optional($sys->year->major)->name }}</td>
                 <td>{{ optional($sys->year)->year_number }}</td>
+                <td>{{ optional($sys->term)->term_number }}</td>
                 <td>{{ optional($sys->device)->name }}</td>
                 <td>{{ $sys->display_name }}</td>
                 <td>{!! $sys->is_active ? '<span class="badge bg-success">مفعل</span>' : '<span class="badge bg-secondary">معطل</span>' !!}</td>

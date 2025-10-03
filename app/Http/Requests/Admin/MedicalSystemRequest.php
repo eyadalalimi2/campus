@@ -12,6 +12,7 @@ class MedicalSystemRequest extends FormRequest
     {
         return [
             'year_id'       => ['required','exists:MedicalYears,id'],
+            'term_id'       => ['required','exists:MedicalTerms,id'],
             'med_device_id' => ['required','exists:med_devices,id'],
             'display_name'  => ['nullable','string','max:255'],
             'notes'         => ['nullable','string'],
