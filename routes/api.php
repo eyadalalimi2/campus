@@ -46,6 +46,9 @@ use App\Http\Controllers\Api\V1\{
 
 Route::prefix('v1')->group(function () {
 
+    // University Branches (by university)
+    Route::get('universities/{id}/branches', [\App\Http\Controllers\Api\V1\UniversityBranchController::class, 'byUniversity']);
+
     /* =========================
      * Auth (بدون مصادقة)
      * ========================= */
