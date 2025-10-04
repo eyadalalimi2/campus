@@ -45,6 +45,9 @@ use App\Http\Controllers\Api\V1\{
 
 Route::prefix('v1')->group(function () {
 
+    // Courses
+    Route::get('courses', [\App\Http\Controllers\Api\V1\CourseController::class, 'index']);
+
     // University Branches (by university)
     Route::get('universities/{id}/branches', [\App\Http\Controllers\Api\V1\UniversityBranchController::class, 'byUniversity']);
 
