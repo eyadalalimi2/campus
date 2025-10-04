@@ -34,7 +34,6 @@ use App\Http\Controllers\Api\V1\NotificationsController;
 use App\Http\Controllers\Api\V1\StudentRequestsController;
 use App\Http\Controllers\Api\V1\ComplaintController;
 use App\Http\Controllers\Api\V1\Me\VisibilityController as ApiVisibilityController;
-use App\Http\Controllers\Api\V1\CoursesController;
 use App\Http\Controllers\Api\V1\{
     MedDeviceController,
     MedSubjectController,
@@ -52,7 +51,7 @@ Route::prefix('v1')->group(function () {
     /* =========================
      * Auth (بدون مصادقة)
      * ========================= */
-    Route::get('/courses', [CoursesController::class, 'index']);
+
 
     //المحتوى الطبي التعليمي العام
     // Devices
