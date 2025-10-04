@@ -139,5 +139,12 @@
 
             </a>
         </div>
+        <div class="nav-item">
+            <a href="{{ route('admin.courses.index') }}"
+               class="nav-link {{ request()->is('admin/courses*') ? 'active' : '' }}">
+                <i class="bi bi-journal-bookmark" style="color:#0e7490;"></i>
+                الكورسات
+            </a>
+        </div>
     </nav>
 </aside>
