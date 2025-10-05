@@ -26,7 +26,7 @@ use App\Http\Controllers\Api\V1\Plans\FeaturesController;
 
 use App\Http\Controllers\Api\V1\Subscription\ActivationController;
 use App\Http\Controllers\Api\V1\Subscription\SubscriptionsController;
-
+use App\Http\Controllers\MedicalSystemController;
 use App\Http\Controllers\Api\V1\Feed\FeedController;
 use App\Http\Controllers\Api\V1\Me\DevicesController;
 use App\Http\Controllers\Api\V1\BannerController;
@@ -34,6 +34,7 @@ use App\Http\Controllers\Api\V1\NotificationsController;
 use App\Http\Controllers\Api\V1\StudentRequestsController;
 use App\Http\Controllers\Api\V1\ComplaintController;
 use App\Http\Controllers\Api\V1\Me\VisibilityController as ApiVisibilityController;
+use App\Http\Controllers\Api\V1\ContentAssistantController as ApiContentAssistantController;
 use App\Http\Controllers\Api\V1\{
     MedDeviceController,
     MedSubjectController,
@@ -44,10 +45,24 @@ use App\Http\Controllers\Api\V1\{
 };
 
 Route::prefix('v1')->group(function () {
+    
+    //content-assistants
+    Route::get('content-assistants', [ApiContentAssistantController::class, 'index']);
+
+    // Courses
+    Route::get('courses', [\App\Http\Controllers\Api\V1\CourseController::class, 'index']);
+
+    // University Branches (by university)
+    Route::get('universities/{id}/branches', [\App\Http\Controllers\Api\V1\UniversityBranchController::class, 'byUniversity']);
+     // Branch Colleges (by branch)
+    Route::get('branches/{branch_id}/colleges', [\App\Http\Controllers\Api\V1\Structure\BranchCollegesController::class, 'byBranch']);
+
 
     /* =========================
      * Auth (بدون مصادقة)
      * ========================= */
+
+
     //المحتوى الطبي التعليمي العام
     // Devices
     Route::get('devices', [MedDeviceController::class, 'index']);
@@ -252,14 +267,18 @@ Route::prefix('v1')->group(function () {
         // هرم السنوات ← الفصول ← المواد
         Route::get('medical/years',       [MedicalPrivateController::class, 'years']);        // ?major_id= (اختياري: إن لم يُمرر نستخدم major الخاص بالمستخدم)
         Route::get('medical/years/{year}/terms', [MedicalPrivateController::class, 'terms']);
-        Route::get('medical/terms/{term}/subjects', [MedicalPrivateController::class, 'subjects']); // ?track=REQUIRED|SYSTEM|CLINICAL
+        Route::get('medical/terms/{termId}/subjects', [MedicalPrivateController::class, 'subjects']); // ?track=REQUIRED|SYSTEM|CLINICAL
 
         // الأنظمة حسب السنة + مواد النظام
         Route::get('medical/systems', [MedicalPrivateController::class, 'systems']); // ?year_id=
         Route::get('medical/systems/{system}/subjects', [MedicalPrivateController::class, 'systemSubjects']);
-
+        Route::get(
+            'medical/years/{year}/terms/{term}/systems',
+            [MedicalSystemController::class, 'systemsByYearAndTerm']
+        )
+            ->whereNumber('year')
+            ->whereNumber('term'); // term_number أو id، سنحله مخصصًا
         // محتوى مادة (يرجع من contents عبر MedicalSubjectContent)
         Route::get('medical/subjects/{subject}/contents', [MedicalPrivateController::class, 'subjectContents']); // ?type=file|link
-
     });
 });

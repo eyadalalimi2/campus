@@ -7,6 +7,7 @@ use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvi
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
+use App\Models\MedicalTerm;
 
 class RouteServiceProvider extends ServiceProvider
 {
@@ -24,6 +25,18 @@ class RouteServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        parent::boot();
+
+        Route::bind('term', function ($value, $route) {
+            $yearId = (int) $route->parameter('year');
+            return MedicalTerm::query()
+                ->where('year_id', $yearId)
+                ->where(function ($q) use ($value) {
+                    $q->where('term_number', $value)  // يفسّرها كرقم فصل
+                        ->orWhere('id', $value);       // أو كـ id صريح
+                })
+                ->firstOrFail();
+        });
         // نضبط محددات المعدّل فقط — لا شيء آخر يتغير.
         $this->configureRateLimiting();
 

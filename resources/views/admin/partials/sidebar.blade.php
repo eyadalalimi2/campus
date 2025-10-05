@@ -139,5 +139,19 @@
 
             </a>
         </div>
+        <div class="nav-item">
+            <a href="{{ route('admin.courses.index') }}"
+               class="nav-link {{ request()->is('admin/courses*') ? 'active' : '' }}">
+                <i class="bi bi-journal-bookmark" style="color:#0e7490;"></i>
+                الكورسات
+            </a>
+        </div>
+        <div class="nav-item">
+            <a class="nav-link {{ request()->routeIs('content_assistants.*') ? 'active' : '' }}"
+               href="{{ route('admin.content_assistants.index') }}">
+                <i class="bi bi-people"></i>
+                <span>مساعدين المحتوى</span>
+            </a>
+        </div>
     </nav>
 </aside>

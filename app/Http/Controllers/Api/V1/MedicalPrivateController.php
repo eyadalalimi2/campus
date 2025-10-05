@@ -156,6 +156,57 @@ class MedicalPrivateController extends Controller
 
         return MedicalSystemResource::collection($rows);
     }
+    public function systemsByTerm(\Illuminate\Http\Request $request, $termId, $year = null)
+    {
+        $user = $request->user();
+        $yearIdFromPath = is_numeric($year) ? (int)$year : null;
+
+        // تأكيد وجود الترم
+        $term = \DB::table('MedicalTerms')->where('id', $termId)->first();
+        if (!$term) {
+            return response()->json(['status' => 'error', 'message' => 'المورد غير موجود.'], 404);
+        }
+
+        // لو مسار السنة موجود، تأكد التطابق مع الترم
+        if ($yearIdFromPath !== null && (int)$term->year_id !== $yearIdFromPath) {
+            return response()->json(['status' => 'error', 'message' => 'المورد غير موجود.'], 404);
+        }
+
+        // جلب السنة للتحقق من تخصّص المستخدم
+        $yearRow = \DB::table('MedicalYears')->where('id', $term->year_id)->first();
+        if (!$yearRow) {
+            return response()->json(['status' => 'error', 'message' => 'المورد غير موجود.'], 404);
+        }
+
+        // تأمين التخصّص
+        if ($user?->major_id && (int)$yearRow->major_id !== (int)$user->major_id) {
+            return response()->json(['status' => 'error', 'message' => 'غير مسموح: عدم تطابق التخصص'], 403);
+        }
+
+        // جلب الأنظمة المقيدة بالترم
+        $rows = \DB::table('MedicalSystems as sys')
+            ->join('med_devices as d', 'd.id', '=', 'sys.med_device_id')
+            ->select(
+                'sys.id',
+                'sys.year_id',
+                'sys.term_id',
+                'sys.med_device_id',
+                'sys.display_name',
+                'sys.is_active',
+                'sys.sort_order',
+                'd.name as device_name',
+                'd.slug as device_slug',
+                'd.image_path as device_image'
+            )
+            ->where('sys.term_id', $termId)
+            ->where('sys.is_active', 1)
+            ->orderBy('sys.sort_order')
+            ->orderBy('d.name')
+            ->get();
+
+        return \App\Http\Resources\MedicalSystemResource::collection($rows);
+    }
+
 
     /**
      * GET /medical/systems/{system}/subjects
@@ -226,10 +277,22 @@ class MedicalPrivateController extends Controller
         $q = DB::table('MedicalSubjectContent as lnk')
             ->join('contents as c', 'c.id', '=', 'lnk.content_id')
             ->select(
-                'c.id','c.title','c.description','c.type','c.source_url','c.file_path',
-                'c.university_id','c.branch_id','c.college_id','c.major_id',
-                'c.status','c.is_active','c.published_at','c.version',
-                'lnk.sort_order','lnk.is_primary'
+                'c.id',
+                'c.title',
+                'c.description',
+                'c.type',
+                'c.source_url',
+                'c.file_path',
+                'c.university_id',
+                'c.branch_id',
+                'c.college_id',
+                'c.major_id',
+                'c.status',
+                'c.is_active',
+                'c.published_at',
+                'c.version',
+                'lnk.sort_order',
+                'lnk.is_primary'
             )
             ->where('lnk.subject_id', $subjectId)
             ->where('c.status', 'published')
@@ -242,14 +305,26 @@ class MedicalPrivateController extends Controller
         // تأكيد التطابق المؤسسي (في حال كان بعض الأعمدة NULL على المحتوى نسمح بها)
         $q->where('c.university_id', $user->university_id);
 
-        if ($user->branch_id)  { $q->where(function($qq) use ($user){ $qq->whereNull('branch_id')->orWhere('branch_id', $user->branch_id); }); }
-        if ($user->college_id) { $q->where(function($qq) use ($user){ $qq->whereNull('college_id')->orWhere('college_id', $user->college_id); }); }
-        if ($user->major_id)   { $q->where(function($qq) use ($user){ $qq->whereNull('major_id')->orWhere('major_id', $user->major_id); }); }
+        if ($user->branch_id) {
+            $q->where(function ($qq) use ($user) {
+                $qq->whereNull('branch_id')->orWhere('branch_id', $user->branch_id);
+            });
+        }
+        if ($user->college_id) {
+            $q->where(function ($qq) use ($user) {
+                $qq->whereNull('college_id')->orWhere('college_id', $user->college_id);
+            });
+        }
+        if ($user->major_id) {
+            $q->where(function ($qq) use ($user) {
+                $qq->whereNull('major_id')->orWhere('major_id', $user->major_id);
+            });
+        }
 
         $rows = $q->orderByDesc('lnk.is_primary')
-                  ->orderBy('lnk.sort_order')
-                  ->orderByDesc('c.published_at')
-                  ->get();
+            ->orderBy('lnk.sort_order')
+            ->orderByDesc('c.published_at')
+            ->get();
 
         return ContentResource::collection($rows);
     }

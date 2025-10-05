@@ -48,6 +48,8 @@ use App\Http\Controllers\Admin\MedicalSystemController;
 use App\Http\Controllers\Admin\MedicalSystemSubjectController;
 use App\Http\Controllers\Admin\MedicalSubjectContentController;
 use App\Http\Controllers\Admin\MedicalContentController;
+use App\Http\Controllers\Admin\MedicalCourseController;
+use App\Http\Controllers\Admin\ContentAssistantController;
 /*
 |--------------------------------------------------------------------------
 | Admin Routes (prefix=admin, name=admin.) via RouteServiceProvider
@@ -223,27 +225,31 @@ Route::middleware('auth:admin')->group(function () {
     Route::get('/notifications/options/colleges',     [AdminNotificationsController::class, 'optionsColleges'])->name('notifications.options.colleges');     // ?university_id=
     Route::get('/notifications/options/majors',       [AdminNotificationsController::class, 'optionsMajors'])->name('notifications.options.majors');       // ?college_id
 
-// موارد كاملة
-Route::resource('medical_years', MedicalYearController::class)->names('medical_years');
-Route::resource('medical_terms', MedicalTermController::class)->names('medical_terms');
-Route::resource('medical_subjects', MedicalSubjectController::class)->names('medical_subjects');
-Route::resource('medical_systems', MedicalSystemController::class)->names('medical_systems');
+    // موارد كاملة
+    Route::resource('medical_years', MedicalYearController::class)->names('medical_years');
+    Route::resource('medical_terms', MedicalTermController::class)->names('medical_terms');
+    Route::resource('medical_subjects', MedicalSubjectController::class)->names('medical_subjects');
+    Route::resource('medical_systems', MedicalSystemController::class)->names('medical_systems');
 
-// ربط الأنظمة بالمواد (store/destroy فقط + index بسيط)
-Route::get('medical_system_subjects', [MedicalSystemSubjectController::class, 'index'])->name('medical_system_subjects.index');
-Route::post('medical_system_subjects', [MedicalSystemSubjectController::class, 'store'])->name('medical_system_subjects.store');
-Route::delete('medical_system_subjects/{medical_system_subject}', [MedicalSystemSubjectController::class, 'destroy'])->name('medical_system_subjects.destroy');
+    // ربط الأنظمة بالمواد (store/destroy فقط + index بسيط)
+    Route::get('medical_system_subjects', [MedicalSystemSubjectController::class, 'index'])->name('medical_system_subjects.index');
+    Route::post('medical_system_subjects', [MedicalSystemSubjectController::class, 'store'])->name('medical_system_subjects.store');
+    Route::delete('medical_system_subjects/{medical_system_subject}', [MedicalSystemSubjectController::class, 'destroy'])->name('medical_system_subjects.destroy');
 
-// ربط محتوى المواد الخاصة
-Route::get('medical_subject_contents', [MedicalSubjectContentController::class, 'index'])->name('medical_subject_contents.index');
-Route::post('medical_subject_contents', [MedicalSubjectContentController::class, 'store'])->name('medical_subject_contents.store');
-Route::delete('medical_subject_contents/{medical_subject_content}', [MedicalSubjectContentController::class, 'destroy'])->name('medical_subject_contents.destroy');
+    // ربط محتوى المواد الخاصة
+    Route::get('medical_subject_contents', [MedicalSubjectContentController::class, 'index'])->name('medical_subject_contents.index');
+    Route::post('medical_subject_contents', [MedicalSubjectContentController::class, 'store'])->name('medical_subject_contents.store');
+    Route::delete('medical_subject_contents/{medical_subject_content}', [MedicalSubjectContentController::class, 'destroy'])->name('medical_subject_contents.destroy');
 
-// مساعد بحث المحتويات المؤهلة للربط
-Route::get('medical_subject_contents/search-eligible', [MedicalSubjectContentController::class, 'searchEligibleContents'])
-    ->name('medical_subject_contents.search');
-// ربط "المحتوى الطبي (خاص)"
-Route::resource('medical_contents', MedicalContentController::class)
-    ->except(['show'])
-    ->names('medical_contents');   
+    // مساعد بحث المحتويات المؤهلة للربط
+    Route::get('medical_subject_contents/search-eligible', [MedicalSubjectContentController::class, 'searchEligibleContents'])
+        ->name('medical_subject_contents.search');
+    // ربط "المحتوى الطبي (خاص)"
+    Route::resource('medical_contents', MedicalContentController::class)
+        ->except(['show'])
+        ->names('medical_contents');
+    Route::resource('courses', MedicalCourseController::class)
+        ->except(['show'])
+        ->names('courses');
+    Route::resource('content_assistants', ContentAssistantController::class)->except(['show']);
 });
