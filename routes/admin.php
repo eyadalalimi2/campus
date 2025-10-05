@@ -6,7 +6,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\UniversityController;
 use App\Http\Controllers\Admin\CollegeController;
 use App\Http\Controllers\Admin\MajorController;
-use App\Http\Controllers\Admin\ImportController;
+// ...existing code...
 use App\Http\Controllers\Admin\ThemeController;
 use App\Http\Controllers\Admin\DoctorController;
 use App\Http\Controllers\Admin\ContentController;
@@ -184,16 +184,14 @@ Route::middleware('auth:admin')->group(function () {
 
     /*
      |-----------------------------
-     | الثيمات + الاستيراد
+     | الثيمات 
      |-----------------------------
      */
     Route::get('/themes',               [ThemeController::class, 'index'])->name('themes.index');
     Route::get('/themes/{university}/edit', [ThemeController::class, 'edit'])->name('themes.edit');
     Route::put('/themes/{university}',      [ThemeController::class, 'update'])->name('themes.update');
 
-    Route::get('/import',               [ImportController::class, 'index'])->name('import.index');
-    Route::post('/import/run',          [ImportController::class, 'run'])->name('import.run');
-    Route::get('/import/sample/{type}', [ImportController::class, 'sample'])->name('import.sample');
+    // ...existing code...
 
     // Banners
     Route::resource('banners', BannerController::class);

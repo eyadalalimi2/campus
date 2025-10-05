@@ -18,8 +18,7 @@
     <hr class="text-secondary">
 
     <div class="text-secondary small mb-1">الإعدادات</div>
-    <a href="{{ route('admin.import.index') }}" class="{{ request()->is('admin/import*') ? 'active' : '' }}">
-        <i class="bi bi-upload"></i> الاستيراد (Excel)
+    
     </a>
     <a href="{{ route('admin.themes.index') }}" class="{{ request()->is('admin/themes*') ? 'active' : '' }}">
         <i class="bi bi-palette"></i> إدارة الثيمات

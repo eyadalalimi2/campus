@@ -27,16 +27,6 @@
           إدارة التقارير
         </a>
       </div>
-      {{-- إدارة الاستيراد والثيمات --}}
-      <div class="section-title mb-0">
-        <i class="bi bi-cloud-arrow-up-fill"></i> إدارة الاستيراد
-      </div>
-      <div class="nav-item">
-        <a href="{{ route('admin.import.index') }}" class="nav-link text-muted p-0">
-          <i class="bi bi-upload"></i>
-          الاستيراد (Excel)
-        </a>
-      </div>
       <div class="nav-item">
         <a href="{{ route('admin.themes.index') }}" class="nav-link text-muted p-0">
           <i class="bi bi-palette"></i>

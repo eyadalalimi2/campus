@@ -103,7 +103,7 @@
       <div class="col-lg-6">
         <h3 class="fw-bold mb-3" style="color: {{ $p }}">تكامل سريع مع أنظمتك الحالية</h3>
         <p class="text-muted mb-4">
-          واجهات برمجية وعمليات استيراد/تصدير بيانات تسهّل الهجرة من الأنظمة القديمة. قابلية لإدارة الأذونات والأدوار.
+          واجهات برمجية تسهّل الهجرة من الأنظمة القديمة. قابلية لإدارة الأذونات والأدوار.
         </p>
         <div class="d-flex gap-2">
           <a href="{{ route('site.home') }}" class="btn btn-primary" style="background: {{ $p }}; border-color: {{ $p }}">ابدأ الآن</a>

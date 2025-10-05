@@ -14,9 +14,7 @@
         <a href="{{ route('admin.contents.create') }}" class="btn btn-outline-secondary btn-sm">
             <i class="bi bi-folder-plus"></i> إضافة محتوى
         </a>
-        <a href="{{ route('admin.import.index') }}" class="btn btn-outline-dark btn-sm">
-            <i class="bi bi-upload"></i> الاستيراد
-        </a>
+        
     </div>
 </div>
 
