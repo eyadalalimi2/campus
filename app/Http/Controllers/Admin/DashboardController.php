@@ -28,10 +28,10 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        // المجالات
-        $discTotal    = Discipline::count();
-        $discActive   = Discipline::where('is_active', 1)->count();
-        $discInactive = $discTotal - $discActive;
+    // المجالات (من جدول med_topics)
+    $discTotal    = DB::table('med_topics')->count();
+    $discActive   = DB::table('med_topics')->where('status', 'published')->count();
+    $discInactive = DB::table('med_topics')->where('status', 'draft')->count();
 
         // البرامج
         $progTotal    = Program::count();

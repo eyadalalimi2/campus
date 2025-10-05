@@ -154,17 +154,17 @@
         </div>
     </div>
 
-    {{-- المجالات --}}
+    {{-- المواضيع --}}
     <div class="col-12 col-md-6 col-xl-3">
         <div class="card kpi-card grad-sub p-3 h-100 position-relative">
             <div class="icon-wrap"><i class="bi bi-bookmark-fill"></i></div>
-            <div class="muted">عدد المجالات</div>
+            <div class="muted">عدد المواضيع</div>
             <div class="value">{{ number_format($discTotal) }}</div>
             <div class="d-flex gap-3 mt-2 small">
                 <span class="badge bg-light text-dark">مفعل: {{ number_format($discActive) }}</span>
                 <span class="badge bg-dark">موقوف: {{ number_format($discInactive) }}</span>
             </div>
-            <a class="stretched-link" href="{{ route('admin.disciplines.index') }}"></a>
+            <a class="stretched-link" href="{{ route('admin.med_topics.index') }}"></a>
         </div>
     </div>
 

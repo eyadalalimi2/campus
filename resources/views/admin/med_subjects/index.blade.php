@@ -26,8 +26,8 @@
             <div class="col-md-3">
                 <select name="status" class="form-select">
                     <option value="">الحالة — الكل</option>
-                    <option value="published" @selected(request('status') === 'published')>منشور</option>
-                    <option value="draft" @selected(request('status') === 'draft')>مسودة</option>
+                    <option value="published" @selected(request('status') === 'published')>مفعل</option>
+                    <option value="draft" @selected(request('status') === 'draft')>موقوف</option>
                 </select>
             </div>
             <div class="col-md-1">
@@ -61,7 +61,7 @@
                         <th>النطاق</th>
                         <th>الترتيب</th>
                         <th>الحالة</th>
-                        <th>تحكم</th>
+                        <th>الاجراءات</th>
                     </tr>
                 </thead>
                 <tbody>

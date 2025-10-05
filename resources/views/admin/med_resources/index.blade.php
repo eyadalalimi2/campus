@@ -41,8 +41,8 @@
     <div class="col-md-1">
       <select name="status" class="form-select">
         <option value="">الحالة</option>
-        <option value="published" @selected(request('status')==='published')>منشور</option>
-        <option value="draft" @selected(request('status')==='draft')>مسودة</option>
+        <option value="published" @selected(request('status')==='published')>مفعل</option>
+        <option value="draft" @selected(request('status')==='draft')>موقوف</option>
       </select>
     </div>
     <div class="col-md-2">
@@ -69,7 +69,7 @@
   <div class="table-responsive">
     <table class="table table-striped align-middle mb-0">
       <thead class="table-light">
-        <tr><th>#</th><th>العنوان</th><th>المادة</th><th>الموضوع</th><th>التصنيف</th><th>الحالة</th><th>تحكم</th></tr>
+        <tr><th>#</th><th>العنوان</th><th>المادة</th><th>الموضوع</th><th>التصنيف</th><th>الحالة</th><th>الاجراءات</th></tr>
       </thead>
       <tbody>
       @forelse($resources as $r)

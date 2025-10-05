@@ -26,8 +26,8 @@
             <div class="col-md-2">
                 <select name="status" class="form-select">
                     <option value="">الحالة — الكل</option>
-                    <option value="published" @selected(request('status') === 'published')>منشور</option>
-                    <option value="draft" @selected(request('status') === 'draft')>مسودة</option>
+                    <option value="published" @selected(request('status') === 'published')>مفعل</option>
+                    <option value="draft" @selected(request('status') === 'draft')>موقوف</option>
                 </select>
             </div>
             <div class="col-md-2">
@@ -60,7 +60,7 @@
                         <th>المادة</th>
                         <th>الترتيب</th>
                         <th>الحالة</th>
-                        <th>تحكم</th>
+                        <th>الاجراءات</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -70,8 +70,10 @@
                             <td>{{ $t->title }}</td>
                             <td>{{ $t->subject?->name }}</td>
                             <td>{{ $t->order_index }}</td>
-                            <td><span
-                                    class="badge bg-{{ $t->status === 'published' ? 'success' : 'secondary' }}">{{ $t->status }}</span>
+                            <td>
+                                <span class="badge bg-{{ $t->status === 'published' ? 'success' : 'secondary' }}">
+                                    {{ $t->status === 'published' ? 'مفعل' : 'موقوف' }}
+                                </span>
                             </td>
                             <td>
                                 <a href="{{ route('admin.med_topics.edit', $t) }}" class="btn btn-sm btn-outline-primary"><i
