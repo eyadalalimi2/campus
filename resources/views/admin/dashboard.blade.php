@@ -88,7 +88,7 @@
                 <span class="badge bg-light text-dark">مفعل: {{ number_format($docActive) }}</span>
                 <span class="badge bg-dark"> موقوف: {{ number_format($docInactive) }}</span>
             </div>
-            <a class="stretched-link" href="{{ route('admin.doctors.index') }}"></a>
+            <a class="stretched-link" href="{{ route('admin.med_doctors.index') }}"></a>
         </div>
     </div>
 </div>
@@ -107,7 +107,7 @@
                 <span class="badge bg-light text-dark">مفعل: {{ number_format($matActive) }}</span>
                 <span class="badge bg-dark">موقوف: {{ number_format($matInactive) }}</span>
             </div>
-            <a class="stretched-link" href="{{ route('admin.materials.index') }}"></a>
+            <a class="stretched-link" href="{{ route('admin.med_subjects.index') }}"></a>
         </div>
     </div>
 

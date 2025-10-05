@@ -165,7 +165,36 @@
         </div>
     </div>
 
+
+
     @include('admin.partials.footer')
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // إخفاء جميع التوستات تلقائياً بعد 3 ثواني
+        setTimeout(function() {
+            document.querySelectorAll('.toast.show').forEach(function(toast) {
+                // Bootstrap 5: إزالة show لتفعيل الأنيميشن ثم إزالة العنصر
+                toast.classList.remove('show');
+                setTimeout(function(){ toast.remove(); }, 500);
+            });
+        }, 3000);
+    });
+    </script>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(function() {
+            document.querySelectorAll('.alert-dismissible').forEach(function(alert) {
+                if(alert.classList.contains('show')) {
+                    // Bootstrap 5: remove 'show' to trigger fade out, then remove from DOM
+                    alert.classList.remove('show');
+                    setTimeout(function(){ alert.remove(); }, 500);
+                }
+            });
+        }, 3000); // 3 ثواني
+    });
+    </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
