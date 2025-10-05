@@ -56,6 +56,7 @@
                 <thead class="table-light">
                     <tr>
                         <th>#</th>
+                        <th>الصورة</th>
                         <th>الاسم</th>
                         <th>النطاق</th>
                         <th>الترتيب</th>
@@ -67,11 +68,20 @@
                     @forelse($subjects as $s)
                         <tr>
                             <td>{{ $s->id }}</td>
+                            <td>
+                                @if($s->image_path)
+                                    <img src="{{ asset('storage/'.$s->image_path) }}" alt="صورة" style="width:40px;height:40px;object-fit:cover;border-radius:8px;">
+                                @else
+                                    <span class="text-muted">—</span>
+                                @endif
+                            </td>
                             <td>{{ $s->name }}</td>
                             <td>{{ $s->scope }}</td>
                             <td>{{ $s->order_index }}</td>
-                            <td><span
-                                    class="badge bg-{{ $s->status === 'published' ? 'success' : 'secondary' }}">{{ $s->status }}</span>
+                            <td>
+                                <span class="badge bg-{{ $s->status === 'published' ? 'success' : ($s->status === 'draft' ? 'danger' : 'secondary') }}">
+                                    {{ $s->status === 'published' ? 'مفعل' : ($s->status === 'draft' ? 'موقوف' : $s->status) }}
+                                </span>
                             </td>
                             <td>
                                 <a href="{{ route('admin.med_subjects.edit', $s) }}"

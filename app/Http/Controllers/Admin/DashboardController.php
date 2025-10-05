@@ -97,10 +97,10 @@ class DashboardController extends Controller
         $stdSuspended = User::where('status', 'suspended')->count();
         $stdGrad      = User::where('status', 'graduated')->count();
 
-        // المواد
-        $matTotal    = Material::count();
-        $matActive   = Material::where('is_active', 1)->count();
-        $matInactive = $matTotal - $matActive;
+    // المواد (من جدول med_subjects)
+    $matTotal    = DB::table('med_subjects')->count();
+    $matActive   = DB::table('med_subjects')->where('status', 'published')->count();
+    $matInactive = DB::table('med_subjects')->where('status', 'draft')->count();
 
         // الأجهزة
         $devTotal    = Device::count();
