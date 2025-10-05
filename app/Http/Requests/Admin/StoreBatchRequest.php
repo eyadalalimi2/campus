@@ -19,6 +19,7 @@ class StoreBatchRequest extends FormRequest
             'notes'          => ['nullable','string'],
             'plan_id'        => ['required','integer','exists:plans,id'],
             'university_id'  => ['nullable','integer','exists:universities,id'],
+            'branch_id'      => ['nullable','integer','exists:university_branches,id'],
             'college_id'     => ['nullable','integer','exists:colleges,id'],
             'major_id'       => ['nullable','integer','exists:majors,id'],
             'quantity'       => ['required','integer','min:1','max:100000'],

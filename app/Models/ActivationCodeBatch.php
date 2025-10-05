@@ -51,6 +51,10 @@ class ActivationCodeBatch extends Model
     {
         return $this->belongsTo(University::class, 'university_id');
     }
+    public function branch()
+    {
+        return $this->belongsTo(\App\Models\UniversityBranch::class, 'branch_id');
+    }
 
     public function college()
     {

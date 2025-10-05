@@ -50,7 +50,7 @@
                     <th>#</th>
                     <th>الاسم</th>
                     <th>الخطة</th>
-                    <th>الجامعة/الكلية/التخصص</th>
+                    <th>الجامعة/ الفرع/الكلية/التخصص</th>
                     <th>الكمية</th>
                     <th>الحالة</th>
                     <th>أكواد مُنشأة</th>
@@ -65,11 +65,11 @@
                         <td>#{{ $batch->plan_id }}</td>
                         <td class="small text-muted">
                             {{ $batch->university->name ?? '—' }}
-                            @if ($batch->college) / {{ $batch->college->name }}
-                            @endif
-                            @if ($batch->major) / {{ $batch->major->name }}
-                            
-                @endif
+                            {{-- تشخيص: طباعة بيانات الفرع --}}
+                            @php // dd($batch->branch) @endphp
+                            @if ($batch->branch) / {{ $batch->branch->name }} @endif
+                            @if ($batch->college) / {{ $batch->college->name }} @endif
+                            @if ($batch->major) / {{ $batch->major->name }} @endif
                 </td>
                 <td>{{ $batch->quantity }}</td>
                 <td>

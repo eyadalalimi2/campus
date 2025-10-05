@@ -20,7 +20,7 @@ class ActivationCodeBatchesController extends Controller
     public function index(Request $r)
     {
         $q = ActivationCodeBatch::query()
-            ->with(['plan', 'university', 'college', 'major'])  // ← مهم
+            ->with(['plan', 'university', 'branch', 'college', 'major'])  // ← مهم
             ->withCount('activationCodes')
             ->orderByDesc('id');
 
