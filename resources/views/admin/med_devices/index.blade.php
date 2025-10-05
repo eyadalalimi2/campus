@@ -17,8 +17,8 @@
     <div class="col-md-3">
       <select name="status" class="form-select">
         <option value="">الحالة — الكل</option>
-        <option value="published" @selected(request('status')==='published')>منشور</option>
-        <option value="draft" @selected(request('status')==='draft')>مسودة</option>
+        <option value="published" @selected(request('status')==='published')>مفعل</option>
+        <option value="draft" @selected(request('status')==='draft')>موقوف</option>
       </select>
     </div>
     <div class="col-md-3">
@@ -45,15 +45,43 @@
   <div class="table-responsive">
     <table class="table table-striped align-middle mb-0">
       <thead class="table-light">
-        <tr><th>#</th><th>الاسم</th><th>الترتيب</th><th>الحالة</th><th>تحكم</th></tr>
+        <tr>
+          <th>#</th>
+          <th>الصورة</th>
+          <th>الاسم</th>
+          <th>المواد المرتبطة</th>
+          <th>الترتيب</th>
+          <th>الحالة</th>
+          <th>تحكم</th>
+        </tr>
       </thead>
       <tbody>
       @forelse($devices as $d)
         <tr>
           <td>{{ $d->id }}</td>
+          <td>
+            @if($d->image_path)
+              <img src="{{ asset('storage/'.$d->image_path) }}" alt="صورة" class="img-thumbnail" style="height:40px;width:40px;object-fit:cover">
+            @else
+              <span class="text-muted">—</span>
+            @endif
+          </td>
           <td>{{ $d->name }}</td>
+          <td>
+            @if(method_exists($d,'subjects') && $d->subjects && count($d->subjects))
+              @foreach($d->subjects as $s)
+                <span class="badge bg-primary text-white mb-1">{{ $s->name }}</span>
+              @endforeach
+            @else
+              <span class="text-muted">—</span>
+            @endif
+          </td>
           <td>{{ $d->order_index }}</td>
-          <td><span class="badge bg-{{ $d->status==='published'?'success':'secondary' }}">{{ $d->status }}</span></td>
+          <td>
+            <span class="badge {{ $d->status==='published' ? 'bg-success' : 'bg-danger' }}">
+              {{ $d->status==='published' ? 'مفعل' : 'موقوف' }}
+            </span>
+          </td>
           <td>
             <a href="{{ route('admin.med_devices.edit',$d) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil-square"></i> تعديل</a>
             <form action="{{ route('admin.med_devices.destroy',$d) }}" method="POST" class="d-inline" onsubmit="return confirm('حذف؟')">

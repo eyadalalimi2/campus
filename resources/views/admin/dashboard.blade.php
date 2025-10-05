@@ -115,13 +115,13 @@
     <div class="col-12 col-md-6 col-xl-3">
         <div class="card kpi-card grad-dev p-3 h-100 position-relative">
             <div class="icon-wrap"><i class="bi bi-cpu"></i></div>
-            <div class="muted">عدد الأجهزة/المهام</div>
+            <div class="muted">عدد الأجهزة</div>
             <div class="value">{{ number_format($devTotal) }}</div>
             <div class="d-flex gap-3 mt-2 small">
                 <span class="badge bg-light text-dark">مفعل: {{ number_format($devActive) }}</span>
                 <span class="badge bg-dark">موقوف: {{ number_format($devInactive) }}</span>
             </div>
-            <a class="stretched-link" href="{{ route('admin.devices.index') }}"></a>
+            <a class="stretched-link" href="{{ route('admin.med_devices.index') }}"></a>
         </div>
     </div>
 

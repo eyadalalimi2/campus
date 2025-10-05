@@ -70,7 +70,7 @@
           <td>
             @if($d->subjects && $d->subjects->count())
               @foreach($d->subjects as $subj)
-                <span class="badge bg-info text-dark mb-1">{{ $subj->name }}</span>
+                <span class="badge bg-primary text-white mb-1">{{ $subj->name }}</span>
               @endforeach
             @else
               <span class="text-muted">—</span>

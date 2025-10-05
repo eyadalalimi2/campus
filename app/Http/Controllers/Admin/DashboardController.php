@@ -103,9 +103,9 @@ class DashboardController extends Controller
     $matInactive = DB::table('med_subjects')->where('status', 'draft')->count();
 
         // الأجهزة
-        $devTotal    = Device::count();
-        $devActive   = Device::where('is_active', 1)->count();
-        $devInactive = $devTotal - $devActive;
+    $devTotal    = \App\Models\MedDevice::count();
+    $devActive   = \App\Models\MedDevice::where('status', 'published')->count();
+    $devInactive = \App\Models\MedDevice::where('status', 'draft')->count();
 
         // المحتوى حسب النوع
         $contentTotal   = Content::count();
