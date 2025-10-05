@@ -15,7 +15,26 @@
                     <span class="badge bg-primary">{{ $currentUniversity->name }}</span>
                 @endif
             @endisset
+            <!-- أيقونة ملء الشاشة -->
+            <button id="fullscreen-toggle" type="button" class="btn btn-link p-0 ms-2" title="وضع ملء الشاشة" style="font-size:1.5rem;">
+                <i class="bi bi-arrows-fullscreen"></i>
+            </button>
         </a>
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var btn = document.getElementById('fullscreen-toggle');
+        if(btn) {
+            btn.addEventListener('click', function() {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen();
+                }
+                // للخروج من ملء الشاشة يجب الضغط مرة أخرى أو استخدام زر الخروج من المتصفح
+            });
+        }
+    });
+</script>
+@endpush
 
         {{-- Toggler (Mobile) --}}
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#adminTopbar"
@@ -28,25 +47,7 @@
             <ul class="navbar-nav ms-auto align-items-lg-center">
                     {{-- إدارة البنرات والشكاوى والإشعارات والطلبات --}}
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('admin.banners.index') }}">
-                            <i class="bi bi-image"></i> البنرات
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('admin.complaints.index') }}">
-                            <i class="bi bi-exclamation-diamond"></i> الشكاوى
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('admin.notifications.index') }}">
-                            <i class="bi bi-bell"></i> الإشعارات
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('admin.requests.index') }}">
-                            <i class="bi bi-envelope-paper"></i> الطلبات
-                        </a>
-                    </li>
+                    {{-- تم نقل روابط البنرات والشكاوى والإشعارات والطلبات إلى القائمة السفلية --}}
 
                 {{-- روابط عامة --}}
                 <li class="nav-item">
