@@ -77,6 +77,7 @@
                 <thead class="table-light">
                     <tr>
                         <th>#</th>
+                        <th>صورة الغلاف</th>
                         <th>العنوان</th>
                         <th>الدكتور</th>
                         <th>المادة</th>
@@ -89,16 +90,26 @@
                     @forelse($videos as $v)
                         <tr>
                             <td>{{ $v->id }}</td>
+                            <td>
+                                @if($v->thumbnail_url)
+                                    <img src="{{ asset('storage/'.$v->cover_image) }}" alt="صورة الغلاف" class="img-thumbnail" style="height:40px;width:40px;object-fit:cover">
+                                @else
+                                    <span class="text-muted">—</span>
+                                @endif
+                            </td>
                             <td>{{ $v->title }}</td>
                             <td>{{ $v->doctor?->name }}</td>
                             <td>{{ $v->subject?->name }}</td>
                             <td>{{ $v->topic?->title }}</td>
-                            <td><span
-                                    class="badge bg-{{ $v->status === 'published' ? 'success' : 'secondary' }}">{{ $v->status }}</span>
+                            <td>
+                                <span class="badge {{ $v->status === 'published' ? 'bg-success' : 'bg-danger' }}">
+                                    {{ $v->status === 'published' ? 'مفعل' : 'موقوف' }}
+                                </span>
                             </td>
                             <td>
                                 <a href="{{ route('admin.med_videos.edit', $v) }}" class="btn btn-sm btn-outline-primary"><i
                                         class="bi bi-pencil-square"></i> تعديل</a>
+                                <a href="{{ $v->youtube_url ?? '#' }}" target="_blank" class="btn btn-sm btn-success"><i class="bi bi-play-circle"></i> عرض الفيديو</a>
                                 <form action="{{ route('admin.med_videos.destroy', $v) }}" method="POST" class="d-inline"
                                     onsubmit="return confirm('حذف؟')">
                                     @csrf @method('DELETE')

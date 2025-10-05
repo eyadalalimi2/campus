@@ -71,7 +71,7 @@
                             <td>{{ $t->subject?->name }}</td>
                             <td>{{ $t->order_index }}</td>
                             <td>
-                                <span class="badge bg-{{ $t->status === 'published' ? 'success' : 'secondary' }}">
+                                <span class="badge {{ $t->status === 'published' ? 'bg-success' : 'bg-danger' }}">
                                     {{ $t->status === 'published' ? 'مفعل' : 'موقوف' }}
                                 </span>
                             </td>

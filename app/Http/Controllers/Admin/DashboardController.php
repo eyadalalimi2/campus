@@ -28,15 +28,15 @@ class DashboardController extends Controller
 {
     public function index()
     {
-    // المجالات (من جدول med_topics)
-    $discTotal    = DB::table('med_topics')->count();
-    $discActive   = DB::table('med_topics')->where('status', 'published')->count();
-    $discInactive = DB::table('med_topics')->where('status', 'draft')->count();
+        // المواضيع (من جدول med_topics)
+        $discTotal    = DB::table('med_topics')->count();
+        $discActive   = DB::table('med_topics')->where('status', 'published')->count();
+        $discInactive = DB::table('med_topics')->where('status', 'draft')->count();
 
-        // البرامج
-        $progTotal    = Program::count();
-        $progActive   = Program::where('is_active', 1)->count();
-        $progInactive = $progTotal - $progActive;
+        // الفيديوهات (من جدول med_videos)
+        $progTotal    = DB::table('med_videos')->count();
+        $progActive   = DB::table('med_videos')->where('status', 'published')->count();
+        $progInactive = DB::table('med_videos')->where('status', 'draft')->count();
 
         // التقاويم الأكاديمية
         $calTotal     = AcademicCalendar::count();
@@ -84,12 +84,12 @@ class DashboardController extends Controller
         $majActive   = Major::where('is_active', 1)->count();
         $majInactive = $majTotal - $majActive;
 
-    // الدكاترة (من جدول med_doctors)
-    $docTotal  = MedDoctor::count();
-    $docActive   = MedDoctor::where('status', 'published')->count();
-    $docInactive = MedDoctor::where('status', 'draft')->count();
-    $docUni    = null; // لا يوجد عمود type في med_doctors
-    $docInd    = null; // لا يوجد عمود type في med_doctors
+        // الدكاترة (من جدول med_doctors)
+        $docTotal  = MedDoctor::count();
+        $docActive   = MedDoctor::where('status', 'published')->count();
+        $docInactive = MedDoctor::where('status', 'draft')->count();
+        $docUni    = null; // لا يوجد عمود type في med_doctors
+        $docInd    = null; // لا يوجد عمود type في med_doctors
 
         // الطلاب
         $stdTotal     = User::count();
@@ -97,15 +97,15 @@ class DashboardController extends Controller
         $stdSuspended = User::where('status', 'suspended')->count();
         $stdGrad      = User::where('status', 'graduated')->count();
 
-    // المواد (من جدول med_subjects)
-    $matTotal    = DB::table('med_subjects')->count();
-    $matActive   = DB::table('med_subjects')->where('status', 'published')->count();
-    $matInactive = DB::table('med_subjects')->where('status', 'draft')->count();
+        // المواد (من جدول med_subjects)
+        $matTotal    = DB::table('med_subjects')->count();
+        $matActive   = DB::table('med_subjects')->where('status', 'published')->count();
+        $matInactive = DB::table('med_subjects')->where('status', 'draft')->count();
 
         // الأجهزة
-    $devTotal    = \App\Models\MedDevice::count();
-    $devActive   = \App\Models\MedDevice::where('status', 'published')->count();
-    $devInactive = \App\Models\MedDevice::where('status', 'draft')->count();
+        $devTotal    = \App\Models\MedDevice::count();
+        $devActive   = \App\Models\MedDevice::where('status', 'published')->count();
+        $devInactive = \App\Models\MedDevice::where('status', 'draft')->count();
 
         // المحتوى حسب النوع
         $contentTotal   = Content::count();
@@ -117,7 +117,7 @@ class DashboardController extends Controller
 
         // تفعيل العناصر الأخرى
         $activeMaterials = $matActive;
-    $activeDoctors   = $docActive;
+        $activeDoctors   = $docActive;
         $activeDevices   = $devActive;
         $activeContents  = Content::where('is_active', 1)->count();
 
@@ -152,7 +152,7 @@ class DashboardController extends Controller
 
         // أحدث السجلات
         $latestStudents = User::latest()->limit(5)->get(['id', 'name', 'student_number', 'university_id', 'branch_id', 'created_at']);
-    $latestDoctors  = MedDoctor::latest()->limit(5)->get(['id', 'name', 'created_at']);
+        $latestDoctors  = MedDoctor::latest()->limit(5)->get(['id', 'name', 'created_at']);
         $latestContent  = Content::latest()->limit(5)->get(['id', 'title', 'type', 'university_id', 'branch_id', 'created_at']);
 
         // ملخص سريع للجامعات

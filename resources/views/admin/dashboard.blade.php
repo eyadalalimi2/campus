@@ -172,13 +172,13 @@
     <div class="col-12 col-md-6 col-xl-3">
         <div class="card kpi-card grad-maj p-3 h-100 position-relative">
             <div class="icon-wrap"><i class="bi bi-collection-fill"></i></div>
-            <div class="muted">عدد البرامج</div>
+            <div class="muted">عدد الفيديوهات</div>
             <div class="value">{{ number_format($progTotal) }}</div>
             <div class="d-flex gap-3 mt-2 small">
                 <span class="badge bg-light text-dark">مفعل: {{ number_format($progActive) }}</span>
                 <span class="badge bg-dark">موقوف: {{ number_format($progInactive) }}</span>
             </div>
-            <a class="stretched-link" href="{{ route('admin.programs.index') }}"></a>
+            <a class="stretched-link" href="{{ route('admin.med_videos.index') }}"></a>
         </div>
     </div>
 
