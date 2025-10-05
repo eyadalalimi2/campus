@@ -79,12 +79,17 @@
             <a class="stretched-link" href="{{ route('admin.majors.index') }}"></a>
         </div>
     </div>
-{{-- الكورسات --}}
+
+    {{-- الكورسات --}}
     <div class="col-12 col-md-6 col-xl-3">
         <div class="card kpi-card grad-courses p-3 h-100 position-relative">
             <div class="icon-wrap"><i class="bi bi-easel2-fill"></i></div>
             <div class="muted">عدد الكورسات</div>
             <div class="value">{{ number_format($coursesTotal ?? 0) }}</div>
+            <div class="d-flex gap-3 mt-2 small">
+                <span class="badge bg-light text-dark">مفعل: {{ number_format($coursesActive ?? 0) }}</span>
+                <span class="badge bg-dark">موقوف: {{ number_format($coursesInactive ?? 0) }}</span>
+            </div>
             <a class="stretched-link" href="{{ route('admin.courses.index') }}"></a>
         </div>
     </div>
@@ -95,6 +100,10 @@
             <div class="icon-wrap"><i class="bi bi-person-lines-fill"></i></div>
             <div class="muted">مساعدي المحتوى</div>
             <div class="value">{{ number_format($assistantsTotal ?? 0) }}</div>
+            <div class="d-flex gap-3 mt-2 small">
+                <span class="badge bg-light text-dark">مفعل: {{ number_format($assistantsActive ?? 0) }}</span>
+                <span class="badge bg-dark">موقوف: {{ number_format($assistantsInactive ?? 0) }}</span>
+            </div>
             <a class="stretched-link" href="{{ route('admin.content_assistants.index') }}"></a>
         </div>
     </div>
@@ -105,6 +114,10 @@
             <div class="icon-wrap"><i class="bi bi-key-fill"></i></div>
             <div class="muted">أكواد التفعيل</div>
             <div class="value">{{ number_format($activationCodesTotal ?? 0) }}</div>
+            <div class="d-flex gap-3 mt-2 small">
+                <span class="badge bg-light text-dark">مفعل: {{ number_format($activationCodesActive ?? 0) }}</span>
+                <span class="badge bg-dark">موقوف: {{ number_format($activationCodesInactive ?? 0) }}</span>
+            </div>
             <a class="stretched-link" href="{{ route('admin.activation_codes.index') }}"></a>
         </div>
     </div>

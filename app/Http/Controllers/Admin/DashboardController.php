@@ -216,10 +216,16 @@ class DashboardController extends Controller
 
     // إحصائيات الكورسات
     $coursesTotal = DB::table('courses')->count();
+    $coursesActive = DB::table('courses')->where('is_active', 1)->count();
+    $coursesInactive = DB::table('courses')->where('is_active', 0)->count();
     // إحصائيات مساعدي المحتوى
     $assistantsTotal = DB::table('content_assistants')->count();
+    $assistantsActive = DB::table('content_assistants')->where('is_active', 1)->count();
+    $assistantsInactive = DB::table('content_assistants')->where('is_active', 0)->count();
     // إحصائيات أكواد التفعيل
     $activationCodesTotal = DB::table('activation_codes')->count();
+    $activationCodesActive = DB::table('activation_codes')->where('status', 'published')->count();
+    $activationCodesInactive = DB::table('activation_codes')->where('status', 'draft')->count();
 
     return view('admin.dashboard', compact(
             // جامعات / فروع / كليات / تخصصات
@@ -311,8 +317,14 @@ class DashboardController extends Controller
             'latestBlogs',
             // بطاقات إضافية
             'coursesTotal',
+            'coursesActive',
+            'coursesInactive',
             'assistantsTotal',
-            'activationCodesTotal'
+            'assistantsActive',
+            'assistantsInactive',
+            'activationCodesTotal',
+            'activationCodesActive',
+            'activationCodesInactive'
         ));
     }
 }
