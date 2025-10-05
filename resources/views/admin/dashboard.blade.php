@@ -16,6 +16,8 @@
         </a>
         
     </div>
+
+    
 </div>
 
 {{-- ========= --}}
@@ -77,7 +79,35 @@
             <a class="stretched-link" href="{{ route('admin.majors.index') }}"></a>
         </div>
     </div>
+{{-- الكورسات --}}
+    <div class="col-12 col-md-6 col-xl-3">
+        <div class="card kpi-card grad-courses p-3 h-100 position-relative">
+            <div class="icon-wrap"><i class="bi bi-easel2-fill"></i></div>
+            <div class="muted">عدد الكورسات</div>
+            <div class="value">{{ number_format($coursesTotal ?? 0) }}</div>
+            <a class="stretched-link" href="{{ route('admin.courses.index') }}"></a>
+        </div>
+    </div>
 
+    {{-- مساعدي المحتوى --}}
+    <div class="col-12 col-md-6 col-xl-3">
+        <div class="card kpi-card grad-assistants p-3 h-100 position-relative">
+            <div class="icon-wrap"><i class="bi bi-person-lines-fill"></i></div>
+            <div class="muted">مساعدي المحتوى</div>
+            <div class="value">{{ number_format($assistantsTotal ?? 0) }}</div>
+            <a class="stretched-link" href="{{ route('admin.content_assistants.index') }}"></a>
+        </div>
+    </div>
+
+    {{-- أكواد التفعيل --}}
+    <div class="col-12 col-md-6 col-xl-3">
+        <div class="card kpi-card grad-activation p-3 h-100 position-relative">
+            <div class="icon-wrap"><i class="bi bi-key-fill"></i></div>
+            <div class="muted">أكواد التفعيل</div>
+            <div class="value">{{ number_format($activationCodesTotal ?? 0) }}</div>
+            <a class="stretched-link" href="{{ route('admin.activation_codes.index') }}"></a>
+        </div>
+    </div>
     {{-- الدكاترة --}}
     <div class="col-12 col-md-6 col-xl-3">
         <div class="card kpi-card grad-doc p-3 h-100 position-relative">

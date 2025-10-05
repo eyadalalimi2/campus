@@ -214,7 +214,14 @@ class DashboardController extends Controller
                     ->whereColumn('doctors.major_id', 'majors.id');
             })->count();
 
-        return view('admin.dashboard', compact(
+    // إحصائيات الكورسات
+    $coursesTotal = DB::table('courses')->count();
+    // إحصائيات مساعدي المحتوى
+    $assistantsTotal = DB::table('content_assistants')->count();
+    // إحصائيات أكواد التفعيل
+    $activationCodesTotal = DB::table('activation_codes')->count();
+
+    return view('admin.dashboard', compact(
             // جامعات / فروع / كليات / تخصصات
             'uniTotal',
             'uniActive',
@@ -301,7 +308,11 @@ class DashboardController extends Controller
             'blogPublished',
             'blogDraft',
             'blogArchived',
-            'latestBlogs'
+            'latestBlogs',
+            // بطاقات إضافية
+            'coursesTotal',
+            'assistantsTotal',
+            'activationCodesTotal'
         ));
     }
 }
