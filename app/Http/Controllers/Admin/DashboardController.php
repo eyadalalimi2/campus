@@ -38,15 +38,15 @@ class DashboardController extends Controller
         $progActive   = DB::table('med_videos')->where('status', 'published')->count();
         $progInactive = DB::table('med_videos')->where('status', 'draft')->count();
 
-        // التقاويم الأكاديمية
-        $calTotal     = AcademicCalendar::count();
-        $calActive    = AcademicCalendar::where('is_active', 1)->count();
-        $calInactive  = $calTotal - $calActive;
+        //  الملفات (من جدول med_resources)
+        $calTotal     = DB::table('med_resources')->count();
+        $calActive    = DB::table('med_resources')->where('status', 'published')->count();
+        $calInactive  = DB::table('med_resources')->where('status', 'draft')->count();
 
-        // الفصول الأكاديمية
-        $termTotal    = AcademicTerm::count();
-        $termActive   = AcademicTerm::where('is_active', 1)->count();
-        $termInactive = $termTotal - $termActive;
+        // الطلاب (من جدول users)
+        $termTotal    = DB::table('users')->count();
+        $termActive   = DB::table('users')->where('status', 'active')->count();
+        $termInactive = DB::table('users')->where('status', 'suspended')->count();
 
         // أحدث المدونات + إحصاءات المدونات
         $latestBlogs = Blog::with('doctor')
@@ -107,7 +107,7 @@ class DashboardController extends Controller
         $devActive   = \App\Models\MedDevice::where('status', 'published')->count();
         $devInactive = \App\Models\MedDevice::where('status', 'draft')->count();
 
-        // المحتوى حسب النوع
+        //المحتوى الطبي الخاص
         $contentTotal   = Content::count();
         $contentsByType = Content::select('type', DB::raw('COUNT(*) as c'))
             ->groupBy('type')->pluck('c', 'type')->toArray();

@@ -79,7 +79,11 @@
           <td>{{ $r->subject?->name }}</td>
           <td>{{ $r->topic?->title }}</td>
           <td>{{ $r->category?->name }}</td>
-          <td><span class="badge bg-{{ $r->status==='published'?'success':'secondary' }}">{{ $r->status }}</span></td>
+          <td>
+            <span class="badge {{ $r->status==='published' ? 'bg-success' : 'bg-danger' }}">
+              {{ $r->status==='published' ? 'مفعل' : 'موقوف' }}
+            </span>
+          </td>
           <td>
             <a href="{{ route('admin.med_resources.edit',$r) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil-square"></i> تعديل</a>
             <form action="{{ route('admin.med_resources.destroy',$r) }}" method="POST" class="d-inline" onsubmit="return confirm('حذف؟')">

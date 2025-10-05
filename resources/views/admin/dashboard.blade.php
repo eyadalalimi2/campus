@@ -186,27 +186,27 @@
     <div class="col-12 col-md-6 col-xl-3">
         <div class="card kpi-card grad-doc p-3 h-100 position-relative">
             <div class="icon-wrap"><i class="bi bi-calendar3"></i></div>
-            <div class="muted">التقاويم الأكاديمية</div>
+            <div class="muted">عدد الملفات</div>
             <div class="value">{{ number_format($calTotal) }}</div>
             <div class="d-flex gap-3 mt-2 small">
                 <span class="badge bg-light text-dark">نشطة: {{ number_format($calActive) }}</span>
                 <span class="badge bg-dark">موقوفة: {{ number_format($calInactive) }}</span>
             </div>
-            <a class="stretched-link" href="{{ route('admin.academic-calendars.index') }}"></a>
+            <a class="stretched-link" href="{{ route('admin.med_resources.index') }}"></a>
         </div>
     </div>
 
-    {{-- الفصول الأكاديمية --}}
+    {{-- عدد الطلاب  --}}
     <div class="col-12 col-md-6 col-xl-3">
         <div class="card kpi-card grad-col p-3 h-100 position-relative">
             <div class="icon-wrap"><i class="bi bi-calendar-event-fill"></i></div>
-            <div class="muted">الفصول الأكاديمية</div>
+            <div class="muted">عدد الطلاب </div>
             <div class="value">{{ number_format($termTotal) }}</div>
             <div class="d-flex gap-3 mt-2 small">
                 <span class="badge bg-light text-dark">نشطة: {{ number_format($termActive) }}</span>
                 <span class="badge bg-dark">موقوفة: {{ number_format($termInactive) }}</span>
             </div>
-            <a class="stretched-link" href="{{ route('admin.academic-terms.index') }}"></a>
+            <a class="stretched-link" href="{{ route('admin.users.index') }}"></a>
         </div>
     </div>
 
@@ -216,7 +216,7 @@
             <div class="icon-wrap"><i class="bi bi-folder2-open"></i></div>
             <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
                 <div>
-                    <div class="muted">المحتوى التعليمي</div>
+                    <div class="muted">المحتوى الطبي الخاص</div>
                     <div class="value">{{ number_format($contentTotal) }}</div>
                 </div>
                 <div class="d-flex flex-wrap gap-2">
@@ -225,7 +225,7 @@
                     <span class="badge bg-white text-dark px-3 py-2 border">روابط: {{ number_format($cntLink) }}</span>
                 </div>
             </div>
-            <a class="stretched-link" href="{{ route('admin.contents.index') }}"></a>
+            <a class="stretched-link" href="{{ route('admin.medical_contents.index') }}"></a>
         </div>
     </div>
 </div>
