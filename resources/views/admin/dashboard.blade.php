@@ -25,7 +25,7 @@
     {{-- الجامعات --}}
     <div class="col-12 col-md-6 col-xl-3">
         <div class="card kpi-card grad-uni p-3 h-100 position-relative">
-            <div class="icon-wrap"><i class="bi bi-building-fill"></i></div>
+            <div class="icon-wrap"><i class="bi bi-mortarboard-fill"></i></div>
             <div class="muted">عدد الجامعات</div>
             <div class="value">{{ number_format($uniTotal) }}</div>
             <div class="d-flex gap-3 mt-2 small">
@@ -53,7 +53,7 @@
     {{-- الكليات --}}
     <div class="col-12 col-md-6 col-xl-3">
         <div class="card kpi-card grad-col p-3 h-100 position-relative">
-            <div class="icon-wrap"><i class="bi bi-bank2"></i></div>
+            <div class="icon-wrap"><i class="bi bi-building-fill"></i></div>
             <div class="muted">عدد الكليات</div>
             <div class="value">{{ number_format($colTotal) }}</div>
             <div class="d-flex gap-3 mt-2 small">
@@ -67,7 +67,7 @@
     {{-- التخصصات --}}
     <div class="col-12 col-md-6 col-xl-3">
         <div class="card kpi-card grad-maj p-3 h-100 position-relative">
-            <div class="icon-wrap"><i class="bi bi-diagram-3-fill"></i></div>
+            <div class="icon-wrap"><i class="bi bi-layers-fill"></i></div>
             <div class="muted">عدد الأقسام (التخصصات)</div>
             <div class="value">{{ number_format($majTotal) }}</div>
             <div class="d-flex gap-3 mt-2 small">
@@ -100,7 +100,7 @@
     {{-- المواد --}}
     <div class="col-12 col-md-6 col-xl-3">
         <div class="card kpi-card grad-mat p-3 h-100 position-relative">
-            <div class="icon-wrap"><i class="bi bi-journal-text"></i></div>
+            <div class="icon-wrap"><i class="bi bi-journal-bookmark-fill"></i></div>
             <div class="muted">عدد المواد</div>
             <div class="value">{{ number_format($matTotal) }}</div>
             <div class="d-flex gap-3 mt-2 small">
@@ -114,7 +114,7 @@
     {{-- الأجهزة --}}
     <div class="col-12 col-md-6 col-xl-3">
         <div class="card kpi-card grad-dev p-3 h-100 position-relative">
-            <div class="icon-wrap"><i class="bi bi-cpu"></i></div>
+            <div class="icon-wrap"><i class="bi bi-cpu-fill"></i></div>
             <div class="muted">عدد الأجهزة</div>
             <div class="value">{{ number_format($devTotal) }}</div>
             <div class="d-flex gap-3 mt-2 small">
@@ -128,7 +128,7 @@
     {{-- المدونات --}}
     <div class="col-12 col-md-6 col-xl-3">
         <div class="card kpi-card grad-blog p-3 h-100 position-relative">
-            <div class="icon-wrap"><i class="bi bi-newspaper"></i></div>
+            <div class="icon-wrap"><i class="bi bi-journal-richtext"></i></div>
             <div class="muted">عدد المدونات</div>
             <div class="value">{{ number_format($blogTotal) }}</div>
             <div class="d-flex gap-2 flex-wrap mt-2 small">
@@ -143,7 +143,7 @@
     {{-- الاشتراكات --}}
     <div class="col-12 col-md-6 col-xl-3">
         <div class="card kpi-card grad-sub p-3 h-100 position-relative">
-            <div class="icon-wrap"><i class="bi bi-credit-card-2-front-fill"></i></div>
+            <div class="icon-wrap"><i class="bi bi-credit-card-fill"></i></div>
             <div class="muted">عدد الاشتراكات</div>
             <div class="value">{{ number_format($subTotal) }}</div>
             <div class="d-flex gap-3 mt-2 small">
@@ -157,7 +157,7 @@
     {{-- المواضيع --}}
     <div class="col-12 col-md-6 col-xl-3">
         <div class="card kpi-card grad-sub p-3 h-100 position-relative">
-            <div class="icon-wrap"><i class="bi bi-bookmark-fill"></i></div>
+            <div class="icon-wrap"><i class="bi bi-bookmarks-fill"></i></div>
             <div class="muted">عدد المواضيع</div>
             <div class="value">{{ number_format($discTotal) }}</div>
             <div class="d-flex gap-3 mt-2 small">
@@ -171,7 +171,7 @@
     {{-- البرامج --}}
     <div class="col-12 col-md-6 col-xl-3">
         <div class="card kpi-card grad-maj p-3 h-100 position-relative">
-            <div class="icon-wrap"><i class="bi bi-collection-fill"></i></div>
+            <div class="icon-wrap"><i class="bi bi-play-btn-fill"></i></div>
             <div class="muted">عدد الفيديوهات</div>
             <div class="value">{{ number_format($progTotal) }}</div>
             <div class="d-flex gap-3 mt-2 small">
@@ -185,7 +185,7 @@
     {{-- التقاويم الأكاديمية --}}
     <div class="col-12 col-md-6 col-xl-3">
         <div class="card kpi-card grad-doc p-3 h-100 position-relative">
-            <div class="icon-wrap"><i class="bi bi-calendar3"></i></div>
+            <div class="icon-wrap"><i class="bi bi-folder2-open"></i></div>
             <div class="muted">عدد الملفات</div>
             <div class="value">{{ number_format($calTotal) }}</div>
             <div class="d-flex gap-3 mt-2 small">
