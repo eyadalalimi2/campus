@@ -41,10 +41,11 @@ class ActivationCodeBatchesController extends Controller
     {
         $plans        = Plan::orderBy('name')->get();
         $universities = University::orderBy('name')->get();
-        $colleges     = College::with('university')->orderBy('name')->get();
+        $branches     = \App\Models\UniversityBranch::orderBy('name')->get();
+        $colleges     = College::with('branch.university')->orderBy('name')->get();
         $majors       = Major::with('college')->orderBy('name')->get();
 
-        return view('admin.activation_codes.batches.create', compact('plans', 'universities', 'colleges', 'majors'));
+        return view('admin.activation_codes.batches.create', compact('plans', 'universities', 'branches', 'colleges', 'majors'));
     }
 
     public function store(StoreBatchRequest $request, ActivationCodeGenerator $generator)
@@ -55,12 +56,13 @@ class ActivationCodeBatchesController extends Controller
 
         // مهم: نعرّف المتغير قبل الـ transaction لالتقاط قيمته
         $batch = null;
+    $generateNow = filter_var($request['generate_now'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
-        DB::transaction(function () use (&$batch, $data, $request, $generator) {
+        DB::transaction(function () use (&$batch, $data, $generator, $generateNow) {
             $batch = ActivationCodeBatch::create($data);
 
             // توليد الأكواد فوراً (اختياري)
-            if ($request->boolean('generate_now')) {
+            if ($generateNow) {
                 $count = (int) ($batch->quantity ?: 0);
 
                 if ($count > 0) {
@@ -102,6 +104,11 @@ class ActivationCodeBatchesController extends Controller
             }
         });
 
+        // معالجة في حال فشل الإنشاء لأي سبب
+        if (!$batch) {
+            return redirect()->back()->withInput()->with('error', 'حدث خطأ أثناء إنشاء الدفعة. حاول مرة أخرى.');
+        }
+
         // تمرير بارامتر الراوت بالاسم الصحيح لتجنّب Missing parameter
         return redirect()
             ->route('admin.activation_code_batches.edit', ['activation_code_batch' => $batch->id])
@@ -126,10 +133,11 @@ class ActivationCodeBatchesController extends Controller
         $batch        = $activation_code_batch;
         $plans        = Plan::orderBy('name')->get();
         $universities = University::orderBy('name')->get();
-        $colleges     = College::with('university')->orderBy('name')->get();
+        $branches     = \App\Models\UniversityBranch::orderBy('name')->get();
+        $colleges     = College::with('branch.university')->orderBy('name')->get();
         $majors       = Major::with('college')->orderBy('name')->get();
 
-        return view('admin.activation_codes.batches.edit', compact('batch', 'plans', 'universities', 'colleges', 'majors'));
+        return view('admin.activation_codes.batches.edit', compact('batch', 'plans', 'universities', 'branches', 'colleges', 'majors'));
     }
 
     public function update(StoreBatchRequest $request, ActivationCodeBatch $activation_code_batch)

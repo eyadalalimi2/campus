@@ -36,14 +36,28 @@
   </div>
 
   <div class="col-md-4">
+    <label class="form-label">الفرع</label>
+    <select name="branch_id" id="branch_select" class="form-select">
+      <option value="">— بدون —</option>
+      @foreach($branches as $b)
+        <option value="{{ $b->id }}" data-university="{{ $b->university_id }}" @selected(old('branch_id', $batch->branch_id ?? '') == $b->id)>{{ $b->name }}</option>
+      @endforeach
+    </select>
+  </div>
+
+  <div class="col-md-4">
     <label class="form-label">الكلية</label>
     <select name="college_id" id="col_select" class="form-select">
       <option value="">— بدون —</option>
       @foreach($colleges as $c)
         <option value="{{ $c->id }}"
-                data-university="{{ $c->university_id }}"
+                data-branch="{{ $c->branch_id }}"
                 @selected(old('college_id', $batch->college_id ?? '') == $c->id)>
-          {{ $c->name }} ({{ $c->university->name }})
+          {{ $c->name }}
+          @if($c->branch)
+            - {{ $c->branch->name }}
+          @endif
+          ({{ $c->university->name }})
         </option>
       @endforeach
     </select>
@@ -111,43 +125,52 @@
     <input type="text" name="starts_on" id="starts_on"
        class="form-control js-date"
        value="{{ old('starts_on', optional($batch->starts_on ?? null)->format('Y-m-d')) }}">
-
   </div>
 
   <div class="col-md-3">
     <label class="form-label">صالح من</label>
-    <input type="datetime-local" name="valid_from" class="form-control"
-      value="{{ old('valid_from', optional($batch->valid_from ?? null)?->format('Y-m-d\TH:i')) }}">
+    <input type="text" name="valid_from" class="form-control js-date"
+      value="{{ old('valid_from', optional($batch->valid_from ?? null)?->format('Y-m-d')) }}">
   </div>
 
   <div class="col-md-3">
     <label class="form-label">صالح حتى</label>
-    <input type="datetime-local" name="valid_until" class="form-control"
-      value="{{ old('valid_until', optional($batch->valid_until ?? null)?->format('Y-m-d\TH:i')) }}">
+    <input type="text" name="valid_until" class="form-control js-date"
+      value="{{ old('valid_until', optional($batch->valid_until ?? null)?->format('Y-m-d')) }}">
   </div>
 </div>
 
 @push('scripts')
 <script>
-function filterCollegesByUniversity(){
+function filterBranchesByUniversity() {
   const uni = document.getElementById('uni_select').value;
-  document.querySelectorAll('#col_select option[data-university]').forEach(o=>{
+  document.querySelectorAll('#branch_select option[data-university]').forEach(o => {
     const show = !uni || o.dataset.university === uni;
     o.hidden = !show;
-    if(!show && o.selected) o.selected = false;
+    if (!show && o.selected) o.selected = false;
+  });
+  filterCollegesByBranch();
+}
+function filterCollegesByBranch() {
+  const branch = document.getElementById('branch_select').value;
+  document.querySelectorAll('#col_select option[data-branch]').forEach(o => {
+    const show = !branch || o.dataset.branch === branch;
+    o.hidden = !show;
+    if (!show && o.selected) o.selected = false;
   });
   filterMajorsByCollege();
 }
-function filterMajorsByCollege(){
+function filterMajorsByCollege() {
   const col = document.getElementById('col_select').value;
-  document.querySelectorAll('#maj_select option[data-college]').forEach(o=>{
+  document.querySelectorAll('#maj_select option[data-college]').forEach(o => {
     const show = !col || o.dataset.college === col;
     o.hidden = !show;
-    if(!show && o.selected) o.selected = false;
+    if (!show && o.selected) o.selected = false;
   });
 }
-document.getElementById('uni_select').addEventListener('change', filterCollegesByUniversity);
+document.getElementById('uni_select').addEventListener('change', filterBranchesByUniversity);
+document.getElementById('branch_select').addEventListener('change', filterCollegesByBranch);
 document.getElementById('col_select').addEventListener('change', filterMajorsByCollege);
-filterCollegesByUniversity(); // init cascade
+filterBranchesByUniversity(); // init cascade
 </script>
 @endpush
