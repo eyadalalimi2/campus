@@ -11,7 +11,7 @@ use App\Models\{
     UniversityBranch,
     College,
     Major,
-    Doctor,
+    MedDoctor,
     Material,
     Device,
     Content,
@@ -84,10 +84,12 @@ class DashboardController extends Controller
         $majActive   = Major::where('is_active', 1)->count();
         $majInactive = $majTotal - $majActive;
 
-        // الدكاترة
-        $docTotal  = Doctor::count();
-        $docUni    = Doctor::where('type', 'university')->count();
-        $docInd    = Doctor::where('type', 'independent')->count();
+    // الدكاترة (من جدول med_doctors)
+    $docTotal  = MedDoctor::count();
+    $docActive   = MedDoctor::where('status', 'published')->count();
+    $docInactive = MedDoctor::where('status', 'draft')->count();
+    $docUni    = null; // لا يوجد عمود type في med_doctors
+    $docInd    = null; // لا يوجد عمود type في med_doctors
 
         // الطلاب
         $stdTotal     = User::count();
@@ -115,7 +117,7 @@ class DashboardController extends Controller
 
         // تفعيل العناصر الأخرى
         $activeMaterials = $matActive;
-        $activeDoctors   = Doctor::where('is_active', 1)->count();
+    $activeDoctors   = $docActive;
         $activeDevices   = $devActive;
         $activeContents  = Content::where('is_active', 1)->count();
 
@@ -150,7 +152,7 @@ class DashboardController extends Controller
 
         // أحدث السجلات
         $latestStudents = User::latest()->limit(5)->get(['id', 'name', 'student_number', 'university_id', 'branch_id', 'created_at']);
-        $latestDoctors  = Doctor::latest()->limit(5)->get(['id', 'name', 'university_id', 'branch_id', 'created_at']);
+    $latestDoctors  = MedDoctor::latest()->limit(5)->get(['id', 'name', 'created_at']);
         $latestContent  = Content::latest()->limit(5)->get(['id', 'title', 'type', 'university_id', 'branch_id', 'created_at']);
 
         // ملخص سريع للجامعات
@@ -229,8 +231,8 @@ class DashboardController extends Controller
 
             // دكاترة
             'docTotal',
-            'docUni',
-            'docInd',
+            'docActive',
+            'docInactive',
 
             // طلاب
             'stdTotal',

@@ -45,15 +45,43 @@
   <div class="table-responsive">
     <table class="table table-striped align-middle mb-0">
       <thead class="table-light">
-        <tr><th>#</th><th>الاسم</th><th>الترتيب</th><th>الحالة</th><th>تحكم</th></tr>
+        <tr>
+          <th>#</th>
+          <th>الصورة</th>
+          <th>الاسم</th>
+          <th>المواد المرتبطة</th>
+          <th>الترتيب</th>
+          <th>الحالة</th>
+          <th>تحكم</th>
+        </tr>
       </thead>
       <tbody>
       @forelse($doctors as $d)
         <tr>
           <td>{{ $d->id }}</td>
+          <td>
+            @if($d->avatar_path)
+              <img src="{{ asset('storage/'.$d->avatar_path) }}" alt="صورة" style="width:40px;height:40px;object-fit:cover;border-radius:50%;">
+            @else
+              <span class="text-muted">—</span>
+            @endif
+          </td>
           <td>{{ $d->name }}</td>
+          <td>
+            @if($d->subjects && $d->subjects->count())
+              @foreach($d->subjects as $subj)
+                <span class="badge bg-info text-dark mb-1">{{ $subj->name }}</span>
+              @endforeach
+            @else
+              <span class="text-muted">—</span>
+            @endif
+          </td>
           <td>{{ $d->order_index }}</td>
-          <td><span class="badge bg-{{ $d->status==='published'?'success':'secondary' }}">{{ $d->status }}</span></td>
+          <td>
+            <span class="badge {{ $d->status==='published' ? 'bg-success' : ($d->status==='draft' ? 'bg-danger' : 'bg-secondary') }}">
+              {{ $d->status==='published' ? 'مفعل' : ($d->status==='draft' ? 'موقوف' : $d->status) }}
+            </span>
+          </td>
           <td>
             <a href="{{ route('admin.med_doctors.edit',$d) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil-square"></i> تعديل</a>
             <form action="{{ route('admin.med_doctors.destroy',$d) }}" method="POST" class="d-inline" onsubmit="return confirm('حذف؟')">

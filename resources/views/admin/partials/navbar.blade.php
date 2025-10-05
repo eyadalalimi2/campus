@@ -8,28 +8,29 @@
         {{-- Brand + Logo + Current University Badge --}}
         <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="{{ route('admin.dashboard') }}">
             <img src="{{ Storage::url('images/logo.png') }}" style="height:36px;width:auto;">
-
             <span>لوحة التحكم</span>
             @isset($currentUniversity)
                 @if (!empty($currentUniversity))
                     <span class="badge bg-primary">{{ $currentUniversity->name }}</span>
                 @endif
             @endisset
-            <!-- أيقونة ملء الشاشة -->
-            <button id="fullscreen-toggle" type="button" class="btn btn-link p-0 ms-2" title="وضع ملء الشاشة" style="font-size:1.5rem;">
-                <i class="bi bi-arrows-fullscreen"></i>
-            </button>
         </a>
+        <!-- زر ملء الشاشة خارج الشعار -->
+        <button id="fullscreen-toggle" type="button" class="btn btn-link p-0 ms-2" title="وضع ملء الشاشة" style="font-size:1.5rem;">
+            <i class="bi bi-arrows-fullscreen"></i>
+        </button>
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         var btn = document.getElementById('fullscreen-toggle');
         if(btn) {
-            btn.addEventListener('click', function() {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
                 if (!document.fullscreenElement) {
                     document.documentElement.requestFullscreen();
+                } else {
+                    document.exitFullscreen();
                 }
-                // للخروج من ملء الشاشة يجب الضغط مرة أخرى أو استخدام زر الخروج من المتصفح
             });
         }
     });

@@ -85,8 +85,8 @@
             <div class="muted">عدد الدكاترة</div>
             <div class="value">{{ number_format($docTotal) }}</div>
             <div class="d-flex gap-3 mt-2 small">
-                <span class="badge bg-light text-dark">جامعي: {{ number_format($docUni) }}</span>
-                <span class="badge bg-dark">مستقل: {{ number_format($docInd) }}</span>
+                <span class="badge bg-light text-dark">مفعل: {{ number_format($docActive) }}</span>
+                <span class="badge bg-dark"> موقوف: {{ number_format($docInactive) }}</span>
             </div>
             <a class="stretched-link" href="{{ route('admin.doctors.index') }}"></a>
         </div>

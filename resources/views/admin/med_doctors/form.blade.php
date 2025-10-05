@@ -21,7 +21,7 @@
   <div class="col-md-3">
     <label class="form-label">الحالة *</label>
     <select name="status" class="form-select">
-      @foreach(['draft'=>'مسودة','published'=>'منشور'] as $k=>$v)
+      @foreach(['draft'=>'موقوف','published'=>'مفعل'] as $k=>$v)
         <option value="{{ $k }}" @selected(old('status',$doctor->status ?? 'draft')==$k)>{{ $v }}</option>
       @endforeach
     </select>
