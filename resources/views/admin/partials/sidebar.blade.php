@@ -141,11 +141,11 @@
                             <i class="bi bi-tags" style="color:#14b8a6;"></i> تصنيفات الملفات
                         </a>
                     </div>
-                    <div class="nav-item">
+                    {{-- <div class="nav-item">
                         <a href="{{ route('admin.universities_management') }}" class="nav-link">
                             <i class="bi bi-building-fill-check" style="color:#f97316;"></i> إدارة الجامعات والكليات
                         </a>
-                    </div>
+                    </div> --}}
                     <div class="nav-item">
                         <a href="{{ route('admin.banners.index') }}" class="nav-link">
                             <i class="bi bi-image" style="color:#f59e42;"></i> البنرات
