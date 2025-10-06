@@ -40,7 +40,7 @@
 
     {{-- الفروع (جديد) --}}
     <div class="col-12 col-md-6 col-xl-3">
-        <div class="card kpi-card grad-col p-3 h-100 position-relative">
+    <div class="card kpi-card grad-branch p-3 h-100 position-relative">
             <div class="icon-wrap"><i class="bi bi-diagram-3-fill"></i></div>
             <div class="muted">عدد الفروع</div>
             <div class="value">{{ number_format($branchTotal) }}</div>
@@ -68,7 +68,7 @@
 
     {{-- التخصصات --}}
     <div class="col-12 col-md-6 col-xl-3">
-        <div class="card kpi-card grad-maj p-3 h-100 position-relative">
+        <div class="card kpi-card grad-topic p-3 h-100 position-relative">
             <div class="icon-wrap"><i class="bi bi-layers-fill"></i></div>
             <div class="muted">عدد الأقسام (التخصصات)</div>
             <div class="value">{{ number_format($majTotal) }}</div>
@@ -82,7 +82,7 @@
 
     {{-- الكورسات --}}
     <div class="col-12 col-md-6 col-xl-3">
-        <div class="card kpi-card grad-courses p-3 h-100 position-relative">
+    <div class="card kpi-card grad-courses p-3 h-100 position-relative">
             <div class="icon-wrap"><i class="bi bi-easel2-fill"></i></div>
             <div class="muted">عدد الكورسات</div>
             <div class="value">{{ number_format($coursesTotal ?? 0) }}</div>
@@ -96,7 +96,7 @@
 
     {{-- مساعدي المحتوى --}}
     <div class="col-12 col-md-6 col-xl-3">
-        <div class="card kpi-card grad-assistants p-3 h-100 position-relative">
+    <div class="card kpi-card grad-assistants p-3 h-100 position-relative">
             <div class="icon-wrap"><i class="bi bi-person-lines-fill"></i></div>
             <div class="muted">مساعدي المحتوى</div>
             <div class="value">{{ number_format($assistantsTotal ?? 0) }}</div>
@@ -110,7 +110,7 @@
 
     {{-- أكواد التفعيل --}}
     <div class="col-12 col-md-6 col-xl-3">
-        <div class="card kpi-card grad-activation p-3 h-100 position-relative">
+    <div class="card kpi-card grad-activation p-3 h-100 position-relative">
             <div class="icon-wrap"><i class="bi bi-key-fill"></i></div>
             <div class="muted">أكواد التفعيل</div>
             <div class="value">{{ number_format($activationCodesTotal ?? 0) }}</div>
@@ -123,7 +123,7 @@
     </div>
     {{-- الدكاترة --}}
     <div class="col-12 col-md-6 col-xl-3">
-        <div class="card kpi-card grad-doc p-3 h-100 position-relative">
+        <div class="card kpi-card grad-doctor p-3 h-100 position-relative">
             <div class="icon-wrap"><i class="bi bi-person-badge-fill"></i></div>
             <div class="muted">عدد الدكاترة</div>
             <div class="value">{{ number_format($docTotal) }}</div>
@@ -185,7 +185,7 @@
 
     {{-- الاشتراكات --}}
     <div class="col-12 col-md-6 col-xl-3">
-        <div class="card kpi-card grad-sub p-3 h-100 position-relative">
+        <div class="card kpi-card grad-subscription p-3 h-100 position-relative">
             <div class="icon-wrap"><i class="bi bi-credit-card-fill"></i></div>
             <div class="muted">عدد الاشتراكات</div>
             <div class="value">{{ number_format($subTotal) }}</div>
@@ -199,7 +199,7 @@
 
     {{-- المواضيع --}}
     <div class="col-12 col-md-6 col-xl-3">
-        <div class="card kpi-card grad-sub p-3 h-100 position-relative">
+        <div class="card kpi-card grad-topic p-3 h-100 position-relative">
             <div class="icon-wrap"><i class="bi bi-bookmarks-fill"></i></div>
             <div class="muted">عدد المواضيع</div>
             <div class="value">{{ number_format($discTotal) }}</div>
@@ -213,7 +213,7 @@
 
     {{-- البرامج --}}
     <div class="col-12 col-md-6 col-xl-3">
-        <div class="card kpi-card grad-maj p-3 h-100 position-relative">
+        <div class="card kpi-card grad-major p-3 h-100 position-relative">
             <div class="icon-wrap"><i class="bi bi-play-btn-fill"></i></div>
             <div class="muted">عدد الفيديوهات</div>
             <div class="value">{{ number_format($progTotal) }}</div>
@@ -227,7 +227,7 @@
 
     {{-- التقاويم الأكاديمية --}}
     <div class="col-12 col-md-6 col-xl-3">
-        <div class="card kpi-card grad-doc p-3 h-100 position-relative">
+        <div class="card kpi-card grad-calendar p-3 h-100 position-relative">
             <div class="icon-wrap"><i class="bi bi-folder2-open"></i></div>
             <div class="muted">عدد الملفات</div>
             <div class="value">{{ number_format($calTotal) }}</div>
@@ -241,7 +241,7 @@
 
     {{-- عدد الطلاب  --}}
     <div class="col-12 col-md-6 col-xl-3">
-        <div class="card kpi-card grad-col p-3 h-100 position-relative">
+        <div class="card kpi-card grad-student p-3 h-100 position-relative">
             <div class="icon-wrap"><i class="bi bi-calendar-event-fill"></i></div>
             <div class="muted">عدد الطلاب </div>
             <div class="value">{{ number_format($termTotal) }}</div>

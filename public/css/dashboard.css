@@ -1,3 +1,18 @@
+/* لون خاص لبطاقة الطلاب */
+.grad-student { background: linear-gradient(135deg,#00b09b,#96c93d); }
+/* ألوان مخصصة للبطاقات الجديدة */
+.grad-college { background: linear-gradient(135deg,#ff7a6e,#ffb86c); }
+.grad-topic { background: linear-gradient(135deg,#8e54e9,#4776e6); }
+.grad-doctor { background: linear-gradient(135deg,#00c6ff,#0072ff); }
+.grad-subscription { background: linear-gradient(135deg,#00f2fe,#4facfe); } /* الاشتراكات (سماوي متدرج) */
+.grad-major { background: linear-gradient(135deg,#36d1c4,#1e3799); }
+.grad-program { background: linear-gradient(135deg,#f953c6,#b91d73); }
+.grad-calendar { background: linear-gradient(135deg,#f7971e,#ffd200); }
+.grad-student { background: linear-gradient(135deg,#00b09b,#96c93d); }
+/* لون خاص لبطاقة الكورسات الجديدة */
+.grad-courses2 { background: linear-gradient(135deg,#f7971e,#ffd200); }
+/* لون خاص للفروع */
+.grad-branch { background: linear-gradient(135deg,#00c9ff,#92fe9d); }
 /* بطاقات KPI */
 .kpi-card {
   border: 0;
@@ -32,14 +47,17 @@
 .grad-col { background: linear-gradient(135deg,#ff7a6e,#ffb86c); }
 .grad-maj { background: linear-gradient(135deg,#8e54e9,#4776e6); }
 .grad-doc { background: linear-gradient(135deg,#00c6ff,#0072ff); }
-.grad-std { background: linear-gradient(135deg,#00b09b,#96c93d); }
-
-/* تدرّجات البطاقات الإضافية */
+.grad-std { background: linear-gradient(135deg,#f857a6,#ff5858); } /* الطلاب (وردي إلى أحمر) */
 .grad-mat { background: linear-gradient(135deg,#6a11cb,#2575fc); }
 .grad-dev { background: linear-gradient(135deg,#ff512f,#dd2476); }
 .grad-cnt { background: linear-gradient(135deg,#11998e,#38ef7d); }
 .grad-sub { background: linear-gradient(135deg,#f7971e,#ffd200); }
 .grad-blog{ background: linear-gradient(135deg,#c31432,#240b36); }
+.grad-branch { background: linear-gradient(135deg,#00c9ff,#92fe9d); } /* الفروع */
+.grad-sub { background: linear-gradient(135deg,#ffb347,#ffcc33); } /* الاشتراكات */
+.grad-courses { background: linear-gradient(135deg,#36d1c4,#1e3799); } /* الكورسات */
+.grad-activation { background: linear-gradient(135deg,#f953c6,#b91d73); } /* أكواد التفعيل */
+.grad-assistants { background: linear-gradient(135deg,#43cea2,#185a9d) !important; } /* مساعدي المحتوى */
 
 /* بطاقات المخططات الدائرية الصغيرة */
 .pie-card {
