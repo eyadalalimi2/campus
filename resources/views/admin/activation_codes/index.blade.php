@@ -5,10 +5,9 @@
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h4 class="mb-0">الأكواد الفردية</h4>
         <div class="d-flex gap-2">
-            <a href="{{ route('admin.activation_codes.create') }}" class="btn btn-primary"><i class="bi bi-plus"></i> كود
-                جديد</a>
-            <a href="{{ route('admin.activation_codes.redeem_form') }}" class="btn btn-outline-success"><i
-                    class="bi bi-key"></i> تفعيل يدوي</a>
+            <a href="{{ route('admin.activation_codes.create') }}" class="btn btn-primary"><i class="bi bi-plus"></i> كود جديد</a>
+            <a href="{{ route('admin.activation_codes.redeem_form') }}" class="btn btn-outline-success"><i class="bi bi-key"></i> تفعيل يدوي</a>
+            <a href="{{ route('admin.activation_code_batches.index') }}" class="btn btn-outline-info"><i class="bi bi-collection"></i> دفعات الاكواد</a>
         </div>
     </div>
 

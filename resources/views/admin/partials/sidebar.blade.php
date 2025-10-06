@@ -52,13 +52,7 @@
             </a>
         </div>
 
-        <div class="nav-item">
-            <a href="{{ route('admin.med_resource-categories.index') }}"
-               class="nav-link {{ request()->is('admin/resource-categories*') ? 'active' : '' }}">
-                <i class="bi bi-tags" style="color:#14b8a6;"></i>
-                تصنيفات الملفات
-            </a>
-        </div>
+        {{-- تم نقل تصنيفات الملفات إلى القائمة السفلية --}}
 
         <div class="nav-item">
             <a href="{{ route('admin.med_resources.index') }}"
@@ -75,13 +69,9 @@
             </a>
         </div>
 
-        <div class="nav-item mb-2">
-            <a href="{{ route('admin.universities_management') }}"
-                class="nav-link {{ request()->routeIs('admin.universities_management') ? 'active' : '' }}">
-                <i class="bi bi-building-fill-check" style="color:#f97316;"></i>
-                إدارة الجامعات والكليات
-            </a>
-        </div>
+        {{-- تم نقل إدارة الجامعات والكليات إلى القائمة السفلية --}}
+
+        {{-- تم نقل اكواد التفعيل إلى القائمة السفلية --}}
 
         {{-- العناصر المضافة --}}
         <div class="nav-item">
@@ -139,6 +129,68 @@
 
             </a>
         </div>
-        {{-- تم نقل روابط الكورسات ومساعدين المحتوى إلى القائمة السفلية --}}
+                <hr>
+                <div class="mt-3">
+                    <div class="nav-item">
+                        <a href="{{ route('admin.activation_codes.index') }}" class="nav-link">
+                            <i class="bi bi-key" style="color:#6366f1;"></i> اكواد التفعيل
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="{{ route('admin.med_resource-categories.index') }}" class="nav-link">
+                            <i class="bi bi-tags" style="color:#14b8a6;"></i> تصنيفات الملفات
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="{{ route('admin.universities_management') }}" class="nav-link">
+                            <i class="bi bi-building-fill-check" style="color:#f97316;"></i> إدارة الجامعات والكليات
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="{{ route('admin.banners.index') }}" class="nav-link">
+                            <i class="bi bi-image" style="color:#f59e42;"></i> البنرات
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="{{ route('admin.notifications.index') }}" class="nav-link">
+                            <i class="bi bi-bell" style="color:#facc15;"></i> الإشعارات
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="{{ route('admin.complaints.index') }}" class="nav-link">
+                            <i class="bi bi-exclamation-diamond" style="color:#e11d48;"></i> الشكاوى
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="{{ route('admin.requests.index') }}" class="nav-link">
+                            <i class="bi bi-envelope-paper" style="color:#6366f1;"></i> الطلبات
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="{{ route('admin.themes.index') }}" class="nav-link">
+                            <i class="bi bi-palette" style="color:#10b981;"></i> إدارة الثيمات
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="{{ route('admin.courses.index') }}" class="nav-link">
+                            <i class="bi bi-journal-bookmark" style="color:#0e7490;"></i> الكورسات
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="{{ route('admin.content_assistants.index') }}" class="nav-link">
+                            <i class="bi bi-people" style="color:#0ea5e9;"></i> مساعدين المحتوى
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="{{ route('admin.countries.index') }}" class="nav-link">
+                            <i class="bi bi-geo-alt" style="color:#22c55e;"></i> اداره الدول
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="{{ route('admin.blogs.index') }}" class="nav-link">
+                            <i class="bi bi-newspaper" style="color:#fb7185;"></i> المدونات
+                        </a>
+                    </div>
+                </div>
     </nav>
 </aside>
