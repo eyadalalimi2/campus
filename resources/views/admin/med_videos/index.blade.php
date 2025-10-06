@@ -92,6 +92,8 @@
                             <td>{{ $v->id }}</td>
                             <td>
                                 @if($v->thumbnail_url)
+                                    <img src="{{ $v->thumbnail_url }}" alt="صورة الغلاف" class="img-thumbnail" style="height:40px;width:40px;object-fit:cover">
+                                @elseif($v->cover_image)
                                     <img src="{{ asset('storage/'.$v->cover_image) }}" alt="صورة الغلاف" class="img-thumbnail" style="height:40px;width:40px;object-fit:cover">
                                 @else
                                     <span class="text-muted">—</span>
