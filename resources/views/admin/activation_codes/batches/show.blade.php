@@ -13,11 +13,12 @@
 
 <div class="card mb-3">
   <div class="card-body">
-    <div><strong>الخطة:</strong> #{{ $batch->plan_id }}</div>
+  <div><strong>الخطة:</strong> {{ $batch->plan->name ?? '—' }}</div>
     <div><strong>النطاق:</strong>
-      جامعة: {{ $batch->university_id ?? '—' }}
-      @if($batch->college_id) / كلية: {{ $batch->college_id }} @endif
-      @if($batch->major_id)   / تخصص: {{ $batch->major_id }}   @endif
+      {{ $batch->university->name ?? '—' }}
+      @if($batch->branch) / {{ $batch->branch->name }} @endif
+      @if($batch->college) / {{ $batch->college->name }} @endif
+      @if($batch->major)   / {{ $batch->major->name }} @endif
     </div>
     <div><strong>الكمية:</strong> {{ $batch->quantity }}</div>
     <div><strong>الحالة:</strong>
