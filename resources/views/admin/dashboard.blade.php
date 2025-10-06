@@ -273,77 +273,7 @@
     </div>
 </div>
 
-{{-- التنبيهات --}}
-<div class="row g-3 mt-1">
-    <div class="col-12">
-        <div class="card card-soft">
-            <div class="card-header bg-white d-flex align-items-center justify-content-between">
-                <strong>الإشعارات والتنبيهات</strong>
-                <span class="small text-muted">فحص سلامة البيانات</span>
-            </div>
-            <div class="card-body">
-                <div class="row g-3">
-                    {{-- جامعات غير مفعّلة --}}
-                    <div class="col-md-4">
-                        <div class="alert alert-warning mb-0">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div><i class="bi bi-exclamation-triangle-fill"></i> جامعات غير مفعلة</div>
-                                <span class="badge bg-dark">{{ $inactiveUniCount }}</span>
-                            </div>
-                            @if ($inactiveUniCount > 0)
-                                <ul class="mt-2 mb-0 small">
-                                    @foreach ($inactiveUniversities as $n)
-                                        <li>{{ $n }}</li>
-                                    @endforeach
-                                </ul>
-                            @else
-                                <div class="small text-muted mt-2">لا يوجد.</div>
-                            @endif
-                        </div>
-                    </div>
-
-                    {{-- مواد بلا محتوى --}}
-                    <div class="col-md-4">
-                        <div class="alert alert-info mb-0">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div><i class="bi bi-folder-x"></i> مواد بلا محتوى</div>
-                                <span class="badge bg-dark">{{ $matNoContentCount }}</span>
-                            </div>
-                            @if ($matNoContentCount > 0)
-                                <ul class="mt-2 mb-0 small">
-                                    @foreach ($materialsWithoutContent as $n)
-                                        <li>{{ $n }}</li>
-                                    @endforeach
-                                </ul>
-                            @else
-                                <div class="small text-muted mt-2">لا يوجد.</div>
-                            @endif
-                        </div>
-                    </div>
-
-                    {{-- أقسام بلا دكاترة --}}
-                    <div class="col-md-4">
-                        <div class="alert alert-secondary mb-0">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div><i class="bi bi-diagram-3"></i> أقسام بلا دكاترة</div>
-                                <span class="badge bg-dark">{{ $majNoDoctorsCount }}</span>
-                            </div>
-                            @if ($majNoDoctorsCount > 0)
-                                <ul class="mt-2 mb-0 small">
-                                    @foreach ($majorsWithoutDoctors as $n)
-                                        <li>{{ $n }}</li>
-                                    @endforeach
-                                </ul>
-                            @else
-                                <div class="small text-muted mt-2">لا يوجد.</div>
-                            @endif
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+{{-- ...existing code... --}}
 
 {{-- الرسوم البيانية --}}
 <div class="row g-3 mt-1">

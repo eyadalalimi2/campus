@@ -5,6 +5,7 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h4 class="mb-0">معاينة قالب Excel لدفعة الأكواد: {{ $batch->name }} (#{{ $batch->id }})</h4>
     <div class="d-flex gap-2">
+        <a href="{{ route('admin.activation_code_batches.export_excel', $batch) }}" class="btn btn-success btn-sm">تصدير Excel</a>
         <a href="{{ route('admin.activation_code_batches.show', $batch) }}" class="btn btn-outline-secondary btn-sm">رجوع</a>
     </div>
 </div>
