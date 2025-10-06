@@ -142,8 +142,21 @@ class ActivationCodeBatchesController extends Controller
 
     public function update(StoreBatchRequest $request, ActivationCodeBatch $activation_code_batch)
     {
+
         $batch = $activation_code_batch;
         $data  = $request->validated();
+
+        // تحويل starts_on إلى Y-m-d إذا كانت موجودة
+        if (!empty($data['starts_on'])) {
+            $data['starts_on'] = date('Y-m-d', strtotime($data['starts_on']));
+        }
+        // تحويل valid_from و valid_until إلى Y-m-d H:i:s إذا كانت موجودة
+        if (!empty($data['valid_from'])) {
+            $data['valid_from'] = date('Y-m-d H:i:s', strtotime($data['valid_from']));
+        }
+        if (!empty($data['valid_until'])) {
+            $data['valid_until'] = date('Y-m-d H:i:s', strtotime($data['valid_until']));
+        }
 
         $batch->update($data);
 

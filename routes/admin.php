@@ -6,7 +6,6 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\UniversityController;
 use App\Http\Controllers\Admin\CollegeController;
 use App\Http\Controllers\Admin\MajorController;
-// ...existing code...
 use App\Http\Controllers\Admin\ThemeController;
 use App\Http\Controllers\Admin\DoctorController;
 use App\Http\Controllers\Admin\ContentController;
@@ -50,6 +49,8 @@ use App\Http\Controllers\Admin\MedicalSubjectContentController;
 use App\Http\Controllers\Admin\MedicalContentController;
 use App\Http\Controllers\Admin\MedicalCourseController;
 use App\Http\Controllers\Admin\ContentAssistantController;
+use App\Http\Controllers\Admin\ActivationCodeBatchesExcelExportController;
+
 /*
 |--------------------------------------------------------------------------
 | Admin Routes (prefix=admin, name=admin.) via RouteServiceProvider
@@ -65,6 +66,15 @@ Route::middleware('guest:admin')->group(function () {
     Route::post('/login', [AdminAuthController::class, 'login'])->name('login.post');
 });
 
+
+
+// تصدير الأكواد إلى Excel
+Route::get('activation-code-batches/{batch}/export-excel', [ActivationCodeBatchesExcelExportController::class, 'exportExcel'])
+    ->name('activation_code_batches.export_excel');
+
+// صفحة التحكم في قالب Excel والمعاينة
+Route::get('activation-code-batches/{batch}/excel-template', [ActivationCodeBatchesExcelExportController::class, 'template'])
+    ->name('activation_code_batches.excel_template');
 // منطقة الإدارة (محميّة)
 Route::middleware('auth:admin')->group(function () {
 

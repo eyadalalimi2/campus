@@ -6,7 +6,9 @@
   <h4 class="mb-0">الدفعة: {{ $batch->name }} (#{{ $batch->id }})</h4>
   <div class="d-flex gap-2">
     <a href="{{ route('admin.activation_code_batches.edit', $batch) }}" class="btn btn-primary btn-sm">تعديل</a>
-    <a href="{{ route('admin.activation_code_batches.export', $batch) }}" class="btn btn-outline-success btn-sm">تصدير</a>
+  <a href="{{ route('admin.activation_code_batches.export', $batch) }}" class="btn btn-outline-success btn-sm">تصدير</a>
+  <a href="{{ route('admin.activation_code_batches.export_excel', $batch) }}" class="btn btn-outline-warning btn-sm">تصدير Excel</a>
+  <a href="{{ route('admin.activation_code_batches.excel_template', $batch) }}" class="btn btn-outline-info btn-sm">قالب Excel</a>
     <a href="{{ route('admin.activation_code_batches.index') }}" class="btn btn-outline-secondary btn-sm">رجوع</a>
   </div>
 </div>
