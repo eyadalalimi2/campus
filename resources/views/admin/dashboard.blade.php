@@ -498,17 +498,17 @@
 <script id="dashboard-data" type="application/json">
 {!! json_encode([
     'studentsPerUniversity' => [
-        'labels' => $studentsPerUniversity->pluck('uname')->map(fn($n) => $n ?: '—'),
-        'data'   => $studentsPerUniversity->pluck('c'),
+        'labels' => $studentsPerUniversity->pluck('uname')->map(fn($n) => $n ?: '—')->values()->all(),
+        'data'   => $studentsPerUniversity->pluck('c')->values()->all(),
     ],
     // جديد: بيانات الفروع
     'studentsPerBranch' => [
-        'labels' => $studentsPerBranch->pluck('ub_name')->map(fn($n) => $n ?: '—'),
-        'data'   => $studentsPerBranch->pluck('c'),
+        'labels' => $studentsPerBranch->pluck('ub_name')->map(fn($n) => $n ?: '—')->values()->all(),
+        'data'   => $studentsPerBranch->pluck('c')->values()->all(),
     ],
     'studentsMonthly' => [
-        'labels' => $studentsMonthly->pluck('ym'),
-        'data'   => $studentsMonthly->pluck('c'),
+        'labels' => $studentsMonthly->pluck('ym')->values()->all(),
+        'data'   => $studentsMonthly->pluck('c')->values()->all(),
     ],
     'pieStatus' => [
         'active'    => $stdActive,
