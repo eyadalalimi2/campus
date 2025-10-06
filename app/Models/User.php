@@ -119,6 +119,18 @@ class User extends Authenticatable
     {
         return $this->hasMany(Subscription::class);
     }
+    // جهاز المستخدم (واحد فقط)
+    public function userDevice()
+    {
+        return $this->hasOne(\App\Models\UserDevice::class);
+    }
+
+    // (اختياري للمستقبل) لو أردت تتبع تاريخ الأجهزة
+    public function devices()
+    {
+        return $this->hasMany(\App\Models\UserDevice::class);
+    }
+
 
     /*=============================
      | Mutators
@@ -238,9 +250,9 @@ class User extends Authenticatable
         $term = trim($term);
         return $q->where(function ($w) use ($term) {
             $w->where('name', 'like', "%{$term}%")
-              ->orWhere('email', 'like', "%{$term}%")
-              ->orWhere('phone', 'like', "%{$term}%")
-              ->orWhere('student_number', 'like', "%{$term}%");
+                ->orWhere('email', 'like', "%{$term}%")
+                ->orWhere('phone', 'like', "%{$term}%")
+                ->orWhere('student_number', 'like', "%{$term}%");
         });
     }
 
@@ -280,7 +292,7 @@ class User extends Authenticatable
     public function scopeOrderDefault($q)
     {
         return $q->orderByRaw("FIELD(status, 'active','suspended','graduated')")
-                 ->orderBy('name');
+            ->orderBy('name');
     }
 
     /*=============================

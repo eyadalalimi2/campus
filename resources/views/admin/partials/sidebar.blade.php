@@ -6,7 +6,7 @@
 
         <div class="nav-item">
             <a href="{{ route('admin.dashboard') }}"
-               class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+                class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                 <i class="bi bi-speedometer2" style="color:#6366f1;"></i>
                 لوحة البيانات
             </a>
@@ -14,7 +14,7 @@
 
         <div class="nav-item">
             <a href="{{ route('admin.med_devices.index') }}"
-               class="nav-link {{ request()->is('admin/devices*') ? 'active' : '' }}">
+                class="nav-link {{ request()->is('admin/devices*') ? 'active' : '' }}">
                 <i class="bi bi-cpu" style="color:#0ea5e9;"></i>
                 الأجهزة
             </a>
@@ -22,7 +22,7 @@
 
         <div class="nav-item">
             <a href="{{ route('admin.med_subjects.index') }}"
-               class="nav-link {{ request()->is('admin/subjects*') ? 'active' : '' }}">
+                class="nav-link {{ request()->is('admin/subjects*') ? 'active' : '' }}">
                 <i class="bi bi-journal-text" style="color:#22c55e;"></i>
                 المواد
             </a>
@@ -30,7 +30,7 @@
 
         <div class="nav-item">
             <a href="{{ route('admin.med_topics.index') }}"
-               class="nav-link {{ request()->is('admin/topics*') ? 'active' : '' }}">
+                class="nav-link {{ request()->is('admin/topics*') ? 'active' : '' }}">
                 <i class="bi bi-list-ul" style="color:#eab308;"></i>
                 المواضيع
             </a>
@@ -38,7 +38,7 @@
 
         <div class="nav-item">
             <a href="{{ route('admin.med_doctors.index') }}"
-               class="nav-link {{ request()->is('admin/doctors*') ? 'active' : '' }}">
+                class="nav-link {{ request()->is('admin/doctors*') ? 'active' : '' }}">
                 <i class="bi bi-person-badge" style="color:#f97316;"></i>
                 الدكاترة
             </a>
@@ -46,7 +46,7 @@
 
         <div class="nav-item">
             <a href="{{ route('admin.med_videos.index') }}"
-               class="nav-link {{ request()->is('admin/videos*') ? 'active' : '' }}">
+                class="nav-link {{ request()->is('admin/videos*') ? 'active' : '' }}">
                 <i class="bi bi-youtube" style="color:#ef4444;"></i>
                 الفيديوهات
             </a>
@@ -56,7 +56,7 @@
 
         <div class="nav-item">
             <a href="{{ route('admin.med_resources.index') }}"
-               class="nav-link {{ request()->is('admin/resources*') ? 'active' : '' }}">
+                class="nav-link {{ request()->is('admin/resources*') ? 'active' : '' }}">
                 <i class="bi bi-file-earmark-pdf" style="color:#a855f7;"></i>
                 الملفات
             </a>
@@ -76,7 +76,7 @@
         {{-- العناصر المضافة --}}
         <div class="nav-item">
             <a href="{{ route('admin.medical_years.index') }}"
-               class="nav-link {{ request()->is('admin/medical_years*') ? 'active' : '' }}">
+                class="nav-link {{ request()->is('admin/medical_years*') ? 'active' : '' }}">
                 <i class="bi bi-calendar" style="color:#06b6d4;"></i>
                 سنوات الطب (خاص)
             </a>
@@ -84,7 +84,7 @@
 
         <div class="nav-item">
             <a href="{{ route('admin.medical_terms.index') }}"
-               class="nav-link {{ request()->is('admin/medical_terms*') ? 'active' : '' }}">
+                class="nav-link {{ request()->is('admin/medical_terms*') ? 'active' : '' }}">
                 <i class="bi bi-journal" style="color:#0ea5e9;"></i>
                 الفصول (خاص)
             </a>
@@ -92,7 +92,7 @@
 
         <div class="nav-item">
             <a href="{{ route('admin.medical_subjects.index') }}"
-               class="nav-link {{ request()->is('admin/medical_subjects*') ? 'active' : '' }}">
+                class="nav-link {{ request()->is('admin/medical_subjects*') ? 'active' : '' }}">
                 <i class="bi bi-journal-text" style="color:#22c55e;"></i>
                 مواد الطب (خاص)
             </a>
@@ -100,7 +100,7 @@
 
         <div class="nav-item">
             <a href="{{ route('admin.medical_systems.index') }}"
-               class="nav-link {{ request()->is('admin/medical_systems*') ? 'active' : '' }}">
+                class="nav-link {{ request()->is('admin/medical_systems*') ? 'active' : '' }}">
                 <i class="bi bi-diagram-3" style="color:#f97316;"></i>
                 الأنظمة (خاص)
             </a>
@@ -108,7 +108,7 @@
 
         <div class="nav-item">
             <a href="{{ route('admin.medical_system_subjects.index') }}"
-               class="nav-link {{ request()->is('admin/medical_system_subjects*') ? 'active' : '' }}">
+                class="nav-link {{ request()->is('admin/medical_system_subjects*') ? 'active' : '' }}">
                 <i class="bi bi-link-45deg" style="color:#eab308;"></i>
                 ربط الأنظمة بالمواد
             </a>
@@ -116,81 +116,88 @@
 
         <div class="nav-item">
             <a href="{{ route('admin.medical_subject_contents.index') }}"
-               class="nav-link {{ request()->is('admin/medical_subject_contents*') ? 'active' : '' }}">
+                class="nav-link {{ request()->is('admin/medical_subject_contents*') ? 'active' : '' }}">
                 <i class="bi bi-file-earmark-text" style="color:#ef4444;"></i>
                 محتوى المواد (خاص)
             </a>
         </div>
         <div class="nav-item">
             <a href="{{ route('admin.medical_contents.index') }}"
-   class="nav-link {{ request()->routeIs('admin.medical_contents.*') ? 'active' : '' }}">
-    <i class="bi bi-file-medical" style="color:#ef4444;"></i>
-    المحتوى الطبي (خاص)
+                class="nav-link {{ request()->routeIs('admin.medical_contents.*') ? 'active' : '' }}">
+                <i class="bi bi-file-medical" style="color:#ef4444;"></i>
+                المحتوى الطبي (خاص)
 
             </a>
         </div>
-                <hr>
-                <div class="mt-3">
-                    <div class="nav-item">
-                        <a href="{{ route('admin.activation_codes.index') }}" class="nav-link">
-                            <i class="bi bi-key" style="color:#6366f1;"></i> اكواد التفعيل
-                        </a>
-                    </div>
-                    <div class="nav-item">
-                        <a href="{{ route('admin.med_resource-categories.index') }}" class="nav-link">
-                            <i class="bi bi-tags" style="color:#14b8a6;"></i> تصنيفات الملفات
-                        </a>
-                    </div>
-                    {{-- <div class="nav-item">
+        <hr>
+        <div class="mt-3">
+            <div class="nav-item">
+                <a href="{{ route('admin.activation_codes.index') }}" class="nav-link">
+                    <i class="bi bi-key" style="color:#6366f1;"></i> اكواد التفعيل
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="{{ route('admin.med_resource-categories.index') }}" class="nav-link">
+                    <i class="bi bi-tags" style="color:#14b8a6;"></i> تصنيفات الملفات
+                </a>
+            </div>
+            {{-- <div class="nav-item">
                         <a href="{{ route('admin.universities_management') }}" class="nav-link">
                             <i class="bi bi-building-fill-check" style="color:#f97316;"></i> إدارة الجامعات والكليات
                         </a>
                     </div> --}}
-                    <div class="nav-item">
-                        <a href="{{ route('admin.banners.index') }}" class="nav-link">
-                            <i class="bi bi-image" style="color:#f59e42;"></i> البنرات
-                        </a>
-                    </div>
-                    <div class="nav-item">
-                        <a href="{{ route('admin.notifications.index') }}" class="nav-link">
-                            <i class="bi bi-bell" style="color:#facc15;"></i> الإشعارات
-                        </a>
-                    </div>
-                    <div class="nav-item">
-                        <a href="{{ route('admin.complaints.index') }}" class="nav-link">
-                            <i class="bi bi-exclamation-diamond" style="color:#e11d48;"></i> الشكاوى
-                        </a>
-                    </div>
-                    <div class="nav-item">
-                        <a href="{{ route('admin.requests.index') }}" class="nav-link">
-                            <i class="bi bi-envelope-paper" style="color:#6366f1;"></i> الطلبات
-                        </a>
-                    </div>
-                    <div class="nav-item">
-                        <a href="{{ route('admin.themes.index') }}" class="nav-link">
-                            <i class="bi bi-palette" style="color:#10b981;"></i> إدارة الثيمات
-                        </a>
-                    </div>
-                    <div class="nav-item">
-                        <a href="{{ route('admin.courses.index') }}" class="nav-link">
-                            <i class="bi bi-journal-bookmark" style="color:#0e7490;"></i> الكورسات
-                        </a>
-                    </div>
-                    <div class="nav-item">
-                        <a href="{{ route('admin.content_assistants.index') }}" class="nav-link">
-                            <i class="bi bi-people" style="color:#0ea5e9;"></i> مساعدين المحتوى
-                        </a>
-                    </div>
-                    <div class="nav-item">
-                        <a href="{{ route('admin.countries.index') }}" class="nav-link">
-                            <i class="bi bi-geo-alt" style="color:#22c55e;"></i> اداره الدول
-                        </a>
-                    </div>
-                    <div class="nav-item">
-                        <a href="{{ route('admin.blogs.index') }}" class="nav-link">
-                            <i class="bi bi-newspaper" style="color:#fb7185;"></i> المدونات
-                        </a>
-                    </div>
-                </div>
+            <div class="nav-item">
+                <a href="{{ route('admin.banners.index') }}" class="nav-link">
+                    <i class="bi bi-image" style="color:#f59e42;"></i> البنرات
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="{{ route('admin.notifications.index') }}" class="nav-link">
+                    <i class="bi bi-bell" style="color:#facc15;"></i> الإشعارات
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="{{ route('admin.complaints.index') }}" class="nav-link">
+                    <i class="bi bi-exclamation-diamond" style="color:#e11d48;"></i> الشكاوى
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="{{ route('admin.requests.index') }}" class="nav-link">
+                    <i class="bi bi-envelope-paper" style="color:#6366f1;"></i> الطلبات
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="{{ route('admin.themes.index') }}" class="nav-link">
+                    <i class="bi bi-palette" style="color:#10b981;"></i> إدارة الثيمات
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="{{ route('admin.courses.index') }}" class="nav-link">
+                    <i class="bi bi-journal-bookmark" style="color:#0e7490;"></i> الكورسات
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="{{ route('admin.content_assistants.index') }}" class="nav-link">
+                    <i class="bi bi-people" style="color:#0ea5e9;"></i> مساعدين المحتوى
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="{{ route('admin.countries.index') }}" class="nav-link">
+                    <i class="bi bi-geo-alt" style="color:#22c55e;"></i> اداره الدول
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="{{ route('admin.blogs.index') }}" class="nav-link">
+                    <i class="bi bi-newspaper" style="color:#fb7185;"></i> المدونات
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="{{ route('admin.user_devices.index') }}"
+                    class="nav-link {{ request()->routeIs('admin.user_devices.*') ? 'active' : '' }}">
+                    <i class="bi bi-phone" style="color:#0ea5e9;"></i>
+                    أجهزة المستخدمين
+                </a>
+            </div>
+        </div>
     </nav>
 </aside>

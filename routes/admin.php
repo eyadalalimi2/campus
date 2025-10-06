@@ -50,7 +50,7 @@ use App\Http\Controllers\Admin\MedicalContentController;
 use App\Http\Controllers\Admin\MedicalCourseController;
 use App\Http\Controllers\Admin\ContentAssistantController;
 use App\Http\Controllers\Admin\ActivationCodeBatchesExcelExportController;
-
+use App\Http\Controllers\Admin\UserDeviceController;
 /*
 |--------------------------------------------------------------------------
 | Admin Routes (prefix=admin, name=admin.) via RouteServiceProvider
@@ -260,5 +260,8 @@ Route::middleware('auth:admin')->group(function () {
     Route::resource('content_assistants', ContentAssistantController::class)->except(['show']);
 
     // User Devices
-    Route::resource('user-devices', App\Http\Controllers\Admin\UserDevicesAdminController::class)->except(['show', 'edit', 'update', 'create']);
+    Route::resource('user-devices', UserDeviceController::class)
+    ->only(['index','destroy'])
+    ->names('user_devices');
+    
 });

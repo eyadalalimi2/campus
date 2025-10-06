@@ -28,7 +28,7 @@ use App\Http\Controllers\Api\V1\Subscription\ActivationController;
 use App\Http\Controllers\Api\V1\Subscription\SubscriptionsController;
 use App\Http\Controllers\MedicalSystemController;
 use App\Http\Controllers\Api\V1\Feed\FeedController;
-use App\Http\Controllers\Api\V1\Me\DevicesController;
+use App\Http\Controllers\Api\V1\UserDeviceController;
 use App\Http\Controllers\Api\V1\BannerController;
 use App\Http\Controllers\Api\V1\NotificationsController;
 use App\Http\Controllers\Api\V1\StudentRequestsController;
@@ -45,7 +45,7 @@ use App\Http\Controllers\Api\V1\{
 };
 
 Route::prefix('v1')->group(function () {
-    
+
     //content-assistants
     Route::get('content-assistants', [ApiContentAssistantController::class, 'index']);
 
@@ -54,7 +54,7 @@ Route::prefix('v1')->group(function () {
 
     // University Branches (by university)
     Route::get('universities/{id}/branches', [\App\Http\Controllers\Api\V1\UniversityBranchController::class, 'byUniversity']);
-     // Branch Colleges (by branch)
+    // Branch Colleges (by branch)
     Route::get('branches/{branch_id}/colleges', [\App\Http\Controllers\Api\V1\Structure\BranchCollegesController::class, 'byBranch']);
 
 
@@ -236,11 +236,8 @@ Route::prefix('v1')->group(function () {
         // تفعيل كود اشتراك وربطه بالمستخدم
 
 
-        /* إدارة الأجهزة/التوكنات (Sanctum) */
-        Route::get('me/devices', [DevicesController::class, 'index']);
-        // قائمة التوكنات الصادرة (اسم الجهاز/الصلاحيات/آخر استخدام)
-
-        Route::delete('me/devices/{tokenId}', [DevicesController::class, 'destroy']);
+        // جهاز المستخدم
+         Route::get('user-devices', [UserDeviceController::class, 'index']);
         // إلغاء/حذف توكن جهاز محدد يخص المستخدم الحالي
         // إشعارات الطالب
         Route::get('me/notifications',          [NotificationsController::class, 'index']);

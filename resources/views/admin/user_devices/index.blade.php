@@ -1,41 +1,74 @@
 @extends('admin.layouts.app')
 
+@section('title', 'أجهزة المستخدمين')
+
 @section('content')
-<div class="container">
-    <h1>الأجهزة المسجلة للمستخدمين</h1>
+<div class="container-fluid">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="mb-0">أجهزة المستخدمين</h4>
+        <form method="GET" action="{{ route('admin.user_devices.index') }}" class="d-flex" style="gap:.5rem">
+            <input type="text" name="q" value="{{ $q }}" class="form-control" placeholder="بحث: اسم/بريد/جهاز/موديل/IP/المعرف">
+            <button class="btn btn-primary">بحث</button>
+        </form>
+    </div>
+
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
-    <table class="table">
-        <thead>
-            <tr>
-                <th>#</th>
-                <th>المستخدم</th>
-                <th>اسم الجهاز</th>
-                <th>رمز الجهاز</th>
-                <th>تاريخ التسجيل</th>
-                <th>إجراءات</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($devices as $device)
-                <tr>
-                    <td>{{ $device->id }}</td>
-                    <td>{{ $device->user ? $device->user->name : '-' }}</td>
-                    <td>{{ $device->device_name }}</td>
-                    <td>{{ $device->device_token }}</td>
-                    <td>{{ $device->created_at }}</td>
-                    <td>
-                        <form method="POST" action="{{ route('admin.user_devices.destroy', $device->id) }}">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-danger btn-sm">حذف</button>
-                        </form>
-                    </td>
-                </tr>
-            @endforeach
-        </tbody>
-    </table>
-    {{ $devices->links() }}
+
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>المستخدم</th>
+                            <th>البريد</th>
+                            <th>اسم الجهاز</th>
+                            <th>الموديل</th>
+                            <th>معرف الجهاز</th>
+                            <th>عنوان IP</th>
+                            <th>آخر تسجيل دخول</th>
+                            <th class="text-end">إجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($devices as $device)
+                            <tr>
+                                <td>{{ $device->id }}</td>
+                                <td>{{ $device->user?->name }}</td>
+                                <td>{{ $device->user?->email }}</td>
+                                <td>{{ $device->device_name }}</td>
+                                <td>{{ $device->device_model ?: '—' }}</td>
+                                <td style="max-width:220px">{{ $device->device_identifier ?: '—' }}</td>
+                                <td>{{ $device->ip_address ?: '—' }}</td>
+                                <td>{{ optional($device->last_login_at)->format('Y-m-d H:i') ?: '—' }}</td>
+                                <td class="text-end">
+                                    <form method="POST" action="{{ route('admin.user_devices.destroy', $device) }}"
+                                          onsubmit="return confirm('هل أنت متأكد من حذف ربط هذا الجهاز؟');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button class="btn btn-sm btn-danger">
+                                            <i class="bi bi-trash"></i> حذف
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="11" class="text-center py-4">لا توجد أجهزة مسجلة.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="p-3">
+                {{ $devices->links('vendor.pagination.bootstrap-custom') }}
+            </div>
+        </div>
+    </div>
 </div>
 @endsection

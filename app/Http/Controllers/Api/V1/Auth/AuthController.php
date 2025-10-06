@@ -12,6 +12,7 @@ use App\Http\Requests\Api\V1\Auth\ResetPasswordRequest;
 use App\Http\Resources\Api\V1\UserResource;
 use App\Mail\EmailVerificationLink;
 use App\Models\User;
+use App\Models\UserDevice;
 use App\Support\ApiResponse;
 use Carbon\Carbon;
 use Illuminate\Auth\Events\PasswordReset;
@@ -32,35 +33,65 @@ final class AuthController extends Controller
     {
         $data = $request->validated();
 
-        // إنشاء المستخدم
-        $user = User::create([
-            'student_number' => $data['student_number'] ?? null,
-            'name'           => $data['name'],
-            'email'          => $data['email'],
-            'phone'          => $data['phone'] ?? null,
-            'country_id'     => $data['country_id'],
-            'university_id'  => $data['university_id'] ?? null,
-            'college_id'     => $data['college_id'] ?? null,
-            'major_id'       => $data['major_id'] ?? null,
-            'level'          => $data['level'] ?? null,
-            'gender'         => $data['gender'] ?? null,
-            'status'         => User::STATUS_ACTIVE,
-            'password'       => $data['password'],
-        ]);
+        $deviceUuid = trim((string)$request->input('device_uuid', ''));
+        if (!$deviceUuid) {
+            throw new ApiException('DEVICE_UUID_REQUIRED', 'device_uuid حقل مطلوب.', 422);
+        }
 
-        // إنشاء توكن الوصول
-        $token = $user->createToken(
-            $data['login_device'],
-            ['me:read', 'structure:read', 'catalog:read', 'subscription:write']
-        )->plainTextToken;
+        DB::beginTransaction();
+        try {
+            $user = User::create([
+                'student_number' => $data['student_number'] ?? null,
+                'name'           => $data['name'],
+                'email'          => $data['email'],
+                'phone'          => $data['phone'] ?? null,
+                'country_id'     => $data['country_id'],
+                'university_id'  => $data['university_id'] ?? null,
+                'college_id'     => $data['college_id'] ?? null,
+                'major_id'       => $data['major_id'] ?? null,
+                'level'          => $data['level'] ?? null,
+                'gender'         => $data['gender'] ?? null,
+                'status'         => User::STATUS_ACTIVE,
+                'password'       => $data['password'],
+            ]);
 
-        // إرسال رابط تفعيل البريد
-        $this->issueAndSendEmailVerificationLink($user->email, $user->name ?? 'طالبنا العزيز');
+            // التقييد: إذا هناك جهاز مسجّل مسبقًا ويختلف uuid → رفض
+            $existing = UserDevice::where('user_id', $user->id)->first();
+            if ($existing && $existing->device_uuid !== $deviceUuid) {
+                throw new ApiException('DEVICE_CONFLICT', 'هذا الحساب مرتبط بجهاز آخر.', 403);
+            }
 
-        return ApiResponse::ok([
-            'token' => $token,
-            'user'  => new UserResource($user),
-        ]);
+            // ربط أو تحديث الجهاز
+            UserDevice::updateOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'device_uuid'  => $deviceUuid,
+                    'device_name'  => $request->input('device_name'),
+                    'device_model' => $request->input('device_model'),
+                    'ip_address'   => $request->ip(),
+                    'user_agent'   => $request->userAgent(),
+                    'last_login_at' => Carbon::now(),
+                ]
+            );
+
+            $token = $user->createToken(
+                $data['login_device'] ?? 'mobile',
+                ['me:read']
+            )->plainTextToken;
+
+            // أرسل رابط التفعيل (إن عندك المنطق)
+            $this->issueAndSendEmailVerificationLink($user->email, $user->name ?? '');
+
+            DB::commit();
+
+            return ApiResponse::ok([
+                'token' => $token,
+                'user'  => new UserResource($user),
+            ]);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
+        }
     }
 
     /**
@@ -70,21 +101,36 @@ final class AuthController extends Controller
     {
         $data = $request->validated();
 
-        /** @var User|null $user */
-        $user = User::query()->where('email', $data['email'])->first();
-
+        $user = User::where('email', $data['email'])->first();
         if (!$user || !Hash::check($data['password'], $user->password)) {
             throw new ApiException('AUTH_INVALID', 'بيانات الاعتماد غير صحيحة.', 401);
         }
 
-        if ($user->status === User::STATUS_SUSPENDED) {
-            throw new ApiException('ACCOUNT_SUSPENDED', 'الحساب موقوف مؤقتًا.', 403);
+        $deviceUuid = trim((string)$request->input('device_uuid', ''));
+        if (!$deviceUuid) {
+            throw new ApiException('DEVICE_UUID_REQUIRED', 'device_uuid حقل مطلوب.', 422);
         }
 
-        // إنشاء التوكن
+        $existing = UserDevice::where('user_id', $user->id)->first();
+        if ($existing && $existing->device_uuid !== $deviceUuid) {
+            throw new ApiException('DEVICE_CONFLICT', 'هذا الحساب مرتبط بجهاز آخر.', 403);
+        }
+
+        UserDevice::updateOrCreate(
+            ['user_id' => $user->id],
+            [
+                'device_uuid'  => $deviceUuid,
+                'device_name'  => $request->input('device_name'),
+                'device_model' => $request->input('device_model'),
+                'ip_address'   => $request->ip(),
+                'user_agent'   => $request->userAgent(),
+                'last_login_at' => Carbon::now(),
+            ]
+        );
+
         $token = $user->createToken(
-            $data['login_device'],
-            ['me:read', 'structure:read', 'catalog:read', 'subscription:write']
+            $data['login_device'] ?? 'mobile',
+            ['me:read']
         )->plainTextToken;
 
         return ApiResponse::ok([
