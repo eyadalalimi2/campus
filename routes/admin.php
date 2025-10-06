@@ -201,8 +201,6 @@ Route::middleware('auth:admin')->group(function () {
     Route::get('/themes/{university}/edit', [ThemeController::class, 'edit'])->name('themes.edit');
     Route::put('/themes/{university}',      [ThemeController::class, 'update'])->name('themes.update');
 
-    // ...existing code...
-
     // Banners
     Route::resource('banners', BannerController::class);
 
@@ -260,4 +258,7 @@ Route::middleware('auth:admin')->group(function () {
         ->except(['show'])
         ->names('courses');
     Route::resource('content_assistants', ContentAssistantController::class)->except(['show']);
+
+    // User Devices
+    Route::resource('user-devices', App\Http\Controllers\Admin\UserDevicesAdminController::class)->except(['show', 'edit', 'update', 'create']);
 });
