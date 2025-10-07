@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\UniversityController;
@@ -204,6 +205,10 @@ Route::middleware('auth:admin')->group(function () {
     // Banners
     Route::resource('banners', BannerController::class);
 
+    // إعدادات لوحة التحكم
+    Route::get('settings', [SettingsController::class, 'edit'])->name('settings.edit');
+    Route::post('settings', [SettingsController::class, 'update'])->name('settings.update');
+
     // Student Requests
     Route::get('requests',              [StudentRequestsController::class, 'index'])->name('requests.index');
     Route::get('requests/{id}',         [StudentRequestsController::class, 'show'])->name('requests.show');
@@ -261,7 +266,6 @@ Route::middleware('auth:admin')->group(function () {
 
     // User Devices
     Route::resource('user-devices', UserDeviceController::class)
-    ->only(['index','destroy'])
-    ->names('user_devices');
-    
+        ->only(['index', 'destroy'])
+        ->names('user_devices');
 });

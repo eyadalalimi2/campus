@@ -7,7 +7,11 @@
         </button>
         {{-- Brand + Logo + Current University Badge --}}
         <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="{{ route('admin.dashboard') }}">
-            <img src="{{ Storage::url('images/logo.png') }}" style="height:36px;width:auto;">
+            @if(!empty($setting) && !empty($setting->dashboard_logo))
+                <img src="{{ asset('storage/' . $setting->dashboard_logo) }}" style="height:36px;width:auto;">
+            @else
+                <img src="{{ Storage::url('images/logo.png') }}" style="height:36px;width:auto;">
+            @endif
             <span>لوحة التحكم</span>
             @isset($currentUniversity)
                 @if (!empty($currentUniversity))
@@ -58,7 +62,7 @@
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link" href="javascript:void(0)">
+                    <a class="nav-link" href="{{ route('admin.settings.edit') }}">
                         <i class="bi bi-gear"></i> الإعدادات
                     </a>
                 </li>

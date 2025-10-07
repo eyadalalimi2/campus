@@ -4,7 +4,10 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title', 'لوحة التحكم')</title>
+    <title>{{ $setting->site_title }}</title>
+    @if(!empty($setting->dashboard_favicon))
+        <link rel="icon" type="image/x-icon" href="{{ asset('storage/' . $setting->dashboard_favicon) }}">
+    @endif
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
     <!-- Flatpickr -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -139,7 +142,7 @@
 </head>
 
 <body>
-    @include('admin.partials.navbar')
+    @include('admin.partials.navbar', ['setting' => $setting])
 
     <div class="container-fluid my-4">
         <div class="row g-4">
