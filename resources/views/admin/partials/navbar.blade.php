@@ -8,7 +8,7 @@
         {{-- Brand + Logo + Current University Badge --}}
         <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="{{ route('admin.dashboard') }}">
             @if(!empty($setting) && !empty($setting->dashboard_logo))
-                <img src="{{ asset('storage/' . $setting->dashboard_logo) }}" style="height:70px;max-width:220px;width:auto;object-fit:contain;">
+                <img src="{{ asset('storage/' . $setting->dashboard_logo) }}" style="height:60px;max-width:220px;width:auto;object-fit:contain;">
             @else
                 <img src="{{ Storage::url('images/logo.png') }}" style="height:54px;max-width:220px;width:auto;object-fit:contain;">
             @endif
@@ -19,27 +19,6 @@
                 @endif
             @endisset
         </a>
-        <!-- زر ملء الشاشة خارج الشعار -->
-        <button id="fullscreen-toggle" type="button" class="btn btn-link p-0 ms-2" title="وضع ملء الشاشة" style="font-size:1.5rem;">
-            <i class="bi bi-arrows-fullscreen"></i>
-        </button>
-@push('scripts')
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        var btn = document.getElementById('fullscreen-toggle');
-        if(btn) {
-            btn.addEventListener('click', function(e) {
-                e.preventDefault();
-                if (!document.fullscreenElement) {
-                    document.documentElement.requestFullscreen();
-                } else {
-                    document.exitFullscreen();
-                }
-            });
-        }
-    });
-</script>
-@endpush
 
         {{-- Toggler (Mobile) --}}
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#adminTopbar"
@@ -88,15 +67,11 @@
                                 حساب المشرف
                             </li>
                             <li>
-                                <a class="dropdown-item" href="javascript:void(0)">
+                                <a class="dropdown-item" href="{{ route('admin.profile') }}">
                                     <i class="bi bi-person-gear me-2"></i> الملف الشخصي
                                 </a>
                             </li>
-                            <li>
-                                <a class="dropdown-item" href="javascript:void(0)">
-                                    <i class="bi bi-clipboard-check me-2"></i> سجلات التدقيق
-                                </a>
-                            </li>
+                            
                             <li>
                                 <hr class="dropdown-divider">
                             </li>

@@ -204,7 +204,11 @@ Route::middleware('auth:admin')->group(function () {
 
     // Banners
     Route::resource('banners', BannerController::class);
-
+    // صفحة الملف الشخصي للمشرف
+    Route::get('profile', function () {
+        return view('admin.profile.edit');
+    })->name('profile');
+    Route::post('profile', [AdminAuthController::class, 'updateProfile'])->name('profile.update');
     // إعدادات لوحة التحكم
     Route::get('settings', [SettingsController::class, 'edit'])->name('settings.edit');
     Route::post('settings', [SettingsController::class, 'update'])->name('settings.update');
