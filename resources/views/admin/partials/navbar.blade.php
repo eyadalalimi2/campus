@@ -8,11 +8,11 @@
         {{-- Brand + Logo + Current University Badge --}}
         <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="{{ route('admin.dashboard') }}">
             @if(!empty($setting) && !empty($setting->dashboard_logo))
-                <img src="{{ asset('storage/' . $setting->dashboard_logo) }}" style="height:36px;width:auto;">
+                <img src="{{ asset('storage/' . $setting->dashboard_logo) }}" style="height:70px;max-width:220px;width:auto;object-fit:contain;">
             @else
-                <img src="{{ Storage::url('images/logo.png') }}" style="height:36px;width:auto;">
+                <img src="{{ Storage::url('images/logo.png') }}" style="height:54px;max-width:220px;width:auto;object-fit:contain;">
             @endif
-            <span>لوحة التحكم</span>
+            <span></span>
             @isset($currentUniversity)
                 @if (!empty($currentUniversity))
                     <span class="badge bg-primary">{{ $currentUniversity->name }}</span>
