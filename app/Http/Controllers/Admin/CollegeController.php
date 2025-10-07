@@ -17,7 +17,7 @@ class CollegeController extends Controller
         $q = College::with(['branch.university'])
             ->orderBy('name');
 
-        // فلاتر اختيارية
+        // فلاتر اختيارية 
         if ($r->filled('university_id')) {
             $q->whereHas('branch', fn($b) => $b->where('university_id', (int) $r->input('university_id')));
         }
