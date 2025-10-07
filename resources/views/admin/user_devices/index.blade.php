@@ -42,7 +42,7 @@
                                 <td>{{ $device->user?->email }}</td>
                                 <td>{{ $device->device_name }}</td>
                                 <td>{{ $device->device_model ?: '—' }}</td>
-                                <td style="max-width:220px">{{ $device->device_identifier ?: '—' }}</td>
+                                <td style="max-width:220px">{{ $device->device_uuid ?: '—' }}</td>
                                 <td>{{ $device->ip_address ?: '—' }}</td>
                                 <td>{{ optional($device->last_login_at)->format('Y-m-d H:i') ?: '—' }}</td>
                                 <td class="text-end">

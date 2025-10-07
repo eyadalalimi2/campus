@@ -55,31 +55,34 @@ final class AuthController extends Controller
                 'password'       => $data['password'],
             ]);
 
-            // التقييد: إذا هناك جهاز مسجّل مسبقًا ويختلف uuid → رفض
+            // التقييد: إن وُجد جهاز سابق مختلف → رفض
             $existing = UserDevice::where('user_id', $user->id)->first();
             if ($existing && $existing->device_uuid !== $deviceUuid) {
                 throw new ApiException('DEVICE_CONFLICT', 'هذا الحساب مرتبط بجهاز آخر.', 403);
             }
 
-            // ربط أو تحديث الجهاز
+            // ربط/تحديث الجهاز
             UserDevice::updateOrCreate(
                 ['user_id' => $user->id],
                 [
-                    'device_uuid'  => $deviceUuid,
-                    'device_name'  => $request->input('device_name'),
-                    'device_model' => $request->input('device_model'),
-                    'ip_address'   => $request->ip(),
-                    'user_agent'   => $request->userAgent(),
+                    'device_uuid'   => $deviceUuid,
+                    'device_name'   => $request->input('device_name'),
+                    'device_model'  => $request->input('device_model'),
+                    'ip_address'    => $request->ip(),
+                    'user_agent'    => $request->userAgent(),
                     'last_login_at' => Carbon::now(),
                 ]
             );
 
+            // صلاحيات التوكن المطلوبة للوصول لباقي أجزاء الـ API
+            $abilities = ['me:read', 'structure:read', 'catalog:read', 'subscription:write'];
+
             $token = $user->createToken(
                 $data['login_device'] ?? 'mobile',
-                ['me:read']
+                $abilities
             )->plainTextToken;
 
-            // أرسل رابط التفعيل (إن عندك المنطق)
+            // إرسال رابط التفعيل
             $this->issueAndSendEmailVerificationLink($user->email, $user->name ?? '');
 
             DB::commit();
@@ -101,6 +104,7 @@ final class AuthController extends Controller
     {
         $data = $request->validated();
 
+        /** @var User|null $user */
         $user = User::where('email', $data['email'])->first();
         if (!$user || !Hash::check($data['password'], $user->password)) {
             throw new ApiException('AUTH_INVALID', 'بيانات الاعتماد غير صحيحة.', 401);
@@ -111,26 +115,31 @@ final class AuthController extends Controller
             throw new ApiException('DEVICE_UUID_REQUIRED', 'device_uuid حقل مطلوب.', 422);
         }
 
+        // حساب مرتبط بجهاز واحد فقط
         $existing = UserDevice::where('user_id', $user->id)->first();
         if ($existing && $existing->device_uuid !== $deviceUuid) {
             throw new ApiException('DEVICE_CONFLICT', 'هذا الحساب مرتبط بجهاز آخر.', 403);
         }
 
+        // تحديث/إنشاء سجل الجهاز
         UserDevice::updateOrCreate(
             ['user_id' => $user->id],
             [
-                'device_uuid'  => $deviceUuid,
-                'device_name'  => $request->input('device_name'),
-                'device_model' => $request->input('device_model'),
-                'ip_address'   => $request->ip(),
-                'user_agent'   => $request->userAgent(),
+                'device_uuid'   => $deviceUuid,
+                'device_name'   => $request->input('device_name'),
+                'device_model'  => $request->input('device_model'),
+                'ip_address'    => $request->ip(),
+                'user_agent'    => $request->userAgent(),
                 'last_login_at' => Carbon::now(),
             ]
         );
 
+        // صلاحيات التوكن المطلوبة
+        $abilities = ['me:read', 'structure:read', 'catalog:read', 'subscription:write'];
+
         $token = $user->createToken(
             $data['login_device'] ?? 'mobile',
-            ['me:read']
+            $abilities
         )->plainTextToken;
 
         return ApiResponse::ok([
@@ -175,18 +184,13 @@ final class AuthController extends Controller
             return ApiResponse::error('TOKEN_EXPIRED', 'انتهت صلاحية رابط التفعيل.', [], 422);
         }
 
-        // تفعيل البريد
         DB::table('users')->where('email', $row->email)->update(['email_verified_at' => Carbon::now()]);
-        // وسم هذا التوكن كمستخدم
         DB::table('email_verification_tokens')->where('id', $row->id)->update(['used_at' => Carbon::now()]);
-        // تنظيف أي توكنات متبقية لنفس البريد
         DB::table('email_verification_tokens')
             ->where('email', $row->email)
             ->whereNull('used_at')
             ->delete();
 
-        // يمكن بدلاً من JSON أن نعيد توجيه Deep Link للتطبيق:
-        // return redirect()->away('com.eyadalalimi.students://email-verified');
         return redirect()->away('com.eyadalalimi.students://email-verified');
     }
 
@@ -197,7 +201,6 @@ final class AuthController extends Controller
     {
         $email = $request->validated()['email'];
 
-        // استخدام Laravel Password Broker لإرسال رابط/رمز الاستعادة
         Password::broker()->sendResetLink(['email' => $email]);
 
         return ApiResponse::ok(['message' => 'إن وُجد الحساب سيتم إرسال رابط/رمز الاستعادة.']);
@@ -257,6 +260,7 @@ final class AuthController extends Controller
 
         return ApiResponse::ok(['message' => 'تم تسجيل الخروج بنجاح.']);
     }
+
     /**
      * حذف الحساب نهائيًا بعد التحقق من كلمة المرور الحالية.
      * DELETE /api/v1/me/account
@@ -264,7 +268,6 @@ final class AuthController extends Controller
      */
     public function destroyAccount(Request $request)
     {
-        // تحقّق من وجود كلمة المرور
         $data = $request->validate([
             'current_password' => ['required', 'string', 'min:6'],
         ]);
@@ -272,15 +275,12 @@ final class AuthController extends Controller
         /** @var User $user */
         $user = $request->user();
 
-        // مطابقة كلمة المرور
         if (! Hash::check($data['current_password'], $user->password)) {
             throw new \App\Exceptions\Api\ApiException('INVALID_PASSWORD', 'كلمة المرور غير صحيحة.', 422);
         }
 
         DB::transaction(function () use ($user) {
-            // (اختياري) حذف صورة البروفايل من التخزين إن وُجدت
             if (!empty($user->profile_photo_path)) {
-                // لو كنت تخزن بـ storage/app/public واستخدمت storage/ للعرض
                 $path = ltrim(preg_replace('#^storage/#', '', $user->profile_photo_path), '/');
                 try {
                     Storage::disk('public')->delete($path);
@@ -288,15 +288,11 @@ final class AuthController extends Controller
                 }
             }
 
-            // حذف جميع توكنات Sanctum (الجلسات)
             try {
                 $user->tokens()->delete();
             } catch (\Throwable $e) {
             }
 
-            // TODO: لو عندك علاقات بقيود FK بلا cascade، احذف/افرغ هنا حسب الحاجة
-
-            // حذف الحساب (حسب إعدادك: نهائي أو SoftDelete إن مفعل)
             $user->delete();
         });
 
@@ -321,18 +317,15 @@ final class AuthController extends Controller
      */
     private function issueAndSendEmailVerificationLink(string $email, string $userName = 'طالبنا العزيز'): void
     {
-        // حد الإرسال اليومي
         $sendCount = DB::table('email_verification_tokens')
             ->where('email', $email)
             ->where('created_at', '>=', Carbon::now()->subDay())
             ->count();
 
         if ($sendCount >= 5) {
-            // لا نرمي خطأ للمستخدم علنًا؛ فقط نتوقف عن الإرسال
             return;
         }
 
-        // إنشاء التوكن
         $token = Str::random(64);
 
         DB::table('email_verification_tokens')->insert([
@@ -343,16 +336,12 @@ final class AuthController extends Controller
             'updated_at' => Carbon::now(),
         ]);
 
-        // بناء الرابط (API GET)
         $verifyUrl = url('/api/v1/auth/email/verify/' . $token);
 
-        // إرسال البريد
         try {
             Mail::to($email)->send(new EmailVerificationLink($verifyUrl, $userName));
         } catch (\Throwable $e) {
-            // لا نفصح عن الفشل للمستخدم (لأسباب أمان/خصوصية)
-            // يمكن تسجيل الخطأ في اللوج فقط
-            // \Log::error('Mail send failed: '.$e->getMessage());
+            // يُكتفى بالتسجيل في اللوج إن رغبت
         }
     }
 }

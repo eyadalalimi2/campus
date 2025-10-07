@@ -14,6 +14,7 @@ class UserDevice extends Model
         'device_name',
         'device_model',
         'device_identifier',
+        'device_uuid',
         'ip_address',
         'user_agent',
         'last_login_at',
