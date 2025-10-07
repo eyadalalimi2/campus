@@ -1,20 +1,18 @@
-{{-- لا تقم بعمل @extends هنا: هذا Partial يُستدعى من create/edit --}}
 @php
   $currentUniversityId = old('university_id', optional($college?->branch?->university)->id ?? request('university_id'));
   $currentBranchId     = old('branch_id', $college->branch_id ?? request('branch_id'));
 @endphp
 
 <div class="row g-3">
-  {{-- الجامعة --}}
+  {{-- الجامعة (للاختيار فقط، لا يتم إرسالها) --}}
   <div class="col-md-6">
     <label class="form-label">الجامعة <span class="text-danger">*</span></label>
-    <select name="university_id" id="university_id" class="form-select" required>
+  <select name="university_id" id="university_id" class="form-select" required>
       <option value="">— اختر —</option>
       @foreach($universities as $u)
         <option value="{{ $u->id }}" @selected($currentUniversityId == $u->id)>{{ $u->name }}</option>
       @endforeach
     </select>
-    @error('university_id') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
   </div>
 
   {{-- الفرع --}}
