@@ -26,6 +26,7 @@ use App\Http\Controllers\Api\V1\Plans\FeaturesController;
 
 use App\Http\Controllers\Api\V1\Subscription\ActivationController;
 use App\Http\Controllers\Api\V1\Subscription\SubscriptionsController;
+
 use App\Http\Controllers\MedicalSystemController;
 use App\Http\Controllers\Api\V1\Feed\FeedController;
 use App\Http\Controllers\Api\V1\UserDeviceController;
@@ -35,6 +36,8 @@ use App\Http\Controllers\Api\V1\StudentRequestsController;
 use App\Http\Controllers\Api\V1\ComplaintController;
 use App\Http\Controllers\Api\V1\Me\VisibilityController as ApiVisibilityController;
 use App\Http\Controllers\Api\V1\ContentAssistantController as ApiContentAssistantController;
+use App\Http\Controllers\Api\V1\AppFeaturesController;
+use App\Http\Controllers\Api\V1\AppContentsController;
 use App\Http\Controllers\Api\V1\{
     MedDeviceController,
     MedSubjectController,
@@ -67,7 +70,10 @@ Route::prefix('v1')->group(function () {
     // Devices
     Route::get('devices', [MedDeviceController::class, 'index']);
     Route::get('devices/{device}/subjects', [MedSubjectController::class, 'byDevice']);
-
+    //App Features
+    Route::get('app-features', [AppFeaturesController::class, 'index']);
+    //App Contents
+    Route::get('app-contents', [AppContentsController::class, 'index']);
     // Subjects
     Route::get('subjects', [MedSubjectController::class, 'index']);
     Route::get('subjects/{subject}/topics', [MedTopicController::class, 'bySubject']);
@@ -237,7 +243,7 @@ Route::prefix('v1')->group(function () {
 
 
         // جهاز المستخدم
-         Route::get('user-devices', [UserDeviceController::class, 'index']);
+        Route::get('user-devices', [UserDeviceController::class, 'index']);
         // إلغاء/حذف توكن جهاز محدد يخص المستخدم الحالي
         // إشعارات الطالب
         Route::get('me/notifications',          [NotificationsController::class, 'index']);

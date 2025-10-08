@@ -198,6 +198,20 @@
                     أجهزة المستخدمين
                 </a>
             </div>
+            <div class="nav-item">
+                <a href="{{ route('admin.app_features.index') }}"
+                    class="nav-link {{ request()->is('app_features*') ? 'active' : '' }}">
+                    <i class="bi bi-star" style="color:#f59e42;"></i>
+                    مميّزات التطبيق
+                </a>
+            </div>
+                <div class="nav-item">
+                    <a href="{{ route('admin.app_contents.index') }}"
+                        class="nav-link {{ request()->is('app_contents*') ? 'active' : '' }}">
+                        <i class="bi bi-file-earmark-richtext" style="color:#6366f1;"></i>
+                        محتوى التطبيق
+                    </a>
+                </div>
         </div>
     </nav>
 </aside>

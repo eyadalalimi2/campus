@@ -52,11 +52,15 @@ use App\Http\Controllers\Admin\MedicalCourseController;
 use App\Http\Controllers\Admin\ContentAssistantController;
 use App\Http\Controllers\Admin\ActivationCodeBatchesExcelExportController;
 use App\Http\Controllers\Admin\UserDeviceController;
+use App\Http\Controllers\Admin\AppFeatureController;
+use App\Http\Controllers\Admin\AppContentController;
 /*
 |--------------------------------------------------------------------------
 | Admin Routes (prefix=admin, name=admin.) via RouteServiceProvider
 |--------------------------------------------------------------------------
 */
+
+Route::resource('app_contents', AppContentController::class)->except(['show']);
 
 Route::get('universities-management', function () {
     return view('admin.universities_management');
@@ -272,4 +276,7 @@ Route::middleware('auth:admin')->group(function () {
     Route::resource('user-devices', UserDeviceController::class)
         ->only(['index', 'destroy'])
         ->names('user_devices');
+
+    // مميزات التطبيق
+    Route::resource('app_features', AppFeatureController::class)->except(['show']);
 });
