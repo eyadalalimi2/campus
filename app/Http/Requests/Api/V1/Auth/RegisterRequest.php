@@ -38,21 +38,26 @@ final class RegisterRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'                   => ['required', 'string', 'min:2', 'max:255'],
-            'email'                  => ['required', 'email', 'max:255', 'unique:users,email'],
-            'password'               => ['required', 'string', 'min:6', 'max:100', 'confirmed'],
-            'password_confirmation'  => ['required', 'string', 'min:6', 'max:100'],
+            'student_number'     => ['nullable', 'string', 'max:30'],
+            'name'               => ['required', 'string', 'min:2', 'max:255'],
+            'email'              => ['required', 'email', 'max:255', 'unique:users,email'],
+            'password'           => ['required', 'string', 'min:6', 'max:100', 'confirmed'],
+            'password_confirmation' => ['required', 'string', 'min:6', 'max:100'],
 
-            'phone'         => ['nullable', 'string', 'max:20'],
-            'country_id'    => ['required', 'integer', 'exists:countries,id'],
-            'university_id' => ['nullable', 'integer', 'exists:universities,id'],
-            'college_id'    => ['nullable', 'integer', 'exists:colleges,id'],
-            'major_id'      => ['nullable', 'integer', 'exists:majors,id'],
-            'level'         => ['nullable', 'integer', 'min:0', 'max:50'],
-            'gender'        => ['nullable', 'in:male,female'],
+            'phone'              => ['nullable', 'string', 'max:20'],
+            'country_id'         => ['required', 'integer', 'exists:countries,id'],
+            'university_id'      => ['nullable', 'integer', 'exists:universities,id'],
+            'branch_id'          => ['nullable', 'integer', 'exists:university_branches,id'],
+            'college_id'         => ['nullable', 'integer', 'exists:colleges,id'],
+            'major_id'           => ['nullable', 'integer', 'exists:majors,id'],
+            'level'              => ['nullable', 'integer', 'min:0', 'max:50'],
+            'current_term'       => ['nullable', 'integer', 'min:0'],
+            'gender'             => ['nullable', 'in:male,female'],
+            'public_college_id'  => ['nullable', 'integer', 'exists:public_colleges,id'],
+            'public_major_id'    => ['nullable', 'integer', 'exists:public_majors,id'],
 
             // اسم جهاز تسجيل الدخول لتوليد توكن Sanctum
-            'login_device'  => ['required', 'string', 'max:60'],
+            'login_device'       => ['required', 'string', 'max:60'],
         ];
     }
 
@@ -105,34 +110,41 @@ final class RegisterRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required'      => 'الاسم مطلوب.',
-            'name.min'           => 'الاسم قصير جدًا.',
-            'name.max'           => 'الاسم يتجاوز الحد المسموح.',
-            'email.required'     => 'البريد الإلكتروني مطلوب.',
-            'email.email'        => 'صيغة البريد غير صحيحة.',
-            'email.max'          => 'البريد يتجاوز 255 حرفًا.',
-            'email.unique'       => 'البريد مستخدم مسبقًا.',
-            'password.required'  => 'كلمة المرور مطلوبة.',
-            'password.min'       => 'كلمة المرور يجب ألا تقل عن 6 أحرف.',
-            'password.max'       => 'كلمة المرور تتجاوز الحد المسموح.',
-            'password.confirmed' => 'تأكيد كلمة المرور غير متطابق.',
+            'student_number.max'     => 'رقم الطالب يتجاوز الحد المسموح (30 حرف).',
+            'name.required'          => 'الاسم مطلوب.',
+            'name.min'               => 'الاسم قصير جدًا.',
+            'name.max'               => 'الاسم يتجاوز الحد المسموح.',
+            'email.required'         => 'البريد الإلكتروني مطلوب.',
+            'email.email'            => 'صيغة البريد غير صحيحة.',
+            'email.max'              => 'البريد يتجاوز 255 حرفًا.',
+            'email.unique'           => 'البريد مستخدم مسبقًا.',
+            'password.required'      => 'كلمة المرور مطلوبة.',
+            'password.min'           => 'كلمة المرور يجب ألا تقل عن 6 أحرف.',
+            'password.max'           => 'كلمة المرور تتجاوز الحد المسموح.',
+            'password.confirmed'     => 'تأكيد كلمة المرور غير متطابق.',
             'password_confirmation.required' => 'حقل تأكيد كلمة المرور مطلوب.',
-
-            'country_id.required' => 'الدولة مطلوبة.',
-            'country_id.exists'   => 'الدولة غير صحيحة.',
-            'university_id.exists'=> 'الجامعة غير صحيحة.',
-            'college_id.exists'   => 'الكلية غير صحيحة.',
-            'major_id.exists'     => 'التخصص غير صحيح.',
-            'gender.in'           => 'قيمة الجنس يجب أن تكون male أو female.',
-
-            'login_device.required' => 'اسم جهاز تسجيل الدخول مطلوب.',
-            'login_device.max'      => 'اسم جهاز تسجيل الدخول يتجاوز 60 حرفًا.',
+            'phone.max'              => 'رقم الجوال يتجاوز الحد المسموح.',
+            'country_id.required'    => 'الدولة مطلوبة.',
+            'country_id.exists'      => 'الدولة غير صحيحة.',
+            'university_id.exists'   => 'الجامعة غير صحيحة.',
+            'branch_id.exists'       => 'الفرع غير صحيح.',
+            'college_id.exists'      => 'الكلية غير صحيحة.',
+            'major_id.exists'        => 'التخصص غير صحيح.',
+            'level.min'              => 'المستوى أقل من الصفر.',
+            'level.max'              => 'المستوى يتجاوز الحد المسموح.',
+            'current_term.min'       => 'الفصل الحالي أقل من الصفر.',
+            'gender.in'              => 'قيمة الجنس يجب أن تكون male أو female.',
+            'public_college_id.exists' => 'الكلية العامة غير صحيحة.',
+            'public_major_id.exists'   => 'التخصص العام غير صحيح.',
+            'login_device.required'   => 'اسم جهاز تسجيل الدخول مطلوب.',
+            'login_device.max'        => 'اسم جهاز تسجيل الدخول يتجاوز 60 حرفًا.',
         ];
     }
 
     public function attributes(): array
     {
         return [
+            'student_number'         => 'رقم الطالب',
             'name'                   => 'الاسم',
             'email'                  => 'البريد الإلكتروني',
             'password'               => 'كلمة المرور',
@@ -140,10 +152,14 @@ final class RegisterRequest extends FormRequest
             'phone'                  => 'الهاتف',
             'country_id'             => 'الدولة',
             'university_id'          => 'الجامعة',
+            'branch_id'              => 'الفرع',
             'college_id'             => 'الكلية',
             'major_id'               => 'التخصص',
             'level'                  => 'المستوى',
+            'current_term'           => 'الفصل الحالي',
             'gender'                 => 'الجنس',
+            'public_college_id'      => 'الكلية العامة',
+            'public_major_id'        => 'التخصص العام',
             'login_device'           => 'اسم جهاز تسجيل الدخول',
         ];
     }

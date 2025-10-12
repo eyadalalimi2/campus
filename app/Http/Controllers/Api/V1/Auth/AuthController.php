@@ -41,18 +41,22 @@ final class AuthController extends Controller
         DB::beginTransaction();
         try {
             $user = User::create([
-                'student_number' => $data['student_number'] ?? null,
-                'name'           => $data['name'],
-                'email'          => $data['email'],
-                'phone'          => $data['phone'] ?? null,
-                'country_id'     => $data['country_id'],
-                'university_id'  => $data['university_id'] ?? null,
-                'college_id'     => $data['college_id'] ?? null,
-                'major_id'       => $data['major_id'] ?? null,
-                'level'          => $data['level'] ?? null,
-                'gender'         => $data['gender'] ?? null,
-                'status'         => User::STATUS_ACTIVE,
-                'password'       => $data['password'],
+                'student_number'    => $data['student_number'] ?? null,
+                'name'              => $data['name'],
+                'email'             => $data['email'],
+                'phone'             => $data['phone'] ?? null,
+                'country_id'        => $data['country_id'],
+                'university_id'     => $data['university_id'] ?? null,
+                'branch_id'         => $data['branch_id'] ?? null,
+                'college_id'        => $data['college_id'] ?? null,
+                'major_id'          => $data['major_id'] ?? null,
+                'level'             => $data['level'] ?? null,
+                'current_term'      => $data['current_term'] ?? null,
+                'gender'            => $data['gender'] ?? null,
+                'public_college_id' => $data['public_college_id'] ?? null,
+                'public_major_id'   => $data['public_major_id'] ?? null,
+                'status'            => User::STATUS_ACTIVE,
+                'password'          => $data['password'],
             ]);
 
             // التقييد: إن وُجد جهاز سابق مختلف → رفض
