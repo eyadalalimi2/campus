@@ -14,14 +14,17 @@ final class UniversitiesController extends Controller
 {
     /**
      * GET /api/v1/universities
-     * فلاتر: q, country_id, is_active, limit, cursor, sort
+    * فلاتر: q, country_id, is_active, limit, cursor, sort
+    * ملاحظة: يمكن تمرير limit=all لإرجاع جميع النتائج دون تقطيع.
      * sort المسموح: name, -name, created_at, -created_at, id, -id
      */
     public function index(PaginateRequest $request)
     {
-        $data    = $request->validated();
-        $limit   = $data['limit'] ?? config('api.pagination.default', 20);
-        $limit   = min((int)$limit, config('api.pagination.max', 50));
+    $data    = $request->validated();
+    // في حال عدم إرسال limit سنُرجع كل النتائج افتراضيًا (بدون تقطيع)
+    $rawLimit = $data['limit'] ?? 'all';
+    $isAll   = (is_string($rawLimit) && strtolower($rawLimit) === 'all');
+    $limit   = $isAll ? null : min((int)$rawLimit, config('api.pagination.max', 50));
         $cursor  = Cursor::decode($data['cursor'] ?? null);
         $offset  = (int)($cursor['offset'] ?? 0);
         $q       = $data['q'] ?? null;
@@ -47,10 +50,16 @@ final class UniversitiesController extends Controller
         ]);
 
         $total = (clone $query)->count();
-        $items = $query->skip($offset)->take($limit)->get();
+        if ($isAll) {
+            // إذا طُلب الكل، نتجاهل الـ cursor والـ limit
+            $items      = $query->get();
+            $nextCursor = null;
+        } else {
+            $items = $query->skip($offset)->take($limit)->get();
+            $nextOffset  = $offset + $items->count();
+            $nextCursor  = ($nextOffset < $total) ? Cursor::encode(['offset' => $nextOffset]) : null;
+        }
 
-        $nextOffset  = $offset + $items->count();
-        $nextCursor  = ($nextOffset < $total) ? Cursor::encode(['offset' => $nextOffset]) : null;
 
         $payload = $items->map(fn ($r) => [
             'id'         => (int)$r->id,

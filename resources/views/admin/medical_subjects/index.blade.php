@@ -57,7 +57,7 @@
     </div>
     @if(method_exists($subjects,'links'))
       <div class="card-footer">
-        {{ $subjects->links() }}
+        {{ $subjects->links('vendor.pagination.bootstrap-custom') }}
       </div>
     @endif
   </div>

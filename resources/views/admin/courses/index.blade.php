@@ -56,7 +56,7 @@
             </table>
 
             <div class="mt-3">
-                {{ $courses->links() }}
+                {{ $courses->links('vendor.pagination.bootstrap-custom') }}
             </div>
         </div>
     </div>

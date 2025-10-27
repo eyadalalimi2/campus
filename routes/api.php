@@ -38,6 +38,9 @@ use App\Http\Controllers\Api\V1\Me\VisibilityController as ApiVisibilityControll
 use App\Http\Controllers\Api\V1\ContentAssistantController as ApiContentAssistantController;
 use App\Http\Controllers\Api\V1\AppFeaturesController;
 use App\Http\Controllers\Api\V1\AppContentsController;
+use App\Http\Controllers\Api\V1\ClinicalSubjectPdfController as ApiClinicalSubjectPdfController;
+use App\Http\Controllers\Api\V1\ClinicalSubjectController;
+use App\Http\Controllers\Api\V1\StudyGuideController as ApiStudyGuideController;
 use App\Http\Controllers\Api\V1\{
     MedDeviceController,
     MedSubjectController,
@@ -48,9 +51,17 @@ use App\Http\Controllers\Api\V1\{
 };
 
 Route::prefix('v1')->group(function () {
+    // Clinical Subjects
+    Route::get('clinical-subjects', [ClinicalSubjectController::class, 'index']);
+    // Clinical Subject PDFs
+    Route::get('clinical-subjects/{clinical_subject}/pdfs', [ApiClinicalSubjectPdfController::class, 'index']);
 
     //content-assistants
     Route::get('content-assistants', [ApiContentAssistantController::class, 'index']);
+
+    // Study Guides (public)
+    Route::get('study-guides', [ApiStudyGuideController::class, 'index']);
+    Route::get('study-guides/{study_guide}', [ApiStudyGuideController::class, 'show']);
 
     // Courses
     Route::get('courses', [\App\Http\Controllers\Api\V1\CourseController::class, 'index']);

@@ -3,6 +3,12 @@
         <div class="nav-item mt-3 fw-bold" style="font-size:15px;color:#0e7490;">
             عناصر الطب البشري
         </div>
+        <div class="nav-item">
+            <a href="{{ route('admin.imports.index') }}"
+                class="nav-link {{ request()->is('admin/imports*') ? 'active' : '' }}">
+                <i class="bi bi-upload" style="color:#0ea5e9;"></i> استيراد بيانات
+            </a>
+        </div>
 
         <div class="nav-item">
             <a href="{{ route('admin.dashboard') }}"
@@ -27,6 +33,7 @@
                 المواد
             </a>
         </div>
+
 
         <div class="nav-item">
             <a href="{{ route('admin.med_topics.index') }}"
@@ -106,11 +113,22 @@
             </a>
         </div>
 
+
+
         <div class="nav-item">
             <a href="{{ route('admin.medical_system_subjects.index') }}"
                 class="nav-link {{ request()->is('admin/medical_system_subjects*') ? 'active' : '' }}">
                 <i class="bi bi-link-45deg" style="color:#eab308;"></i>
                 ربط الأنظمة بالمواد
+            </a>
+        </div>
+
+        <div class="nav-item">
+            <a href="{{ route('admin.medical_contents.index') }}"
+                class="nav-link {{ request()->routeIs('admin.medical_contents.*') ? 'active' : '' }}">
+                <i class="bi bi-file-medical" style="color:#ef4444;"></i>
+                المحتوى الطبي (خاص)
+
             </a>
         </div>
 
@@ -122,11 +140,24 @@
             </a>
         </div>
         <div class="nav-item">
-            <a href="{{ route('admin.medical_contents.index') }}"
-                class="nav-link {{ request()->routeIs('admin.medical_contents.*') ? 'active' : '' }}">
-                <i class="bi bi-file-medical" style="color:#ef4444;"></i>
-                المحتوى الطبي (خاص)
-
+            <a href="{{ route('admin.clinical_subjects.index') }}"
+                class="nav-link {{ request()->routeIs('admin.clinical_subjects.*') ? 'active' : '' }}">
+                <i class="bi bi-hospital" style="color:#0ea5e9;"></i>
+                المواد السريرية
+            </a>
+        </div>
+        <div class="nav-item">
+            <a href="{{ route('admin.clinical_subject_pdfs.index') }}"
+                class="nav-link {{ request()->routeIs('admin.clinical_subject_pdfs.*') ? 'active' : '' }}">
+                <i class="bi bi-file-earmark-pdf" style="color:#a855f7;"></i>
+                ملفات PDF السريرية
+            </a>
+        </div>
+        <div class="nav-item">
+            <a href="{{ route('admin.study_guides.index') }}"
+                class="nav-link {{ request()->routeIs('admin.study_guides.*') ? 'active' : '' }}">
+                <i class="bi bi-mortarboard" style="color:#06b6d4;"></i>
+                أدلة المذاكرة
             </a>
         </div>
         <hr>
@@ -199,19 +230,25 @@
                 </a>
             </div>
             <div class="nav-item">
+                <a href="{{ route('admin.apps.index') }}"
+                    class="nav-link {{ request()->is('admin/apps*') ? 'active' : '' }}">
+                    <i class="bi bi-phone-fill" style="color:#0ea5e9;"></i> إدارة التطبيقات
+                </a>
+            </div>
+            <div class="nav-item">
                 <a href="{{ route('admin.app_features.index') }}"
                     class="nav-link {{ request()->is('app_features*') ? 'active' : '' }}">
                     <i class="bi bi-star" style="color:#f59e42;"></i>
                     مميّزات التطبيق
                 </a>
             </div>
-                <div class="nav-item">
-                    <a href="{{ route('admin.app_contents.index') }}"
-                        class="nav-link {{ request()->is('app_contents*') ? 'active' : '' }}">
-                        <i class="bi bi-file-earmark-richtext" style="color:#6366f1;"></i>
-                        محتوى التطبيق
-                    </a>
-                </div>
+            <div class="nav-item">
+                <a href="{{ route('admin.app_contents.index') }}"
+                    class="nav-link {{ request()->is('app_contents*') ? 'active' : '' }}">
+                    <i class="bi bi-file-earmark-richtext" style="color:#6366f1;"></i>
+                    محتوى التطبيق
+                </a>
+            </div>
         </div>
     </nav>
 </aside>

@@ -37,11 +37,67 @@
   </div>
 
   <div class="col-12">
-    <label class="form-label">ربط بالأجهزة</label>
-    <select name="device_ids[]" class="form-select" multiple size="8">
-      @foreach(\App\Models\MedDevice::orderBy('name')->get() as $d)
-        <option value="{{ $d->id }}" @selected(in_array($d->id,$selected ?? []))>{{ $d->name }}</option>
-      @endforeach
-    </select>
+    <div class="d-flex justify-content-between align-items-center mb-1">
+      <label class="form-label mb-0">ربط بالأجهزة</label>
+      <div>
+        <a href="#" id="med-devices-toggle" class="small">تحديد الكل</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-body p-2" style="max-height:320px; overflow:auto;">
+        <div class="row g-2" id="med-devices-list">
+          @foreach(\App\Models\MedDevice::orderBy('name')->get() as $d)
+            <div class="col-12 col-md-6 col-lg-4">
+              <div class="form-check">
+                <input class="form-check-input med-device-checkbox" type="checkbox"
+                       name="device_ids[]" value="{{ $d->id }}" id="med_device_{{ $d->id }}"
+                       @checked(in_array($d->id,$selected ?? []))>
+                <label class="form-check-label" for="med_device_{{ $d->id }}">{{ $d->name }}</label>
+              </div>
+            </div>
+          @endforeach
+        </div>
+      </div>
+    </div>
   </div>
+
+  @push('scripts')
+  <script>
+    (function(){
+      const toggle = document.getElementById('med-devices-toggle');
+      const container = document.getElementById('med-devices-list');
+      if(!toggle || !container) return;
+
+      function setAll(checked){
+        container.querySelectorAll('input.med-device-checkbox').forEach(cb => cb.checked = checked);
+      }
+
+      function allChecked(){
+        const boxes = Array.from(container.querySelectorAll('input.med-device-checkbox'));
+        return boxes.length && boxes.every(b => b.checked);
+      }
+
+      function refreshLink(){
+        toggle.textContent = allChecked() ? 'إلغاء التحديد' : 'تحديد الكل';
+      }
+
+      toggle.addEventListener('click', function(e){
+        e.preventDefault();
+        const shouldCheck = !allChecked();
+        setAll(shouldCheck);
+        refreshLink();
+      });
+
+      container.addEventListener('change', function(e){
+        if(e.target && e.target.classList && e.target.classList.contains('med-device-checkbox')){
+          refreshLink();
+        }
+      });
+
+      document.addEventListener('DOMContentLoaded', refreshLink);
+      refreshLink();
+    })();
+  </script>
+  @endpush
 </div>

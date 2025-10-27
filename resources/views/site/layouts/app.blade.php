@@ -64,6 +64,13 @@
           </li>
 
           {{-- روابط المصادقة/لوحة الطالب --}}
+          {{-- زر تطبيق الأندرويد --}}
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('apps.show', 'midecal') }}">
+              <i class="bi bi-phone me-1"></i> تطبيق الأندرويد
+            </a>
+          </li>
+
           @guest
             <li class="nav-item">
               <a class="nav-link" href="{{ route('login') }}">

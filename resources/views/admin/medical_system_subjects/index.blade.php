@@ -77,23 +77,93 @@
       </div>
     </div>
 
-    <div class="card">
-      <div class="card-header">إضافة ربط جديد</div>
-      <div class="card-body">
-        <form method="post" action="{{ route('admin.medical_system_subjects.store') }}" class="row g-3">
-          @csrf
-          <input type="hidden" name="system_id" value="{{ $systemId }}">
-          <div class="col-md-6">
-            <label class="form-label">ID المادة الخاصة (SYSTEM لنفس السنة)</label>
-            <input name="subject_id" class="form-control" placeholder="أدخل ID للمادة">
-            @error('subject_id')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
-          </div>
-          <div class="col-12">
-            <button class="btn btn-primary">إضافة</button>
-          </div>
-        </form>
-      </div>
-    </div>
+    
   @endif
+    <!-- قائمة المواد: بطاقة للاختيار المتعدد -->
+    @if($systemId)
+      <div class="card mt-3">
+        <div class="card-header">قائمة المواد (اختر واحداً أو أكثر)</div>
+        <div class="card-body">
+          <form method="post" action="{{ route('admin.medical_system_subjects.store') }}">
+            @csrf
+            <input type="hidden" name="system_id" value="{{ $systemId }}">
+
+            <div class="row g-2 mb-3">
+              <div class="col-md-6">
+                <input id="subjectSearch" type="text" class="form-control" placeholder="ابحث عن مادة بالاسم أو ID">
+              </div>
+              <div class="col-md-6 d-flex justify-content-end align-items-center">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="selectAll">
+                  <label class="form-check-label" for="selectAll">تحديد الكل</label>
+                </div>
+              </div>
+            </div>
+
+            <div class="table-responsive" style="max-height:420px; overflow:auto;">
+              <table class="table table-bordered table-hover mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th style="width:40px"></th>
+                    <th>ID</th>
+                    <th>المادة العامة</th>
+                    <th>السنة/الترم</th>
+                    <th>المسار</th>
+                  </tr>
+                </thead>
+                <tbody id="subjectsTable">
+                  @forelse($subjects ?? [] as $sub)
+                    <tr>
+                      <td class="align-middle"><input type="checkbox" name="subject_ids[]" value="{{ $sub->id }}"></td>
+                      <td class="align-middle">{{ $sub->id }}</td>
+                      <td class="align-middle">{{ optional($sub->medSubject)->name }}</td>
+                      <td class="align-middle">سنة {{ optional($sub->term->year)->year_number }} / ترم {{ optional($sub->term)->term_number }}</td>
+                      <td class="align-middle">{{ $sub->track }}</td>
+                    </tr>
+                  @empty
+                    <tr><td colspan="5" class="text-center text-muted">لا توجد مواد</td></tr>
+                  @endforelse
+                </tbody>
+              </table>
+            </div>
+
+            @error('subject_ids')<div class="text-danger small mt-2">{{ $message }}</div>@enderror
+
+            <div class="mt-3">
+              <button class="btn btn-primary">إضافة المواد المحددة</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    @endif
 </div>
+@push('scripts')
+<script>
+  (function(){
+    const search = document.getElementById('subjectSearch');
+    const table = document.getElementById('subjectsTable');
+    const selectAll = document.getElementById('selectAll');
+
+    if (search) {
+      search.addEventListener('input', function(){
+        const q = this.value.trim().toLowerCase();
+        Array.from(table.querySelectorAll('tr')).forEach(function(tr){
+          const text = tr.innerText.toLowerCase();
+          tr.style.display = q === '' || text.indexOf(q) !== -1 ? '' : 'none';
+        });
+      });
+    }
+
+    if (selectAll) {
+      selectAll.addEventListener('change', function(){
+        const checked = this.checked;
+        Array.from(table.querySelectorAll('input[type="checkbox"][name="subject_ids[]"]')).forEach(function(cb){
+          if (cb.closest('tr').style.display !== 'none') cb.checked = checked;
+        });
+      });
+    }
+  })();
+</script>
+@endpush
+
 @endsection

@@ -38,6 +38,7 @@ use App\Http\Controllers\Admin\MedSubjectController;
 use App\Http\Controllers\Admin\MedTopicController;
 use App\Http\Controllers\Admin\MedDoctorController;
 use App\Http\Controllers\Admin\MedVideoController;
+use App\Http\Controllers\Admin\ClinicalSubjectController;
 use App\Http\Controllers\Admin\MedResourceCategoryController;
 use App\Http\Controllers\Admin\MedResourceController;
 use App\Http\Controllers\Admin\BannerController;
@@ -54,6 +55,12 @@ use App\Http\Controllers\Admin\ActivationCodeBatchesExcelExportController;
 use App\Http\Controllers\Admin\UserDeviceController;
 use App\Http\Controllers\Admin\AppFeatureController;
 use App\Http\Controllers\Admin\AppContentController;
+use App\Http\Controllers\Admin\AndroidAppController;
+use App\Http\Controllers\Admin\AndroidAppReleaseController;
+use App\Http\Controllers\Admin\ClinicalSubjectPdfController;
+use App\Http\Controllers\Admin\StudyGuideController;
+use App\Http\Controllers\Admin\ImportController;
+
 /*
 |--------------------------------------------------------------------------
 | Admin Routes (prefix=admin, name=admin.) via RouteServiceProvider
@@ -250,6 +257,11 @@ Route::middleware('auth:admin')->group(function () {
     Route::resource('medical_subjects', MedicalSubjectController::class)->names('medical_subjects');
     Route::resource('medical_systems', MedicalSystemController::class)->names('medical_systems');
 
+    // Study Guides (كيفية مذاكرة وتنظيم الوقت)
+    Route::resource('study_guides', StudyGuideController::class)
+        ->except(['show'])
+        ->names('study_guides');
+
     // ربط الأنظمة بالمواد (store/destroy فقط + index بسيط)
     Route::get('medical_system_subjects', [MedicalSystemSubjectController::class, 'index'])->name('medical_system_subjects.index');
     Route::post('medical_system_subjects', [MedicalSystemSubjectController::class, 'store'])->name('medical_system_subjects.store');
@@ -277,6 +289,39 @@ Route::middleware('auth:admin')->group(function () {
         ->only(['index', 'destroy'])
         ->names('user_devices');
 
+    /*
+     |-----------------------------
+     | Import / Excel upload screens
+     |-----------------------------
+     */
+    Route::get('imports', [ImportController::class, 'index'])->name('imports.index');
+    Route::get('imports/{type}', [ImportController::class, 'show'])->name('imports.show');
+    Route::post('imports/{type}', [ImportController::class, 'upload'])->name('imports.upload');
+    Route::post('imports/{type}/preview', [ImportController::class, 'preview'])->name('imports.preview');
+    Route::post('imports/{type}/confirm', [ImportController::class, 'confirm'])->name('imports.confirm');
+    Route::get('imports/{type}/errors-export', [ImportController::class, 'errorsExport'])->name('imports.errors_export');
+    Route::get('imports/{type}/template', [ImportController::class, 'template'])->name('imports.template');
+
     // مميزات التطبيق
     Route::resource('app_features', AppFeatureController::class)->except(['show']);
+    // إدارة تطبيقات الأندرويد (صفحة التطبيق في الواجهة + تحميل apk)
+    Route::resource('apps', AndroidAppController::class)->except(['show']);
+    // Releases nested resource for app (manage updates)
+    Route::resource('apps.releases', AndroidAppReleaseController::class)->shallow()->except(['show','edit','update']);
+    Route::resource('clinical_subjects', ClinicalSubjectController::class)->names([
+    'index' => 'clinical_subjects.index',
+    'create' => 'clinical_subjects.create',
+    'store' => 'clinical_subjects.store',
+    'edit' => 'clinical_subjects.edit',
+    'update' => 'clinical_subjects.update',
+    'destroy' => 'clinical_subjects.destroy',
+]);
+Route::resource('clinical_subject_pdfs', ClinicalSubjectPdfController::class)->names([
+    'index' => 'clinical_subject_pdfs.index',
+    'create' => 'clinical_subject_pdfs.create',
+    'store' => 'clinical_subject_pdfs.store',
+    'edit' => 'clinical_subject_pdfs.edit',
+    'update' => 'clinical_subject_pdfs.update',
+    'destroy' => 'clinical_subject_pdfs.destroy',
+]);
 });

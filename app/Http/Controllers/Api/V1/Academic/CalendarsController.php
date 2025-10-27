@@ -19,10 +19,12 @@ final class CalendarsController extends Controller
      */
     public function index(PaginateRequest $request)
     {
-        $data   = $request->validated();
-        $limit  = min((int)($data['limit'] ?? config('api.pagination.default', 20)), config('api.pagination.max', 50));
-        $cursor = Cursor::decode($data['cursor'] ?? null);
-        $offset = (int)($cursor['offset'] ?? 0);
+    $data   = $request->validated();
+    $rawLimit = $data['limit'] ?? 'all';
+    $isAll    = (is_string($rawLimit) && strtolower($rawLimit) === 'all');
+    $limit    = $isAll ? null : min((int)$rawLimit, config('api.pagination.max', 50));
+    $cursor = Cursor::decode($data['cursor'] ?? null);
+    $offset = (int)($cursor['offset'] ?? 0);
 
         $query = AcademicCalendar::query()
             ->select(['id','university_id','year_label','starts_on','ends_on','is_active','created_at'])
@@ -40,10 +42,14 @@ final class CalendarsController extends Controller
         ]);
 
         $total = (clone $query)->count();
-        $items = $query->skip($offset)->take($limit)->get();
-
-        $nextOffset = $offset + $items->count();
-        $nextCursor = ($nextOffset < $total) ? Cursor::encode(['offset'=>$nextOffset]) : null;
+        if ($isAll) {
+            $items = $query->get();
+            $nextCursor = null;
+        } else {
+            $items = $query->skip($offset)->take($limit)->get();
+            $nextOffset = $offset + $items->count();
+            $nextCursor = ($nextOffset < $total) ? Cursor::encode(['offset'=>$nextOffset]) : null;
+        }
 
         return ApiResponse::ok($items, ['count'=>$items->count(),'total'=>$total,'next_cursor'=>$nextCursor], ['next'=>$nextCursor]);
     }

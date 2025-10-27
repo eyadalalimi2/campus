@@ -147,7 +147,7 @@
         </div>
 
         <div class="card-footer">
-            {{ $contents->links() }}
+            {{ $contents->links('vendor.pagination.bootstrap-custom') }}
         </div>
     </div>
 </div>

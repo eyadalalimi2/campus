@@ -11,13 +11,31 @@ class MedicalTermController extends Controller
 {
     public function index()
     {
-        $terms = MedicalTerm::with('year.major')->orderBy('year_id')->orderBy('term_number')->paginate(20);
+        // Eager load الجامعة والفرع عبر التخصص المرتبط بالسنة لعرضها بكفاءة
+        $terms = MedicalTerm::with('year.major.college.branch.university')
+            ->orderBy('year_id')
+            ->orderBy('term_number')
+            ->paginate(20);
         return view('admin.medical_terms.index', compact('terms'));
     }
 
     public function create()
     {
-        $years = MedicalYear::with('major')->get()->mapWithKeys(fn($y)=>[$y->id => $y->major->name.' - سنة '.$y->year_number]);
+        // بناء تسميات السنوات بالشكل: جامعة - فرع - تخصص - سنة X
+        $years = MedicalYear::with('major.college.branch.university')
+            ->orderBy('major_id')
+            ->orderBy('year_number')
+            ->get()
+            ->mapWithKeys(function ($y) {
+                $major = $y->major;
+                $college = optional($major)->college;
+                $branch = optional($college)->branch;
+                $universityName = optional(optional($branch)->university)->name;
+                $branchName = optional($branch)->name;
+                $majorName = optional($major)->name;
+                $parts = array_filter([$universityName, $branchName, $majorName, 'سنة '.$y->year_number], fn($v)=>filled($v));
+                return [$y->id => implode(' - ', $parts)];
+            });
         return view('admin.medical_terms.create', compact('years'));
     }
 
@@ -29,7 +47,21 @@ class MedicalTermController extends Controller
 
     public function edit(MedicalTerm $medical_term)
     {
-        $years = MedicalYear::with('major')->get()->mapWithKeys(fn($y)=>[$y->id => $y->major->name.' - سنة '.$y->year_number]);
+        // بناء تسميات السنوات بالشكل: جامعة - فرع - تخصص - سنة X
+        $years = MedicalYear::with('major.college.branch.university')
+            ->orderBy('major_id')
+            ->orderBy('year_number')
+            ->get()
+            ->mapWithKeys(function ($y) {
+                $major = $y->major;
+                $college = optional($major)->college;
+                $branch = optional($college)->branch;
+                $universityName = optional(optional($branch)->university)->name;
+                $branchName = optional($branch)->name;
+                $majorName = optional($major)->name;
+                $parts = array_filter([$universityName, $branchName, $majorName, 'سنة '.$y->year_number], fn($v)=>filled($v));
+                return [$y->id => implode(' - ', $parts)];
+            });
         return view('admin.medical_terms.edit', ['term' => $medical_term, 'years' => $years]);
     }
 

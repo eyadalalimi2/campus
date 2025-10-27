@@ -73,7 +73,7 @@
                             </tr>
                         @endforeach
                     </tbody>
-                    <tfoot><tr><td colspan="8" class="pt-3">{{ $contents->links() }}</td></tr></tfoot>
+                    <tfoot><tr><td colspan="8" class="pt-3">{{ $contents->links('vendor.pagination.bootstrap-custom') }}</td></tr></tfoot>
                 </table>
             </div>
         </div>

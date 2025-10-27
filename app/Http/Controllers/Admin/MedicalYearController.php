@@ -12,13 +12,28 @@ class MedicalYearController extends Controller
 {
     public function index()
     {
-        $years = MedicalYear::with('major')->orderBy('major_id')->orderBy('sort_order')->paginate(20);
+        // Eager load الجامعة والفرع عبر علاقة التخصص ← الكلية ← الفرع ← الجامعة لعرضها في الفهرس بكفاءة
+        $years = MedicalYear::with('major.college.branch.university')
+            ->orderBy('major_id')
+            ->orderBy('sort_order')
+            ->paginate(20);
         return view('admin.medical_years.index', compact('years'));
     }
 
     public function create()
     {
-        $majors = Major::orderBy('name')->pluck('name','id');
+        // إظهار اسم الجامعة والفرع مع كل تخصص داخل قائمة الاختيار
+        $majors = Major::with('college.branch.university')
+            ->orderBy('name')
+            ->get()
+            ->mapWithKeys(function ($m) {
+                $university = optional(optional(optional($m->college)->branch)->university)->name;
+                $branch     = optional(optional($m->college)->branch)->name;
+                // تكوين التسمية: جامعة - فرع - تخصص (مع تجاهل القيم الفارغة)
+                $labelParts = array_filter([$university, $branch, $m->name], fn ($v) => filled($v));
+                $label      = implode(' - ', $labelParts);
+                return [$m->id => $label];
+            });
         return view('admin.medical_years.create', compact('majors'));
     }
 
@@ -30,7 +45,17 @@ class MedicalYearController extends Controller
 
     public function edit(MedicalYear $medical_year)
     {
-        $majors = Major::orderBy('name')->pluck('name','id');
+        // إظهار اسم الجامعة والفرع مع كل تخصص داخل قائمة الاختيار
+        $majors = Major::with('college.branch.university')
+            ->orderBy('name')
+            ->get()
+            ->mapWithKeys(function ($m) {
+                $university = optional(optional(optional($m->college)->branch)->university)->name;
+                $branch     = optional(optional($m->college)->branch)->name;
+                $labelParts = array_filter([$university, $branch, $m->name], fn ($v) => filled($v));
+                $label      = implode(' - ', $labelParts);
+                return [$m->id => $label];
+            });
         return view('admin.medical_years.edit', ['year' => $medical_year, 'majors' => $majors]);
     }
 

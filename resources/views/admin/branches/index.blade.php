@@ -43,6 +43,7 @@
   <table class="table table-hover align-middle bg-white">
     <thead class="table-light">
       <tr>
+        <th style="width:60px">معرّف</th>
         <th>الفرع</th>
         <th>الجامعة</th>
         <th>العنوان</th>
@@ -55,6 +56,7 @@
     <tbody>
       @forelse($branches as $b)
         <tr>
+          <td class="small text-muted">{{ $b->id }}</td>
           <td class="fw-semibold">{{ $b->name }}</td>
           <td class="small text-muted">{{ $b->university?->name ?? '—' }}</td>
           <td class="small text-muted">{{ $b->address ?: '—' }}</td>
@@ -75,7 +77,7 @@
         </tr>
       @empty
         <tr>
-          <td colspan="7" class="text-center text-muted">لا توجد بيانات.</td>
+          <td colspan="8" class="text-center text-muted">لا توجد بيانات.</td>
         </tr>
       @endforelse
     </tbody>

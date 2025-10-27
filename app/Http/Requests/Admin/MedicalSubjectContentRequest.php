@@ -12,7 +12,10 @@ class MedicalSubjectContentRequest extends FormRequest
     {
         return [
             'subject_id' => ['required','exists:MedicalSubjects,id'],
-            'content_id' => ['required','exists:contents,id'],
+            // allow either a single content_id or an array of content_ids
+            'content_id'   => ['nullable','required_without:content_ids','exists:contents,id'],
+            'content_ids'  => ['nullable','array','required_without:content_id'],
+            'content_ids.*'=> ['exists:contents,id'],
             'sort_order' => ['nullable','integer','min:0'],
             'is_primary' => ['nullable','boolean'],
             'notes'      => ['nullable','string'],

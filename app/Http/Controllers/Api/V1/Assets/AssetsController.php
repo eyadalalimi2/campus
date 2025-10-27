@@ -32,10 +32,12 @@ final class AssetsController extends Controller
      */
     public function index(PaginateRequest $request)
     {
-        $data   = $request->validated();
-        $limit  = min((int)($data['limit'] ?? config('api.pagination.default', 20)), config('api.pagination.max', 50));
-        $cursor = Cursor::decode($data['cursor'] ?? null);
-        $offset = (int)($cursor['offset'] ?? 0);
+    $data   = $request->validated();
+    $rawLimit = $data['limit'] ?? 'all';
+    $isAll    = (is_string($rawLimit) && strtolower($rawLimit) === 'all');
+    $limit    = $isAll ? null : min((int)$rawLimit, config('api.pagination.max', 50));
+    $cursor = Cursor::decode($data['cursor'] ?? null);
+    $offset = (int)($cursor['offset'] ?? 0);
 
         $user   = auth()->user();
         // سياسة الرؤية العامة (قد تحتاج لاحقًا للمحتوى المؤسسي؛ نُبقيها كما هي)
@@ -86,9 +88,13 @@ final class AssetsController extends Controller
         ]);
 
         $total = (clone $query)->count();
-        $items = $query->skip($offset)->take($limit)->get();
-
-        $next = ($offset + $items->count() < $total) ? Cursor::encode(['offset'=>$offset + $items->count()]) : null;
+        if ($isAll) {
+            $items = $query->get();
+            $next  = null;
+        } else {
+            $items = $query->skip($offset)->take($limit)->get();
+            $next  = ($offset + $items->count() < $total) ? Cursor::encode(['offset'=>$offset + $items->count()]) : null;
+        }
 
         return ApiResponse::ok(
             AssetResource::collection($items),

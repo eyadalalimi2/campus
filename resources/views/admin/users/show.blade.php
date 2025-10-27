@@ -19,7 +19,7 @@
                             $user->profile_photo_url ??
                             ($user->profile_photo_path
                                 ? asset('storage/' . $user->profile_photo_path)
-                                : 'https://obdcodehub.com/storage/images/icon.png');
+                                : 'https://alaaglaa.com/storage/images/icon.png');
                     @endphp
                     <img src="{{ $photoUrl }}" class="rounded-circle mb-3"
                         style="width:160px;height:160px;object-fit:cover" alt="Profile">

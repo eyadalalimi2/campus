@@ -59,7 +59,7 @@
     </div>
     @if(method_exists($systems,'links'))
       <div class="card-footer">
-        {{ $systems->links() }}
+        {{ $systems->links('vendor.pagination.bootstrap-custom') }}
       </div>
     @endif
   </div>

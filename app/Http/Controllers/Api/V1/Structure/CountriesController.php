@@ -19,11 +19,12 @@ final class CountriesController extends Controller
      */
     public function index(PaginateRequest $request)
     {
-        $data   = $request->validated();
-        $limit  = $data['limit'] ?? config('api.pagination.default', 20);
-        $limit  = min((int)$limit, config('api.pagination.max', 50));
-        $cursor = Cursor::decode($data['cursor'] ?? null);
-        $offset = (int)($cursor['offset'] ?? 0);
+    $data   = $request->validated();
+    $rawLimit = $data['limit'] ?? 'all';
+    $isAll    = (is_string($rawLimit) && strtolower($rawLimit) === 'all');
+    $limit    = $isAll ? null : min((int)$rawLimit, config('api.pagination.max', 50));
+    $cursor = Cursor::decode($data['cursor'] ?? null);
+    $offset = (int)($cursor['offset'] ?? 0);
         $q      = $data['q'] ?? null;
 
         $query = Country::query()
@@ -49,10 +50,14 @@ final class CountriesController extends Controller
 
         // Cursor pagination (offset-based)
         $total = (clone $query)->count();
-        $items = $query->skip($offset)->take($limit)->get();
-
-        $nextOffset  = $offset + $items->count();
-        $nextCursor  = ($nextOffset < $total) ? Cursor::encode(['offset' => $nextOffset]) : null;
+        if ($isAll) {
+            $items = $query->get();
+            $nextCursor = null;
+        } else {
+            $items = $query->skip($offset)->take($limit)->get();
+            $nextOffset  = $offset + $items->count();
+            $nextCursor  = ($nextOffset < $total) ? Cursor::encode(['offset' => $nextOffset]) : null;
+        }
 
         $payload = $items->map(fn ($r) => [
             'id'            => (int)$r->id,

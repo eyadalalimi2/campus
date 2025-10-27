@@ -73,7 +73,7 @@
                         <tr>
                             <td colspan="6">
                                 <div class="mt-3">
-                                    {{ $features->links() }}
+                                    {{ $features->links('vendor.pagination.bootstrap-custom') }}
                                 </div>
                             </td>
                         </tr>

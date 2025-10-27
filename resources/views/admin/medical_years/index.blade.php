@@ -21,7 +21,7 @@
           <thead class="table-light">
             <tr>
               <th>#</th>
-              <th>التخصص</th>
+              <th>الجامعة - الفرع - التخصص</th>
               <th>رقم السنة</th>
               <th>مفعل</th>
               <th>الترتيب</th>
@@ -32,7 +32,18 @@
             @forelse($years as $y)
               <tr>
                 <td>{{ $y->id }}</td>
-                <td>{{ optional($y->major)->name }}</td>
+                <td>
+                  @php
+                    $major = $y->major;
+                    $college = optional($major)->college;
+                    $branch = optional($college)->branch;
+                    $universityName = optional(optional($branch)->university)->name;
+                    $branchName = optional($branch)->name;
+                    $majorName = optional($major)->name;
+                    $parts = array_filter([$universityName, $branchName, $majorName], fn($v) => filled($v));
+                  @endphp
+                  {{ implode(' - ', $parts) }}
+                </td>
                 <td>{{ $y->year_number }}</td>
                 <td>{!! $y->is_active ? '<span class="badge bg-success">مفعل</span>' : '<span class="badge bg-secondary">معطل</span>' !!}</td>
                 <td>{{ $y->sort_order }}</td>
@@ -55,7 +66,7 @@
     </div>
     @if(method_exists($years,'links'))
       <div class="card-footer">
-        {{ $years->links() }}
+        {{ $years->links('vendor.pagination.bootstrap-custom') }}
       </div>
     @endif
   </div>

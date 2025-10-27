@@ -33,10 +33,13 @@ final class ContentsController extends Controller
             return ApiResponse::error('FORBIDDEN','هذا القسم متاح فقط للطلاب المرتبطين بجامعة.',[],403);
         }
 
-        $data   = $request->validated();
-        $limit  = min((int)($data['limit'] ?? config('api.pagination.default', 20)), config('api.pagination.max', 50));
-        $cursor = Cursor::decode($data['cursor'] ?? null);
-        $offset = (int)($cursor['offset'] ?? 0);
+    $data   = $request->validated();
+    // افتراضيًا أعِد كل النتائج إذا لم يُرسل حد
+    $rawLimit = $data['limit'] ?? 'all';
+    $isAll    = (is_string($rawLimit) && strtolower($rawLimit) === 'all');
+    $limit    = $isAll ? null : min((int)$rawLimit, config('api.pagination.max', 50));
+    $cursor   = Cursor::decode($data['cursor'] ?? null);
+    $offset   = (int)($cursor['offset'] ?? 0);
 
         $query = Content::query()
             ->select(['id','title','description','type','source_url','file_path','university_id','college_id','major_id','material_id','doctor_id','status','is_active','published_at','created_at'])
@@ -64,9 +67,13 @@ final class ContentsController extends Controller
         ]);
 
         $total = (clone $query)->count();
-        $items = $query->skip($offset)->take($limit)->get();
-
-        $next = ($offset + $items->count() < $total) ? Cursor::encode(['offset'=>$offset + $items->count()]) : null;
+        if ($isAll) {
+            $items = $query->get();
+            $next  = null;
+        } else {
+            $items = $query->skip($offset)->take($limit)->get();
+            $next  = ($offset + $items->count() < $total) ? Cursor::encode(['offset'=>$offset + $items->count()]) : null;
+        }
 
         return ApiResponse::ok(ContentResource::collection($items), ['count'=>$items->count(),'total'=>$total,'next_cursor'=>$next], ['next'=>$next]);
     }

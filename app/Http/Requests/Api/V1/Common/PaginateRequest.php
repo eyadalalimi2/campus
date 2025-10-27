@@ -5,9 +5,9 @@ namespace App\Http\Requests\Api\V1\Common;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * @property-read string|null $cursor
- * @property-read int|null    $limit
- * @property-read string|null $sort
+ * @property-read string|null       $cursor
+ * @property-read int|string|null   $limit  رقم أو 'all'
+ * @property-read string|null       $sort
  */
 final class PaginateRequest extends FormRequest
 {
@@ -25,7 +25,25 @@ final class PaginateRequest extends FormRequest
     {
         return [
             'cursor' => ['nullable', 'string'],
-            'limit'  => ['nullable', 'integer', 'min:1', 'max:50'],
+            // limit يمكن أن يكون رقمًا (int أو نص رقمي) أو الكلمة 'all'
+            'limit'  => [
+                'nullable',
+                function (string $attribute, $value, $fail) {
+                    if (is_int($value)) {
+                        if ($value < 1) $fail('الحد الأدنى للنتائج هو عنصر واحد.');
+                        return;
+                    }
+                    if (is_string($value)) {
+                        $lower = strtolower($value);
+                        if ($lower === 'all') return; // مقبول
+                        if (preg_match('/^\\d+$/', $value)) {
+                            if ((int)$value < 1) $fail('الحد الأدنى للنتائج هو عنصر واحد.');
+                            return;
+                        }
+                    }
+                    $fail("قيمة الحد يجب أن تكون رقمًا صحيحًا أو الكلمة 'all'.");
+                },
+            ],
             'sort'   => ['nullable', 'string', 'max:100'],
         ];
     }
@@ -34,9 +52,6 @@ final class PaginateRequest extends FormRequest
     {
         return [
             'cursor.string' => 'قيمة المؤشر يجب أن تكون نصية.',
-            'limit.integer' => 'قيمة الحد يجب أن تكون رقمًا صحيحًا.',
-            'limit.min'     => 'الحد الأدنى للنتائج هو عنصر واحد.',
-            'limit.max'     => 'الحد الأقصى للنتائج هو 50 عنصرًا.',
             'sort.string'   => 'قيمة الترتيب يجب أن تكون نصية.',
             'sort.max'      => 'قيمة الترتيب تتجاوز الطول المسموح.',
         ];

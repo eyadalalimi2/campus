@@ -27,6 +27,7 @@
     <table class="table table-hover align-middle bg-white">
       <thead class="table-light">
         <tr>
+          <th style="width:60px">معرّف</th>
           <th style="width:72px">الشعار</th>
           <th>الاسم</th>
           <th>العنوان</th>
@@ -43,6 +44,7 @@
               ?: ($u->logo_path ? \Illuminate\Support\Facades\Storage::url($u->logo_path) : asset('images/logo.png'));
           @endphp
           <tr>
+            <td class="small text-muted">{{ $u->id }}</td>
             <td>
               <img src="{{ $logoSrc }}" alt="Logo" style="height:40px;width:auto;object-fit:contain">
             </td>
@@ -79,8 +81,8 @@
           </tr>
         @empty
           <tr>
-            {{-- جدول فيه 6 أعمدة --}}
-            <td colspan="6" class="text-center text-muted">لا توجد بيانات.</td>
+            {{-- جدول فيه 7 أعمدة --}}
+            <td colspan="7" class="text-center text-muted">لا توجد بيانات.</td>
           </tr>
         @endforelse
       </tbody>

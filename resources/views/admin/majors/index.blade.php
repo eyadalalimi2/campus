@@ -41,6 +41,7 @@
   <table class="table table-hover bg-white">
     <thead class="table-light">
       <tr>
+        <th style="width:60px">معرّف</th>
         <th>التخصص</th>
         <th>الكلية</th>
         <th>الجامعة</th>
@@ -51,6 +52,7 @@
     <tbody>
       @forelse($majors as $m)
       <tr>
+        <td class="small text-muted">{{ $m->id }}</td>
         <td class="fw-semibold">{{ $m->name }}</td>
         <td>{{ $m->college->name }}</td>
         <td>{{ $m->college->university->name }}</td>
@@ -69,8 +71,8 @@
       </tr>
       @empty
       <tr>
-        {{-- لدينا 5 أعمدة في الجدول --}}
-        <td colspan="5" class="text-center text-muted">لا توجد بيانات.</td>
+        {{-- لدينا 6 أعمدة في الجدول --}}
+        <td colspan="6" class="text-center text-muted">لا توجد بيانات.</td>
       </tr>
       @endforelse
     </tbody>

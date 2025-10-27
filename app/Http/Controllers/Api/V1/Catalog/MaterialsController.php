@@ -20,10 +20,12 @@ final class MaterialsController extends Controller
      */
     public function index(PaginateRequest $request)
     {
-        $data   = $request->validated();
-        $limit  = min((int)($data['limit'] ?? config('api.pagination.default', 20)), config('api.pagination.max', 50));
-        $cursor = Cursor::decode($data['cursor'] ?? null);
-        $offset = (int)($cursor['offset'] ?? 0);
+    $data   = $request->validated();
+    $rawLimit = $data['limit'] ?? 'all';
+    $isAll    = (is_string($rawLimit) && strtolower($rawLimit) === 'all');
+    $limit    = $isAll ? null : min((int)$rawLimit, config('api.pagination.max', 50));
+    $cursor = Cursor::decode($data['cursor'] ?? null);
+    $offset = (int)($cursor['offset'] ?? 0);
 
         $query = Material::query()
             ->select(['id','name','scope','university_id','college_id','major_id','level','is_active','created_at'])
@@ -43,9 +45,13 @@ final class MaterialsController extends Controller
         ]);
 
         $total = (clone $query)->count();
-        $items = $query->skip($offset)->take($limit)->get();
-
-        $nextCursor = ($offset + $items->count() < $total) ? Cursor::encode(['offset'=>$offset + $items->count()]) : null;
+        if ($isAll) {
+            $items = $query->get();
+            $nextCursor = null;
+        } else {
+            $items = $query->skip($offset)->take($limit)->get();
+            $nextCursor = ($offset + $items->count() < $total) ? Cursor::encode(['offset'=>$offset + $items->count()]) : null;
+        }
 
         return ApiResponse::ok(MaterialResource::collection($items), ['count'=>$items->count(),'total'=>$total,'next_cursor'=>$nextCursor], ['next'=>$nextCursor]);
     }

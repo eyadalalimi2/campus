@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Site\StudentAuthController;
 use App\Http\Controllers\Site\StudentDashboardController;
 use App\Http\Controllers\Site\StudentVerificationController;
+use App\Http\Controllers\Site\AndroidAppController as SiteAndroidAppController;
 
 
 Route::get('/', function () {
@@ -46,3 +47,7 @@ Route::prefix('email')->middleware('auth')->group(function () {
 Route::prefix('student')->middleware(['auth','verified'])->group(function () {
     Route::get('/dashboard', [StudentDashboardController::class, 'index'])->name('student.dashboard');
 });
+
+// صفحة عرض تطبيق (مثال: /apps/medical-notes)
+Route::get('apps/{slug}', [SiteAndroidAppController::class, 'show'])->name('apps.show');
+Route::get('apps/{slug}/download', [SiteAndroidAppController::class, 'download'])->name('apps.download');

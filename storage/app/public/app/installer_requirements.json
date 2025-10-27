@@ -1,0 +1,79 @@
+{
+    "blocking": [
+        {
+            "label": "إصدار PHP ≥ 8.2",
+            "ok": true
+        },
+        {
+            "label": "امتداد: mbstring",
+            "ok": true
+        },
+        {
+            "label": "امتداد: openssl",
+            "ok": true
+        },
+        {
+            "label": "امتداد: pdo_mysql",
+            "ok": true
+        },
+        {
+            "label": "امتداد: tokenizer",
+            "ok": true
+        },
+        {
+            "label": "امتداد: xml",
+            "ok": true
+        },
+        {
+            "label": "امتداد: ctype",
+            "ok": true
+        },
+        {
+            "label": "امتداد: json",
+            "ok": true
+        },
+        {
+            "label": "امتداد: curl",
+            "ok": true
+        },
+        {
+            "label": "امتداد: fileinfo",
+            "ok": true
+        },
+        {
+            "label": "امتداد: gd",
+            "ok": true
+        },
+        {
+            "label": "memory_limit ≥ 256M",
+            "ok": true
+        },
+        {
+            "label": "max_execution_time ≥ 60s",
+            "ok": true
+        },
+        {
+            "label": "post_max_size ≥ 16M",
+            "ok": true
+        },
+        {
+            "label": "upload_max_filesize ≥ 16M",
+            "ok": true
+        },
+        {
+            "label": "كتابة storage\/",
+            "ok": true
+        },
+        {
+            "label": "كتابة bootstrap\/cache",
+            "ok": true
+        }
+    ],
+    "warnings": [
+        {
+            "label": "HTTPS مفعل (تحذيري)",
+            "ok": true
+        }
+    ],
+    "blocking_passed": true
+}

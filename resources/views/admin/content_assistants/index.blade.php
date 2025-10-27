@@ -84,6 +84,6 @@
         </table>
     </div>
 
-    {{ $assistants->links() }}
+    {{ $assistants->links('vendor.pagination.bootstrap-custom') }}
 </div>
 @endsection

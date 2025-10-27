@@ -50,6 +50,7 @@
   <table class="table table-hover bg-white align-middle">
     <thead class="table-light">
       <tr>
+        <th style="width:60px">معرّف</th>
         <th>الكلية</th>
         <th>الفرع</th>
         <th>الجامعة</th>
@@ -60,6 +61,7 @@
     <tbody>
       @forelse($colleges as $c)
         <tr>
+          <td class="small text-muted">{{ $c->id }}</td>
           <td class="fw-semibold">{{ $c->name }}</td>
           <td class="text-muted">{{ optional($c->branch)->name ?? '—' }}</td>
           <td class="text-muted">{{ optional($c->branch?->university)->name ?? '—' }}</td>
@@ -80,7 +82,7 @@
         </tr>
       @empty
         <tr>
-          <td colspan="5" class="text-center text-muted">لا توجد بيانات.</td>
+          <td colspan="6" class="text-center text-muted">لا توجد بيانات.</td>
         </tr>
       @endforelse
     </tbody>

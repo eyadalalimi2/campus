@@ -30,22 +30,22 @@
             <label class="form-label">البريد الإلكتروني</label>
 
             {{-- السطر الأصلي (معلّق مؤقتًا) --}}
-            {{-- <input type="email" name="email" value="{{ old('email') }}" class="form-control" required autofocus> --}}
+            <input type="email" name="email" value="{{ old('email') }}" class="form-control" required autofocus>
 
             {{-- تعبئة تلقائية مؤقتة — احذف هذا السطر لاحقًا ثم أزل التعليق عن السطر الأصلي --}}
-            <input type="email" name="email" value="eyad@admin.com"
-                   class="form-control" required autofocus autocomplete="username">
+            {{-- <input type="email" name="email" value="eyad@admin.com"
+                   class="form-control" required autofocus autocomplete="username"> --}}
           </div>
 
           <div class="mb-3">
             <label class="form-label">كلمة المرور</label>
 
             {{-- السطر الأصلي (معلّق مؤقتًا) --}}
-            {{-- <input type="password" name="password" class="form-control" required> --}}
+            <input type="password" name="password" class="form-control" required> 
 
             {{-- تعبئة تلقائية مؤقتة — احذف هذا السطر لاحقًا ثم أزل التعليق عن السطر الأصلي --}}
-            <input type="password" name="password" value="123456789"
-                   class="form-control" required autocomplete="current-password">
+           {{--  <input type="password" name="password" value="123456789"
+                   class="form-control" required autocomplete="current-password">--}}
           </div>
 
           <div class="form-check mb-3">
