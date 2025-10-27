@@ -4,7 +4,13 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ $setting->site_title }}</title>
+    <title>
+        @hasSection('title')
+            @yield('title')
+        @else
+            {{ $setting->site_title }}
+        @endif
+    </title>
     @if(!empty($setting->dashboard_favicon))
         <link rel="icon" type="image/x-icon" href="{{ asset('storage/' . $setting->dashboard_favicon) }}">
     @endif

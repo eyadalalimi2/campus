@@ -1,19 +1,20 @@
 @extends('admin.layouts.app')
-
+@php
+    $labels = [
+        'universities' => 'الجامعات',
+        'branches' => 'الفروع',
+        'colleges' => 'الكليات',
+        'majors' => 'التخصصات',
+        'med_devices' => 'أجهزة طبية',
+        'med_subjects' => 'مواد طبية',
+        'med_topics' => 'مواضيع طبية',
+        'med_doctors' => 'دكاترة',
+    ];
+@endphp
+@section('title','استيراد — ' . ($labels[$type] ?? ucfirst($type)) )
 @section('content')
     <div class="container-fluid">
-        @php
-            $labels = [
-                'universities' => 'الجامعات',
-                'branches' => 'الفروع',
-                'colleges' => 'الكليات',
-                'majors' => 'التخصصات',
-                'med_devices' => 'أجهزة طبية',
-                'med_subjects' => 'مواد طبية',
-                'med_topics' => 'مواضيع طبية',
-                'med_doctors' => 'دكاترة',
-            ];
-        @endphp
+        
         <h1 class="mb-3">استيراد — {{ $labels[$type] ?? ucfirst($type) }}</h1>
 
         @if ($errors->any())
@@ -74,11 +75,13 @@
                                     </tr>
                                     <tr>
                                         <td>الشعار<br><small><code>logo</code></small></td>
-                                        <td>شعار الجامعة (بعد الانتهاء من استيراد الجامعات ارفع الشعار عبر لوحة التحكم).</td>
+                                        <td>شعار الجامعة (بعد الانتهاء من استيراد الجامعات ارفع الشعار عبر لوحة التحكم).
+                                        </td>
                                         <td>لا</td>
                                         <td>
                                             الانتقال لصفحه الجامعات
-                                            <a href="{{ route('admin.universities.index') }}" class="btn btn-sm btn-outline-primary">
+                                            <a href="{{ route('admin.universities.index') }}"
+                                                class="btn btn-sm btn-outline-primary">
                                                 من هنا
                                             </a>
                                         </td>
@@ -260,33 +263,39 @@
                                         <td>يتم رفعها بواسطه لوحه التحكم</td>
                                         <td>لا</td>
                                         <td>
-                                            الانتقال لصفحه الاجهزة الطبية
-                                            <a href="{{ route('admin.med_devices.index') }}" class="btn btn-sm btn-outline-primary">
-                                                من هنا
-                                            </a>
+
                                         </td>
                                     </tr>
                                     <tr>
                                         <td>المواد<br><small><code>device_ids</code></small></td>
                                         <td>يتم ربط الاجهزة الطبية بالمادة بواسطة لوحة التحكم</td>
                                         <td>لا</td>
-                                       <td>
-                                            الانتقال لصفحه الاجهزة الطبية
-                                            <a href="{{ route('admin.med_devices.index') }}" class="btn btn-sm btn-outline-primary">
-                                                من هنا
-                                            </a>
+                                        <td>
+
                                         </td>
+                                    </tr>
+                                    <tr>
+                                        <td>الحالة<br><small><code>status</code></small></td>
+                                        <td>حالة العرض للجهاز: اكتب <code>published</code> أو <code>draft</code> إن رغبت. إن
+                                            ترك الحقل
+                                            فارغًا سيتم استخدام القيمة الافتراضية.</td>
+                                        <td>لا</td>
+                                        <td>published</td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
+                        <p class="small text-muted">ملاحظة:الصور و ربط الأجهزة الطبية بالمواد لم يعد
+                            مدعوماً في الاستيراد المباشر؛ يمكنك ربط المواد لاحقاً من خلال واجهة إدارة الاجهزة.</p>
                     </div>
                 @endif
 
                 @if ($type === 'med_subjects')
                     <div class="alert alert-info">
                         <h6 class="mb-2">إرشادات استيراد المواد الطبية</h6>
-                        <p class="small mb-2">كل صف يصف مادة طبية (subject). الحقول المدعومة: <code>name</code> (مطلوب)، <code>scope</code> (النطاق، اختياري)، <code>status</code> (الحالة، اختياري).</p>
+                        <p class="small mb-2">كل صف يصف مادة طبية (subject). الحقول المدعومة: <code>name</code> (مطلوب)،
+                            <code>scope</code> (النطاق، اختياري)، <code>status</code> (الحالة، اختياري).
+                        </p>
                         <div class="table-responsive mb-2">
                             <table class="table table-sm table-bordered mb-0">
                                 <thead class="table-light">
@@ -325,7 +334,10 @@
                 @if ($type === 'med_topics')
                     <div class="alert alert-info">
                         <h6 class="mb-2">إرشادات استيراد مواضيع طبية</h6>
-                        <p class="small mb-2">كل صف يصف موضوعًا فرعيًا مرتبطًا بمادة. الحقول المطلوبة: <code>subject_id</code> (معرّف المادة)، <code>name</code> (اسم الموضوع). الحقل <code>status</code> اختياري.</p>
+                        <p class="small mb-2">كل صف يصف موضوعًا فرعيًا مرتبطًا بمادة. الحقول المطلوبة:
+                            <code>subject_id</code> (معرّف المادة)، <code>name</code> (اسم الموضوع). الحقل
+                            <code>status</code> اختياري.
+                        </p>
                         <div class="table-responsive mb-2">
                             <table class="table table-sm table-bordered mb-0">
                                 <thead class="table-light">
@@ -364,7 +376,8 @@
                 @if ($type === 'med_doctors')
                     <div class="alert alert-info">
                         <h6 class="mb-2">إرشادات استيراد الدكاترة</h6>
-                        <p class="small mb-2">كل صف يصف دكتورًا. الحقول المدعومة الآن: <code>name</code> (مطلوب) و<code>status</code> (اختياري).</p>
+                        <p class="small mb-2">كل صف يصف دكتورًا. الحقول المدعومة الآن: <code>name</code> (مطلوب)
+                            و<code>status</code> (اختياري).</p>
                         <div class="table-responsive mb-2">
                             <table class="table table-sm table-bordered mb-0">
                                 <thead class="table-light">
@@ -391,12 +404,13 @@
                                 </tbody>
                             </table>
                         </div>
-                        <p class="small text-muted">ملاحظة: ربط الدكاترة بالمواد عبر عمود <code>subject_ids</code> لم يعد مدعوماً في الاستيراد المباشر؛ يمكنك ربط المواد لاحقاً من خلال واجهة إدارة الدكاترة.</p>
+                        <p class="small text-muted">ملاحظة: ربط الدكاترة بالمواد عبر عمود <code>subject_ids</code> لم يعد
+                            مدعوماً في الاستيراد المباشر؛ يمكنك ربط المواد لاحقاً من خلال واجهة إدارة الدكاترة.</p>
                     </div>
                 @endif
 
                 <div class="row">
-                    
+
 
                     <div class="col-lg-6">
                         <div class="card shadow-sm border-0">
@@ -531,7 +545,7 @@
                                     @foreach ($r['headers'] ?? [] as $h)
                                         <th>{{ $h }}</th>
                                     @endforeach
-                                    @if(($r['type'] ?? '') === 'colleges')
+                                    @if (($r['type'] ?? '') === 'colleges')
                                         <th>حالة الارتباط</th>
                                     @endif
                                 </tr>
@@ -544,10 +558,10 @@
                                         @foreach ($r['headers'] ?? [] as $h)
                                             <td>{{ $row['raw'][$h] ?? '' }}</td>
                                         @endforeach
-                                        @if(($r['type'] ?? '') === 'colleges')
+                                        @if (($r['type'] ?? '') === 'colleges')
                                             @php $rel = $row['meta']['relation_ok'] ?? null; @endphp
                                             <td>
-                                                @if($rel === true)
+                                                @if ($rel === true)
                                                     <span class="text-success">✔ مرتبط</span>
                                                 @elseif($rel === false)
                                                     <span class="text-danger">✖ غير مرتبط</span>

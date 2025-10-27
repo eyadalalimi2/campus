@@ -71,7 +71,7 @@ class ImportController extends Controller
             'colleges'     => ['university_id', 'branch_id', 'name', 'is_active'],
             'majors'       => ['college_id', 'name', 'is_active'],
             // medical-related templates
-            'med_devices'  => ['name'],
+            'med_devices'  => ['name', 'status'],
             'med_subjects' => ['name', 'scope', 'status'],
             'med_topics'   => ['subject_id', 'name', 'status'],
             'med_doctors'  => ['name', 'status'],
@@ -735,6 +735,7 @@ class ImportController extends Controller
                 if ($type === 'med_devices') {
                     $v = $this->makeValidator($type, $rowAssoc, [
                         'name' => 'required|string|max:191',
+                        'status' => 'nullable',
                     ]);
                     if ($v->fails()) {
                         $failed++;
@@ -751,6 +752,7 @@ class ImportController extends Controller
                     if ($persist) {
                         MedDevice::create([
                             'name' => $rowAssoc['name'],
+                            'status' => $rowAssoc['status'] ?? null,
                         ]);
                     }
                     $created++;
