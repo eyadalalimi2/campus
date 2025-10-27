@@ -74,7 +74,7 @@ class ImportController extends Controller
             'med_devices'  => ['name', 'status'],
             'med_subjects' => ['name', 'scope', 'status'],
             'med_topics'   => ['subject_id', 'name', 'status'],
-            'med_doctors'  => ['name', 'status'],
+            'med_doctors'  => ['name', 'status', 'subject_ids'],
         ];
 
         $headers = $templates[$type];
@@ -736,6 +736,8 @@ class ImportController extends Controller
                     $v = $this->makeValidator($type, $rowAssoc, [
                         'name' => 'required|string|max:191',
                         'status' => 'nullable',
+                        // accept a comma/semicolon-separated list of subject ids or names
+                        'subject_ids' => 'nullable',
                     ]);
                     if ($v->fails()) {
                         $failed++;
@@ -750,9 +752,15 @@ class ImportController extends Controller
                     }
 
                     if ($persist) {
+                        // Default status to 'published' when the uploaded value is empty or null
+                        $status = isset($rowAssoc['status']) ? trim((string)$rowAssoc['status']) : '';
+                        if ($status === '') {
+                            $status = 'published';
+                        }
+
                         MedDevice::create([
                             'name' => $rowAssoc['name'],
-                            'status' => $rowAssoc['status'] ?? null,
+                            'status' => $status,
                         ]);
                     }
                     $created++;
@@ -777,10 +785,16 @@ class ImportController extends Controller
                     }
 
                     if ($persist) {
+                        // Default status to 'published' when empty/null to avoid DB errors
+                        $status = isset($rowAssoc['status']) ? trim((string)$rowAssoc['status']) : '';
+                        if ($status === '') {
+                            $status = 'published';
+                        }
+
                         MedSubject::create([
                             'name' => $rowAssoc['name'],
                             'scope' => $rowAssoc['scope'] ?? null,
-                            'status' => $rowAssoc['status'] ?? null,
+                            'status' => $status,
                         ]);
                     }
                     $created++;
@@ -820,10 +834,16 @@ class ImportController extends Controller
                     }
 
                     if ($persist) {
+                        // Default status to 'published' when empty/null
+                        $status = isset($rowAssoc['status']) ? trim((string)$rowAssoc['status']) : '';
+                        if ($status === '') {
+                            $status = 'published';
+                        }
+
                         MedTopic::create([
                             'subject_id' => $subject->id,
                             'title' => $rowAssoc['name'] ?? null,
-                            'status' => $rowAssoc['status'] ?? null,
+                            'status' => $status,
                         ]);
                     }
                     $created++;
@@ -848,10 +868,49 @@ class ImportController extends Controller
                     }
 
                     if ($persist) {
-                        MedDoctor::create([
-                            'name' => $rowAssoc['name'],
-                            'status' => $rowAssoc['status'] ?? null,
-                        ]);
+                            // Default status to 'published' when empty/null
+                            $status = isset($rowAssoc['status']) ? trim((string)$rowAssoc['status']) : '';
+                            if ($status === '') {
+                                $status = 'published';
+                            }
+
+                            // Create the doctor and optionally attach subjects
+                            $doctor = MedDoctor::create([
+                                'name' => $rowAssoc['name'],
+                                'status' => $status,
+                            ]);
+
+                            // If the import included a subject_ids column, parse and attach relations.
+                            // Accept formats like "1,2,3" or "Anatomy;Physiology" where tokens may be IDs or names.
+                            if (!empty($rowAssoc['subject_ids'])) {
+                                $tokens = preg_split('/[;,|]+/', (string)$rowAssoc['subject_ids']);
+                                $attachIds = [];
+                                $missing = [];
+                                foreach ($tokens as $t) {
+                                    $t = trim($t);
+                                    if ($t === '') continue;
+                                    if (is_numeric($t)) {
+                                        $sub = MedSubject::find((int)$t);
+                                    } else {
+                                        $sub = MedSubject::where('name', $t)->first();
+                                    }
+                                    if ($sub) {
+                                        $attachIds[] = $sub->id;
+                                    } else {
+                                        $missing[] = $t;
+                                    }
+                                }
+
+                                if (!empty($attachIds)) {
+                                    // attach found subjects
+                                    $doctor->subjects()->sync($attachIds);
+                                }
+
+                                // For any missing tokens, add a non-fatal warning to the preview/errors list so admin can see them
+                                if (!empty($missing)) {
+                                    $errors[] = ['row' => $rowNumber, 'messages' => ['بعض المواد المذكورة غير موجودة: ' . implode(', ', $missing)], 'raw' => $rowAssoc];
+                                }
+                            }
                     }
                     $created++;
                 }
