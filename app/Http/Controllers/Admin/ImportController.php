@@ -27,6 +27,7 @@ class ImportController extends Controller
         'med_devices',
         'med_topics',
         'med_doctors',
+        'clinical_subjects',
     ];
 
     // Human-friendly Arabic labels for each import type
@@ -35,6 +36,7 @@ class ImportController extends Controller
         'branches' => 'الفروع',
         'colleges' => 'الكليات',
         'majors' => 'التخصصات',
+        'clinical_subjects' => 'المواد السريرية',
         'med_devices' => 'أجهزة طبية',
         'med_subjects' => 'مواد طبية',
         'med_topics' => 'مواضيع طبية',
@@ -74,6 +76,7 @@ class ImportController extends Controller
             // medical-related templates
             'med_devices'  => ['name', 'status', 'order_index', 'image_path', 'subject_ids'],
             'med_subjects' => ['name', 'scope', 'status', 'order_index', 'image_path'],
+            'clinical_subjects' => ['name', 'order', 'image_path'],
             'med_topics'   => ['subject_id', 'name', 'order_index', 'status'],
             'med_doctors'  => ['name', 'status', 'order_index', 'image_path', 'subject_ids'],
         ];
@@ -339,6 +342,14 @@ class ImportController extends Controller
             // accept 'logo' as alternative to 'logo_path' in uploaded files
             if (!isset($rowAssoc['logo_path']) && isset($rowAssoc['logo'])) {
                 $rowAssoc['logo_path'] = $rowAssoc['logo'];
+            }
+
+            // normalize clinical subject fields: accept 'order' or 'order_index', and 'image' or 'image_path'
+            if (!isset($rowAssoc['order']) && isset($rowAssoc['order_index'])) {
+                $rowAssoc['order'] = $rowAssoc['order_index'];
+            }
+            if (!isset($rowAssoc['image']) && isset($rowAssoc['image_path'])) {
+                $rowAssoc['image'] = $rowAssoc['image_path'];
             }
 
             // support common alternative header names
@@ -820,6 +831,37 @@ class ImportController extends Controller
                             'order_index' => isset($rowAssoc['order_index']) && $rowAssoc['order_index'] !== '' ? (int)$rowAssoc['order_index'] : 0,
                         ]);
                     }
+                    $created++;
+                }
+
+                if ($type === 'clinical_subjects') {
+                    $v = $this->makeValidator($type, $rowAssoc, [
+                        'name' => 'required|string|max:191',
+                        'order' => 'nullable|integer',
+                        'image' => 'nullable|string|max:255',
+                        'image_path' => 'nullable|string|max:255',
+                    ]);
+                    if ($v->fails()) {
+                        $failed++;
+                        $errors[] = ['row' => $rowNumber, 'messages' => $v->errors()->all(), 'raw' => $rowAssoc];
+                        continue;
+                    }
+
+                    // treat existing clinical subject (by name) as skipped (admin can change to update behavior later)
+                    if (\App\Models\ClinicalSubject::where('name', $rowAssoc['name'])->exists()) {
+                        $skipped++;
+                        $errors[] = ['row' => $rowNumber, 'messages' => ['المادة السريرية موجودة مسبقاً (تخطي)'], 'raw' => $rowAssoc];
+                        continue;
+                    }
+
+                    if ($persist) {
+                        \App\Models\ClinicalSubject::create([
+                            'name' => $rowAssoc['name'],
+                            'order' => isset($rowAssoc['order']) && $rowAssoc['order'] !== '' ? (int)$rowAssoc['order'] : 0,
+                            'image' => $rowAssoc['image'] ?? null,
+                        ]);
+                    }
+
                     $created++;
                 }
 

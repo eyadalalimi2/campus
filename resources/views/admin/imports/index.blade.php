@@ -49,7 +49,7 @@
         <div class="card-body">
             <p>اختر نوع البيانات التي تريد استيرادها من ملف Excel . يمكنك تحميل القالب لكل نوع من أجل تهيئة الأعمدة بشكل صحيح.</p>
 
-            @php
+                @php
                 $labels = [
                     'universities' => 'الجامعات',
                     'branches' => 'الفروع',
@@ -59,6 +59,7 @@
                     'med_subjects' => 'مواد طبية',
                     'med_topics' => 'مواضيع طبية',
                     'med_doctors' => 'دكاترة',
+                    'clinical_subjects' => 'المواد السريرية',
                 ];
 
                 $descriptions = [
@@ -70,6 +71,7 @@
                     'med_subjects' => 'استيراد المواد الطبية وربطها بالأجهزة إن وُجدت.',
                     'med_topics' => 'استيراد المواضيع الفرعية المرتبطة بالمواد.',
                     'med_doctors' => 'استيراد بيانات الدكاترة وربطهم بالمواد.',
+                    'clinical_subjects' => 'استيراد المواد السريرية — الاسم، الترتيب، ومسار الصورة.',
                 ];
             @endphp
 
@@ -80,7 +82,7 @@
                             <div class="card-body d-flex flex-column">
                                 <div class="d-flex align-items-start">
                                     <div class="me-3">
-                                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width:44px;height:44px;font-size:18px">@switch($t) @case('universities') 🎓 @break @case('branches') 🏢 @break @case('colleges') 🏫 @break @case('majors') 📚 @break @case('med_devices') ⚙️ @break @case('med_subjects') 🧾 @break @case('med_topics') 🗂️ @break @case('med_doctors') 👩‍⚕️ @break @default 📁 @endswitch</div>
+                                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width:44px;height:44px;font-size:18px">@switch($t) @case('universities') 🎓 @break @case('branches') 🏢 @break @case('colleges') 🏫 @break @case('majors') 📚 @break @case('med_devices') ⚙️ @break @case('med_subjects') 🧾 @break @case('med_topics') 🗂️ @break @case('med_doctors') 👩‍⚕️ @break @case('clinical_subjects') 🩺 @break @default 📁 @endswitch</div>
                                     </div>
                                     <div>
                                         <h5 class="card-title mb-1">{{ $labels[$t] ?? ucfirst($t) }}</h5>

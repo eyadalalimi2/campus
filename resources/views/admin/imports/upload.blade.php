@@ -5,6 +5,7 @@
         'branches' => 'الفروع',
         'colleges' => 'الكليات',
         'majors' => 'التخصصات',
+        'clinical_subjects' => 'المواد السريرية',
         'med_devices' => 'أجهزة طبية',
         'med_subjects' => 'مواد طبية',
         'med_topics' => 'مواضيع طبية',
@@ -342,6 +343,47 @@
                         </div>
                         <p class="small text-muted mb-0">ملاحظة: يُسمح الآن بتعيين مسار الصورة وحقول الترتيب عبر الاستيراد باستخدام <code>image_path</code> و<code>order_index</code>، أما ربط المواد بالأجهزة فيُدار من خلال واجهة إدارة الأجهزة ولا يتم إنشاؤه تلقائيًا عبر الاستيراد.</p>
                     </div>
+                @endif
+
+                @if ($type === 'clinical_subjects')
+                    <div class="alert alert-info">
+                        <h6 class="mb-2">إرشادات استيراد المواد السريرية</h6>
+                        <p class="small mb-2">كل صف يصف مادة سريرية. الحقول المدعومة: <code>name</code> (مطلوب)، <code>order</code> أو <code>order_index</code> (اختياري)، و<code>image_path</code> أو <code>image</code> (اختياري).</p>
+                        <div class="table-responsive mb-2">
+                            <table class="table table-sm table-bordered mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>العمود</th>
+                                        <th>الوصف</th>
+                                        <th>مطلوب؟</th>
+                                        <th>مثال</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>الاسم<br><small><code>name</code></small></td>
+                                        <td>اسم المادة السريرية كما سيظهر في التطبيق.</td>
+                                        <td>نعم</td>
+                                        <td>جراحة الفم</td>
+                                    </tr>
+                                    <tr>
+                                        <td>ترتيب العرض<br><small><code>order</code> أو <code>order_index</code></small></td>
+                                        <td>قيمة رقمية تحدد ترتيب ظهور المادة في القوائم؛ قيمة أصغر تُعرض أولاً.</td>
+                                        <td>لا</td>
+                                        <td>5</td>
+                                    </tr>
+                                    <tr>
+                                        <td>مسار الصورة<br><small><code>image_path</code> أو <code>image</code></small></td>
+                                        <td>مسار الصورة داخل مساحة التخزين (مثال: <code>uploads/clinical_subjects/surgery.png</code>). إن لم تكن لديك صورة، اترك الحقل فارغًا ويمكنك رفع الصورة لاحقًا عبر لوحة التحكم.</td>
+                                        <td>لا</td>
+                                        <td>uploads/clinical_subjects/surgery.png</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p class="small text-muted">ملاحظة: يُسمح باستخدام اسم العمود البديل <code>order_index</code> أو <code>order</code>، وكذلك <code>image</code> أو <code>image_path</code>؛ سيتم التعامل مع البدائل تلقائياً أثناء المعاينة والاستيراد.</p>
+                    </div>
+
                 @endif
 
                 @if ($type === 'med_topics')
