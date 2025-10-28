@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use App\Exports\TemplateExport;
 use App\Models\MedVideo;
 use App\Models\MedResource;
@@ -141,16 +142,70 @@ class ContentImportController extends Controller
         $preview = session()->get('content_import_preview');
         if (!$preview || !isset($preview['path'])) return back()->withErrors(['file' => 'لا يوجد معاينة صالحة.']);
         $path = $preview['path'];
+        $previewReport = $preview['report'] ?? [];
+
+        // if preview has relation errors, block the confirm and ask user to fix them first
+        $relationErrors = array_filter($previewReport['errors'] ?? [], function($e){ return ($e['type'] ?? '') === 'relation'; });
+        $hasRelationErrors = count($relationErrors) > 0;
+        if ($hasRelationErrors) {
+            // build a short warning with examples (rows)
+            $msgs = array_map(function($e){
+                $m = is_array($e['messages']) ? implode(' | ', $e['messages']) : ($e['messages'] ?? '');
+                return '(' . ($e['row'] ?? '') . ') ' . $m;
+            }, array_slice($relationErrors,0,6));
+            $text = 'يوجد تحذيرات ربط تمنع التأكيد — صحح القيم أو أنشئ الفئات يدوياً ثم أعد المعاينة.';
+            if (!empty($msgs)) $text .= ' أمثلة: ' . implode(' ; ', $msgs);
+            session()->flash('warning', $text);
+            return redirect()->route('admin.content_imports.show', $type);
+        }
+
+        // proceed with actual persist
         $report = $this->processFile($path, $type, true);
         session()->forget('content_import_preview');
-    session()->flash('content_import_report', $report);
-        // detailed summary for confirm
+        session()->flash('content_import_report', $report);
+
+        // more informative summary for confirm: include examples for created/skipped/errors (limited)
         $parts = [];
         $parts[] = "تم إنشاء: {$report['created']} عناصر";
-        if (!empty($report['skipped_items'])) $parts[] = "تم تجاوز: " . count($report['skipped_items']) . " عنصرًا (موجودة مسبقًا)";
-        if (!empty($report['failed'])) $parts[] = "فشل: {$report['failed']}";
-        session()->flash('success', implode(' — ', $parts));
-    return redirect()->route('admin.content_imports.show', $type);
+        if (!empty($report['skipped_items'])) {
+            $parts[] = "تم تجاوز: " . count($report['skipped_items']) . " عنصرًا (موجودة مسبقًا)";
+        }
+        if (!empty($report['failed'])) {
+            $parts[] = "فشل: {$report['failed']}";
+        }
+
+        // examples of created items (titles / names)
+        if (!empty($report['created_items'])) {
+            $titles = array_map(function($i){ return $i['title'] ?? ($i['name'] ?? ($i['youtube_url'] ?? '')); }, array_slice($report['created_items'],0,6));
+            if (!empty($titles)) $parts[] = 'أمثلة مُستحدثة: ' . implode(', ', $titles);
+        }
+
+        // examples of skipped items
+        if (!empty($report['skipped_items'])) {
+            $skips = array_map(function($s){
+                $label = $s['title'] ?? ($s['name'] ?? ($s['file'] ?? ($s['youtube_url'] ?? '')));
+                return trim($label . ' (' . ($s['reason'] ?? '') . ')');
+            }, array_slice($report['skipped_items'],0,6));
+            if (!empty($skips)) $parts[] = 'أمثلة مُتجاوزة: ' . implode(', ', $skips);
+        }
+
+        // include a few example error messages (row + joined messages)
+        if (!empty($report['errors'])) {
+            $errs = [];
+            foreach(array_slice($report['errors'],0,6) as $e) {
+                $msgs = is_array($e['messages']) ? implode(' | ', $e['messages']) : ($e['messages'] ?? '');
+                $errs[] = '(' . ($e['row'] ?? '') . ') ' . $msgs;
+            }
+            if (!empty($errs)) $parts[] = 'أمثلة أخطاء: ' . implode(' ; ', $errs);
+        }
+
+        // choose flash level: danger if there were failures, success otherwise
+        if (!empty($report['failed'])) {
+            session()->flash('danger', implode(' — ', $parts));
+        } else {
+            session()->flash('success', implode(' — ', $parts));
+        }
+        return redirect()->route('admin.content_imports.show', $type);
     }
 
     public function errorsExport($type)
@@ -361,7 +416,28 @@ class ContentImportController extends Controller
                     $category = null; $subject=null;$topic=null;
                     if (!empty($rowAssoc['category_id_or_name'])) {
                         $c = $rowAssoc['category_id_or_name'];
-                        $category = is_numeric($c) ? MedResourceCategory::find((int)$c) : MedResourceCategory::where('name',$c)->first();
+                        // allowed constant category names (case-insensitive)
+                        $allowedCats = ['files','notes','questions','references'];
+                        if (is_numeric($c)) {
+                            $category = MedResourceCategory::find((int)$c);
+                        } else {
+                            $category = MedResourceCategory::where('name',$c)->first();
+                            // if not found but matches an allowed constant, do NOT silently accept it in preview
+                            // because persist does not create categories automatically and would result in NULL id
+                            if (!$category) {
+                                $norm = strtolower(trim($c));
+                                if (in_array($norm, $allowedCats)) {
+                                    // in persist mode we keep category null (no auto-create)
+                                    if ($persist) {
+                                        $category = null;
+                                    } else {
+                                        // in preview mode: treat as missing relation so preview shows a clear warning
+                                        // leave $category null and let relation-checking produce a relation message
+                                        $category = null;
+                                    }
+                                }
+                            }
+                        }
                     }
                     if (!empty($rowAssoc['subject_id_or_name'])) {
                         $s = $rowAssoc['subject_id_or_name'];

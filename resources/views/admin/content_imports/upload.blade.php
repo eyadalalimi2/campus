@@ -14,6 +14,12 @@
     <div class="container-fluid">
         <h1 class="mb-3">استيراد محتوى — {{ $labels[$type] ?? ucfirst($type) }}</h1>
 
+        @if(session('danger'))
+            <div class="alert alert-danger">{{ session('danger') }}</div>
+        @endif
+        @if(session('warning'))
+            <div class="alert alert-warning">{{ session('warning') }}</div>
+        @endif
         @if(session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>
         @endif
@@ -95,33 +101,104 @@
                                 <p class="small text-muted">ملاحظة: عند إدخال أعمدة تربط الدكاترة أو المواد أو المواضيع سيتم محاولة حلها إما كمعرّف رقم أو كاسم؛ القيم غير الموجودة ستظهر كتحذير في تقرير المعاينة.</p>
                             </div>
                         @elseif($type === 'med_resources')
-                            <h5 class="card-title">إرشادات استيراد الموارد</h5>
-                            <p class="small text-muted mb-2">كل صف يصف ملف/مصدر متعلق بالمادة. الحقل المطلوب: <code>title</code>.</p>
-                            <div class="table-responsive mb-2">
-                                <table class="table table-sm table-bordered mb-0">
-                                    <thead class="table-light"><tr><th>العمود</th><th>الوصف</th><th>مطلوب؟</th><th>مثال</th></tr></thead>
-                                    <tbody>
-                                        <tr><td>العنوان<br><small><code>title</code></small></td><td>عنوان المورد.</td><td>نعم</td><td>ملف محاضرة تشريح</td></tr>
-                                        <tr><td>رابط/مسار الملف<br><small><code>file_url</code></small></td><td>رابط مباشر أو مسار داخل التخزين.</td><td>لا</td><td>uploads/resources/anatomy.pdf</td></tr>
-                                        <tr><td>حجم الملف بالبايت<br><small><code>file_size_bytes</code></small></td><td>حجم الملف إذا توافر (اختياري).</td><td>لا</td><td>1240000</td></tr>
-                                        <tr><td>عدد الصفحات<br><small><code>pages_count</code></small></td><td>عدد صفحات الـ PDF إن وُجد.</td><td>لا</td><td>48</td></tr>
-                                        <tr><td>التصنيف<br><small><code>category_id_or_name</code></small></td><td>معرّف أو اسم تصنيف الملف.</td><td>لا</td><td>محاضرات</td></tr>
-                                    </tbody></table>
+                            <div class="alert alert-info">
+                                <h6 class="mb-2">إرشادات تعبئة قالب استيراد الموارد</h6>
+                                <p class="small mb-2">افحص الأعمدة التالية واملأ كل صف ببيانات مورد واحد. الرجاء عدم تعديل صف الرأس أو تسميات الأعمدة.</p>
+                                <div class="table-responsive mb-2">
+                                    <table class="table table-sm table-bordered mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>العمود</th>
+                                                <th>الوصف</th>
+                                                <th>مطلوب؟</th>
+                                                <th>مثال</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>العنوان<br><small><code>title</code></small></td>
+                                                <td>عنوان المورد كما سيظهر في التطبيق.</td>
+                                                <td>نعم</td>
+                                                <td>ملف محاضرة تشريح</td>
+                                            </tr>
+                                            <tr>
+                                                <td>رابط/مسار الملف<br><small><code>file_url</code></small></td>
+                                                <td>رابط مباشر أو مسار داخل التخزين.</td>
+                                                <td>لا</td>
+                                                <td>uploads/resources/anatomy.pdf</td>
+                                            </tr>
+                                            <tr>
+                                                <td>حجم الملف بالبايت<br><small><code>file_size_bytes</code></small></td>
+                                                <td>حجم الملف إذا توافر (اختياري).</td>
+                                                <td>لا</td>
+                                                <td>1240000</td>
+                                            </tr>
+                                            <tr>
+                                                <td>عدد الصفحات<br><small><code>pages_count</code></small></td>
+                                                <td>عدد صفحات الـ PDF إن وُجد.</td>
+                                                <td>لا</td>
+                                                <td>48</td>
+                                            </tr>
+                                            <tr>
+                                                <td>التصنيف<br><small><code>category_id_or_name</code></small></td>
+                                                <td>معرّف أو اسم تصنيف الملف. القيم الثابتة المدعومة: <code>files</code>, <code>notes</code>, <code>questions</code>, <code>references</code>.</td>
+                                                <td>لا</td>
+                                                <td>files</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <p class="small text-muted">ملاحظة: عند إدخال أعمدة تربط التصنيفات أو المواد أو المواضيع سيتم محاولة حلها إما كمعرّف رقم أو كاسم؛ القيم غير الموجودة ستظهر كتحذير في تقرير المعاينة.</p>
                             </div>
                         @elseif($type === 'clinical_subject_pdfs')
-                            <h5 class="card-title">إرشادات استيراد PDF المواد السريرية</h5>
-                            <p class="small text-muted mb-2">كل صف يصف ملف PDF مرتبط بمادة سريرية. الحقول المطلوبة: <code>name</code> و<code>clinical_subject_id_or_name</code>.</p>
-                            <div class="table-responsive mb-2">
-                                <table class="table table-sm table-bordered mb-0">
-                                    <thead class="table-light"><tr><th>العمود</th><th>الوصف</th><th>مطلوب؟</th><th>مثال</th></tr></thead>
-                                    <tbody>
-                                        <tr><td>الاسم<br><small><code>name</code></small></td><td>اسم الملف كما سيظهر في التطبيق.</td><td>نعم</td><td>ملخص جراحة الفم</td></tr>
-                                        <tr><td>مسار/رابط الملف<br><small><code>file</code></small></td><td>رابط أو مسار الملف داخل التخزين.</td><td>نعم</td><td>uploads/clinical_pdfs/guide.pdf</td></tr>
-                                        <tr><td>المحتوى (وصف)<br><small><code>content</code></small></td><td>وصف موجز للمحتوى.</td><td>لا</td><td>ملاحظات مساعدة للمذاكرة</td></tr>
-                                        <tr><td>الترتيب<br><small><code>order</code></small></td><td>قيمة رقمية لترتيب العرض.</td><td>لا</td><td>1</td></tr>
-                                        <tr><td>المادة السريرية<br><small><code>clinical_subject_id_or_name</code></small></td><td>معرّف المادة أو اسمها لربط الملف.</td><td>نعم</td><td>تشريح سريري</td></tr>
-                                    </tbody>
-                                </table>
+                            <div class="alert alert-info">
+                                <h6 class="mb-2">إرشادات تعبئة قالب استيراد PDF المواد السريرية</h6>
+                                <p class="small mb-2">افحص الأعمدة التالية واملأ كل صف ببيانات PDF واحد مرتبط بمادة سريرية. الرجاء عدم تعديل صف الرأس أو تسميات الأعمدة.</p>
+                                <div class="table-responsive mb-2">
+                                    <table class="table table-sm table-bordered mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>العمود</th>
+                                                <th>الوصف</th>
+                                                <th>مطلوب؟</th>
+                                                <th>مثال</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>الاسم<br><small><code>name</code></small></td>
+                                                <td>اسم الملف كما سيظهر في التطبيق.</td>
+                                                <td>نعم</td>
+                                                <td>ملخص جراحة الفم</td>
+                                            </tr>
+                                            <tr>
+                                                <td>مسار/رابط الملف<br><small><code>file</code></small></td>
+                                                <td>رابط أو مسار الملف داخل التخزين.</td>
+                                                <td>نعم</td>
+                                                <td>uploads/clinical_pdfs/guide.pdf</td>
+                                            </tr>
+                                            <tr>
+                                                <td>المحتوى (وصف)<br><small><code>content</code></small></td>
+                                                <td>وصف موجز للمحتوى.</td>
+                                                <td>لا</td>
+                                                <td>ملاحظات مساعدة للمذاكرة</td>
+                                            </tr>
+                                            <tr>
+                                                <td>الترتيب<br><small><code>order</code></small></td>
+                                                <td>قيمة رقمية لترتيب العرض.</td>
+                                                <td>لا</td>
+                                                <td>1</td>
+                                            </tr>
+                                            <tr>
+                                                <td>المادة السريرية<br><small><code>clinical_subject_id_or_name</code></small></td>
+                                                <td>معرّف المادة أو اسمها لربط الملف.</td>
+                                                <td>نعم</td>
+                                                <td>تشريح سريري</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <p class="small text-muted">ملاحظة: عند إدخال عمود ربط المادة السريرية سيتم محاولة حل القيمة كمعرّف أو اسم؛ القيم غير الموجودة ستظهر كتحذير في تقرير المعاينة.</p>
                             </div>
                         @endif
                         <p class="text-muted small mb-0">اتبع الإرشادات أعلاه بعناية، وحمّل الملف بصيغة Excel (.xlsx أو .xls). تأكد من أن أسماء الأعمدة لم تُعدّل.</p>
@@ -151,6 +228,7 @@
                                 <a href="{{ route('admin.content_imports.template', $type) }}" class="btn btn-outline-secondary">تحميل القالب</a>
                             </div>
                         </form>
+                        <div id="clientPreviewArea" class="mt-3"></div>
                     </div>
                 </div>
 
@@ -173,6 +251,23 @@
                         $rowsCount = count($showRows);
                         $maxDisplay = 500;
                     @endphp
+
+                    @php
+                        // Build preview errors list early so we can show it above the data preview
+                        $previewErrors = $r['errors'] ?? [];
+                        $existingSkippedRows = collect($previewErrors)->filter(function($e){ return ($e['type'] ?? '') === 'skip'; })->pluck('row')->all();
+                        foreach(($r['rows'] ?? []) as $rr) {
+                            $m = $rr['meta'] ?? [];
+                            if (!empty($m['skip'])) {
+                                $rowNum = $rr['row'] ?? null;
+                                if (!in_array($rowNum, $existingSkippedRows)) {
+                                    $previewErrors[] = ['row'=>$rowNum,'type'=>'skip','messages'=>[$m['skip_reason'] ?? 'مكرر — تم التخطي'],'raw'=>$rr['raw'] ?? []];
+                                }
+                            }
+                        }
+                    @endphp
+
+                    {{-- previewErrors card moved below the data preview to match the imports reference layout --}}
 
                     <div class="mb-3">
                         <form method="post" action="{{ route('admin.content_imports.confirm', $type) }}">
@@ -271,15 +366,57 @@
 
                                             @elseif($type === 'med_resources')
                                                 @php $cat = $relations['category'] ?? null; $su = $relations['subject'] ?? null; $to = $relations['topic'] ?? null; @endphp
-                                                @if($cat === true)<span class="badge bg-success me-1">تصنيف</span>@elseif($cat === false)<span class="badge bg-warning me-1 text-dark">تصنيف</span>@else<span class="badge bg-secondary me-1">تصنيف</span>@endif
-                                                @if($su === true)<span class="badge bg-success me-1">المادة</span>@elseif($su === false)<span class="badge bg-warning me-1 text-dark">المادة</span>@else<span class="badge bg-secondary me-1">المادة</span>@endif
-                                                @if($to === true)<span class="badge bg-success me-1">الموضوع</span>@elseif($to === false)<span class="badge bg-warning me-1 text-dark">الموضوع</span>@else<span class="badge bg-secondary me-1">الموضوع</span>@endif
+                                                @if($cat === true)
+                                                    <span class="badge bg-success me-1">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-check2" viewBox="0 0 16 16"><path d="M13.854 3.646a.5.5 0 0 1 0 .708L6.707 11.5a.5.5 0 0 1-.708 0L2.146 7.646a.5.5 0 1 1 .708-.708L6.25 10.146l6.896-6.5a.5.5 0 0 1 .708 0z"/></svg>
+                                                        تصنيف
+                                                    </span>
+                                                @elseif($cat === false)
+                                                    <span class="badge bg-warning me-1 text-dark">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16"><path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/></svg>
+                                                        تصنيف
+                                                    </span>
+                                                @else
+                                                    <span class="badge bg-secondary me-1">تصنيف</span>
+                                                @endif
+                                                @if($su === true)
+                                                    <span class="badge bg-success me-1">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-check2" viewBox="0 0 16 16"><path d="M13.854 3.646a.5.5 0 0 1 0 .708L6.707 11.5a.5.5 0 0 1-.708 0L2.146 7.646a.5.5 0 1 1 .708-.708L6.25 10.146l6.896-6.5a.5.5 0 0 1 .708 0z"/></svg>
+                                                        المادة
+                                                    </span>
+                                                @elseif($su === false)
+                                                    <span class="badge bg-warning me-1 text-dark">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16"><path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/></svg>
+                                                        المادة
+                                                    </span>
+                                                @else
+                                                    <span class="badge bg-secondary me-1">المادة</span>
+                                                @endif
+                                                @if($to === true)
+                                                    <span class="badge bg-success me-1">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-check2" viewBox="0 0 16 16"><path d="M13.854 3.646a.5.5 0 0 1 0 .708L6.707 11.5a.5.5 0 0 1-.708 0L2.146 7.646a.5.5 0 1 1 .708-.708L6.25 10.146l6.896-6.5a.5.5 0 0 1 .708 0z"/></svg>
+                                                        الموضوع
+                                                    </span>
+                                                @elseif($to === false)
+                                                    <span class="badge bg-warning me-1 text-dark">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16"><path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/></svg>
+                                                        الموضوع
+                                                    </span>
+                                                @else
+                                                    <span class="badge bg-secondary me-1">الموضوع</span>
+                                                @endif
 
                                             @elseif($type === 'clinical_subject_pdfs')
                                                 @if(($meta['relation_ok'] ?? null) === true)
-                                                    <span class="badge bg-success">المادة السريرية</span>
+                                                    <span class="badge bg-success">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-check2" viewBox="0 0 16 16"><path d="M13.854 3.646a.5.5 0 0 1 0 .708L6.707 11.5a.5.5 0 0 1-.708 0L2.146 7.646a.5.5 0 1 1 .708-.708L6.25 10.146l6.896-6.5a.5.5 0 0 1 .708 0z"/></svg>
+                                                        المادة السريرية
+                                                    </span>
                                                 @elseif(($meta['relation_ok'] ?? null) === false)
-                                                    <span class="badge bg-warning text-dark">المادة السريرية</span>
+                                                    <span class="badge bg-warning text-dark">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16"><path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/></svg>
+                                                        المادة السريرية
+                                                    </span>
                                                 @else
                                                     <span class="badge bg-secondary">المادة السريرية</span>
                                                 @endif
@@ -345,48 +482,52 @@
 
                     <hr>
 
+                    @if(!empty($previewErrors))
+                        <div class="table-responsive" style="max-height:360px; overflow:auto;">
+                            <table class="table table-sm table-bordered mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>سطر</th>
+                                        <th>حالة</th>
+                                        <th>الرسائل</th>
+                                        <th>البيانات (JSON)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($previewErrors as $err)
+                                        <tr class="{{ empty($err['messages']) ? 'table-success' : 'table-danger' }}">
+                                            <td>{{ $err['row'] ?? '' }}</td>
+                                            <td>
+                                                @if (empty($err['messages']))
+                                                    صالح
+                                                @else
+                                                    خطأ
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if (!empty($err['messages']))
+                                                    <ul class="mb-0 small">
+                                                        @foreach ($err['messages'] as $m)
+                                                            <li>{{ $m }}</li>
+                                                        @endforeach
+                                                    </ul>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                <pre class="mb-0 small">{{ json_encode($err['raw'] ?? [], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) }}</pre>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @endif
+
                     @php
                         $postReport = session('content_import_report');
                     @endphp
 
-                    {{-- Preview errors (show during preview) --}}
-                    @if(!empty($r['errors']))
-                        <div class="card mt-3 border-danger">
-                            <div class="card-body">
-                                <h6 class="card-title">قائمة الأخطاء والتحذيرات (معاينة)</h6>
-                                <div class="table-responsive" style="max-height:360px; overflow:auto;">
-                                    <table class="table table-sm table-bordered mb-0">
-                                        <thead class="table-light">
-                                            <tr>
-                                                <th>سطر</th>
-                                                <th>النوع</th>
-                                                <th>الرسائل</th>
-                                                <th>بيانات خام</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach($r['errors'] as $err)
-                                                <tr>
-                                                    <td>{{ $err['row'] ?? '' }}</td>
-                                                    <td>{{ $err['type'] ?? 'غير محدد' }}</td>
-                                                    <td>
-                                                        @if(is_array($err['messages']))
-                                                            @foreach($err['messages'] as $m)
-                                                                <div class="small">• {{ $m }}</div>
-                                                            @endforeach
-                                                        @else
-                                                            <div class="small">{{ $err['messages'] }}</div>
-                                                        @endif
-                                                    </td>
-                                                    <td class="small text-muted">{{ json_encode($err['raw'] ?? [], JSON_UNESCAPED_UNICODE) }}</td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    @endif
+                    
 
                     {{-- Post-confirm report (show after confirm) --}}
                     @if(!empty($postReport) && !empty($postReport['errors']))
@@ -450,11 +591,41 @@
                             return;
                         }
                         selectedName.textContent = f.name;
-                        previewBtn.disabled = false;
+                        const name = f.name.toLowerCase();
+                        if (name.endsWith('.xlsx') || name.endsWith('.xls')) {
+                            clientArea.innerHTML = '<div class="alert alert-info">تم اختيار ملف Excel. سيتم إجراء المعاينة الكاملة على الخادم عند الضغط على "معاينة الملف".</div>';
+                            previewBtn.disabled = false;
+                        } else {
+                            clientArea.innerHTML = '<div class="alert alert-danger">يرجى رفع ملف Excel فقط (.xlsx أو .xls).</div>';
+                            previewBtn.disabled = true;
+                            el.value = '';
+                            selectedName.textContent = 'لا يوجد ملف';
+                        }
                     }
 
                     fileInput.addEventListener('change', function(){ onFileChange(this); });
                     clearBtn && clearBtn.addEventListener('click', function(e){ e.preventDefault(); fileInput.value = ''; onFileChange(fileInput); });
+
+                    // preview errors filtering (kept for backward compatibility; no-op if filter not present)
+                    const filterGroup = document.querySelector('[aria-label="filter-errors"]');
+                    if (filterGroup) {
+                        const buttons = filterGroup.querySelectorAll('button[data-filter]');
+                        const table = document.getElementById('previewErrorsTable');
+                        const rows = table ? table.querySelectorAll('tbody tr') : [];
+                        buttons.forEach(b => b.addEventListener('click', function(){
+                            buttons.forEach(x => x.classList.remove('active'));
+                            this.classList.add('active');
+                            const f = this.getAttribute('data-filter');
+                            rows.forEach(r => {
+                                const t = r.getAttribute('data-type') || 'other';
+                                if (f === 'all') {
+                                    r.style.display = '';
+                                } else {
+                                    r.style.display = (t === f) ? '' : 'none';
+                                }
+                            });
+                        }));
+                    }
                 })();
             </script>
         @endpush
