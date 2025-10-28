@@ -28,6 +28,7 @@
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
                     <tr>
+                        <th>المعرف</th>
                         <th>الاسم</th>
                         <th>الصورة</th>
                         <th>الترتيب</th>
@@ -37,6 +38,7 @@
                 <tbody>
                     @forelse($subjects as $subject)
                         <tr>
+                            <td>{{ $subject->id }}</td>
                             <td class="fw-semibold">{{ $subject->name }}</td>
                             <td>
                                 @if($subject->image)
@@ -61,9 +63,9 @@
                                 </form>
                             </td>
                         </tr>
-                    @empty
+                        @empty
                         <tr>
-                            <td colspan="4" class="text-center text-muted py-5">لا توجد مواد حالياً.</td>
+                            <td colspan="5" class="text-center text-muted py-5">لا توجد مواد حالياً.</td>
                         </tr>
                     @endforelse
                 </tbody>
