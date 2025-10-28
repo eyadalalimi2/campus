@@ -23,8 +23,8 @@ class ImportController extends Controller
         'branches',
         'colleges',
         'majors',
-        'med_devices',
         'med_subjects',
+        'med_devices',
         'med_topics',
         'med_doctors',
     ];
@@ -66,15 +66,16 @@ class ImportController extends Controller
         if (!in_array($type, $this->types)) abort(404);
 
         $templates = [
-            'universities' => ['name', 'address', 'phone', 'is_active'],
+            // add 'logo' header to universities template so admins can provide logo path during import
+            'universities' => ['name', 'address', 'phone', 'is_active', 'logo'],
             'branches'     => ['university_id', 'name', 'address', 'phone', 'is_active', 'email'],
             'colleges'     => ['university_id', 'branch_id', 'name', 'is_active'],
             'majors'       => ['college_id', 'name', 'is_active'],
             // medical-related templates
-            'med_devices'  => ['name', 'status'],
-            'med_subjects' => ['name', 'scope', 'status'],
-            'med_topics'   => ['subject_id', 'name', 'status'],
-            'med_doctors'  => ['name', 'status', 'subject_ids'],
+            'med_devices'  => ['name', 'status', 'order_index', 'image_path', 'subject_ids'],
+            'med_subjects' => ['name', 'scope', 'status', 'order_index', 'image_path'],
+            'med_topics'   => ['subject_id', 'name', 'order_index', 'status'],
+            'med_doctors'  => ['name', 'status', 'order_index', 'image_path', 'subject_ids'],
         ];
 
         $headers = $templates[$type];
@@ -126,173 +127,10 @@ class ImportController extends Controller
             return back()->withErrors(['file' => 'أعمدة مفقودة: ' . implode(', ', $missing)]);
         }
 
-        $created = 0;
-        $skipped = 0;
-        $failed = 0;
-        $errors = []; // array of ['row'=>int,'messages'=>[], 'raw'=>[]]
+        // Delegate processing to centralized processor (handles preview/confirm and pivot attaching)
+        $report = $this->processFile($path, $type, true);
 
-        foreach ($dataRows as $index => $row) {
-            $rowNumber = $index + 2; // Excel row (1-based + header)
-            // map by header
-            $rowAssoc = [];
-            foreach ($headers as $i => $h) {
-                $rowAssoc[$h] = isset($row[$i]) ? (is_string($row[$i]) ? trim($row[$i]) : $row[$i]) : null;
-            }
-
-            // normalize some fields so validation accepts numeric phone values etc.
-            if (isset($rowAssoc['phone']) && !is_string($rowAssoc['phone'])) {
-                $rowAssoc['phone'] = (string) $rowAssoc['phone'];
-            }
-
-            // type-specific validation and creation
-            try {
-                if ($type === 'universities') {
-                    $v = $this->makeValidator($type, $rowAssoc, [
-                        'name' => 'required|string|max:191',
-                        'phone' => 'nullable|string|max:50',
-                        'is_active' => 'nullable',
-                    ]);
-                    if ($v->fails()) {
-                        $failed++;
-                        $errors[] = ['row' => $rowNumber, 'messages' => $v->errors()->all(), 'raw' => $rowAssoc];
-                        continue;
-                    }
-
-                    $name = $rowAssoc['name'];
-                    if (University::where('name', $name)->exists()) {
-                        $skipped++;
-                        $errors[] = ['row' => $rowNumber, 'messages' => ['موجود مسبقاً (تخطي)'], 'raw' => $rowAssoc];
-                        continue;
-                    }
-
-                    University::create([
-                        'name' => $name,
-                        'address' => $rowAssoc['address'] ?? null,
-                        'phone' => $rowAssoc['phone'] ?? null,
-                        'is_active' => in_array(strtolower((string)($rowAssoc['is_active'] ?? '1')), ['1', 'true', 'yes']),
-                    ]);
-                    $created++;
-                }
-
-                if ($type === 'branches') {
-                    $v = $this->makeValidator($type, $rowAssoc, [
-                        'university_id' => 'required|integer',
-                        'name' => 'required|string|max:191',
-                        'phone' => 'nullable|string|max:50',
-                        'email' => 'nullable|email|max:191',
-                    ]);
-                    if ($v->fails()) {
-                        $failed++;
-                        $errors[] = ['row' => $rowNumber, 'messages' => $v->errors()->all(), 'raw' => $rowAssoc];
-                        continue;
-                    }
-                    $u = $rowAssoc['university_id'];
-                    $university = University::find((int)$u);
-                    if (!$university) {
-                        $failed++;
-                        $errors[] = ['row' => $rowNumber, 'messages' => ['الجامعة غير موجودة: ' . $u], 'raw' => $rowAssoc];
-                        continue;
-                    }
-
-                    if (UniversityBranch::where('university_id', $university->id)->where('name', $rowAssoc['name'])->exists()) {
-                        $skipped++;
-                        $errors[] = ['row' => $rowNumber, 'messages' => ['الفرع موجود مسبقاً (تخطي)'], 'raw' => $rowAssoc];
-                        continue;
-                    }
-
-                    UniversityBranch::create([
-                        'university_id' => $university->id,
-                        'name' => $rowAssoc['name'] ?? null,
-                        'address' => $rowAssoc['address'] ?? null,
-                        'phone' => $rowAssoc['phone'] ?? null,
-                        'email' => $rowAssoc['email'] ?? null,
-                        'is_active' => in_array(strtolower((string)($rowAssoc['is_active'] ?? '1')), ['1', 'true', 'yes']),
-                    ]);
-                    $created++;
-                }
-
-                if ($type === 'colleges') {
-                    $v = $this->makeValidator($type, $rowAssoc, [
-                        'university_id' => 'required|integer',
-                        'branch_id' => 'required|integer',
-                        'name' => 'required|string|max:191',
-                    ]);
-                    if ($v->fails()) {
-                        $failed++;
-                        $errors[] = ['row' => $rowNumber, 'messages' => $v->errors()->all(), 'raw' => $rowAssoc];
-                        continue;
-                    }
-                    $b = $rowAssoc['branch_id'];
-                    $branch = UniversityBranch::find((int)$b);
-                    if (!$branch) {
-                        $failed++;
-                        $errors[] = ['row' => $rowNumber, 'messages' => ['الفرع غير موجود: ' . $b], 'raw' => $rowAssoc];
-                        continue;
-                    }
-
-                    if (College::where('branch_id', $branch->id)->where('name', $rowAssoc['name'])->exists()) {
-                        $skipped++;
-                        $errors[] = ['row' => $rowNumber, 'messages' => ['الكلية موجودة مسبقاً (تخطي)'], 'raw' => $rowAssoc];
-                        continue;
-                    }
-
-                    College::create([
-                        'branch_id' => $branch->id,
-                        'name' => $rowAssoc['name'] ?? null,
-                        'is_active' => in_array(strtolower((string)($rowAssoc['is_active'] ?? '1')), ['1', 'true', 'yes']),
-                    ]);
-                    $created++;
-                }
-
-                if ($type === 'majors') {
-                    $v = $this->makeValidator($type, $rowAssoc, [
-                        'college_id' => 'required|integer',
-                        'name' => 'required|string|max:191',
-                    ]);
-                    if ($v->fails()) {
-                        $failed++;
-                        $errors[] = ['row' => $rowNumber, 'messages' => $v->errors()->all(), 'raw' => $rowAssoc];
-                        continue;
-                    }
-                    $c = $rowAssoc['college_id'];
-                    $college = College::find((int)$c);
-                    if (!$college) {
-                        $failed++;
-                        $errors[] = ['row' => $rowNumber, 'messages' => ['الكلية غير موجودة: ' . $c], 'raw' => $rowAssoc];
-                        continue;
-                    }
-
-                    if (Major::where('college_id', $college->id)->where('name', $rowAssoc['name'])->exists()) {
-                        $skipped++;
-                        $errors[] = ['row' => $rowNumber, 'messages' => ['التخصص موجود مسبقاً (تخطي)'], 'raw' => $rowAssoc];
-                        continue;
-                    }
-
-                    Major::create([
-                        'college_id' => $college->id,
-                        'name' => $rowAssoc['name'] ?? null,
-                        'is_active' => in_array(strtolower((string)($rowAssoc['is_active'] ?? '1')), ['1', 'true', 'yes']),
-                    ]);
-                    $created++;
-                }
-            } catch (\Throwable $e) {
-                $failed++;
-                $errors[] = ['row' => $rowNumber, 'messages' => [$e->getMessage()], 'raw' => $rowAssoc];
-            }
-        }
-
-        // keep uploaded file for auditing
-        $report = [
-            'type' => $type,
-            'type_label' => $this->typeLabels[$type] ?? ucfirst($type),
-            'created' => $created,
-            'skipped' => $skipped,
-            'failed' => $failed,
-            'total' => count($dataRows),
-            'errors' => $errors,
-        ];
-
-        session()->flash('success', "نتيجة الاستيراد: تم إنشاء {$created} — تم تخطي {$skipped} — فشل {$failed}");
+        session()->flash('success', "نتيجة الاستيراد: تم إنشاء {$report['created']} — تم تحديث " . ($report['updated'] ?? 0) . " — تم تخطي {$report['skipped']} — فشل {$report['failed']}");
         session()->flash('import_report', $report);
 
         return redirect()->route('admin.imports.index');
@@ -341,8 +179,8 @@ class ImportController extends Controller
 
         // remove preview and store final report
         session()->forget('import_preview');
-        session()->flash('import_report', $report);
-        session()->flash('success', "تم استيراد: {$report['created']} عناصر. فشل: {$report['failed']}. تم تخطي: {$report['skipped']}.");
+    session()->flash('import_report', $report);
+    session()->flash('success', "تم استيراد: {$report['created']} عناصر. تم تحديث: " . ($report['updated'] ?? 0) . ". فشل: {$report['failed']}. تم تخطي: {$report['skipped']}.");
 
         return redirect()->route('admin.imports.index');
     }
@@ -408,6 +246,10 @@ class ImportController extends Controller
             'device_ids' => 'معرّفات الأجهزة',
             'device_subject_ids' => 'معرّفات مواد الجهاز',
             'subject_ids' => 'معرّفات المواد',
+            'order_index' => 'ترتيب العرض',
+            'image_path' => 'مسار الصورة',
+            'logo' => 'الشعار',
+            'logo_path' => 'مسار الشعار',
         ];
 
         return Validator::make($data, $rules, $messages, $attributes);
@@ -463,11 +305,12 @@ class ImportController extends Controller
             return ['error' => 'أعمدة مفقودة: ' . implode(', ', $missing)];
         }
 
-        $created = 0;
-        $skipped = 0;
-        $failed = 0;
-        $errors = [];
-        $rowsList = [];
+    $created = 0;
+    $skipped = 0;
+    $failed = 0;
+    $updated = 0;
+    $errors = [];
+    $rowsList = [];
 
         foreach ($dataRows as $index => $row) {
             $rowNumber = $index + 2;
@@ -491,6 +334,11 @@ class ImportController extends Controller
             }
             if (!isset($rowAssoc['college_id_or_name']) && isset($rowAssoc['college_id'])) {
                 $rowAssoc['college_id_or_name'] = $rowAssoc['college_id'];
+            }
+
+            // accept 'logo' as alternative to 'logo_path' in uploaded files
+            if (!isset($rowAssoc['logo_path']) && isset($rowAssoc['logo'])) {
+                $rowAssoc['logo_path'] = $rowAssoc['logo'];
             }
 
             // support common alternative header names
@@ -517,6 +365,8 @@ class ImportController extends Controller
                         'name' => 'required|string|max:191',
                         'phone' => 'nullable|string|max:50',
                         'is_active' => 'nullable',
+                        'logo' => 'nullable|string|max:255',
+                        'logo_path' => 'nullable|string|max:255',
                     ]);
                     if ($v->fails()) {
                         $failed++;
@@ -538,6 +388,7 @@ class ImportController extends Controller
                             'name' => $rowAssoc['name'],
                             'address' => $rowAssoc['address'] ?? '',
                             'phone' => $rowAssoc['phone'] ?? '',
+                            'logo_path' => $rowAssoc['logo_path'] ?? null,
                             'is_active' => in_array(strtolower((string)($rowAssoc['is_active'] ?? '1')), ['1', 'true', 'yes']),
                         ]);
                     }
@@ -736,7 +587,9 @@ class ImportController extends Controller
                     $v = $this->makeValidator($type, $rowAssoc, [
                         'name' => 'required|string|max:191',
                         'status' => 'nullable',
-                        // accept a comma/semicolon-separated list of subject ids or names
+                        // optional ordering, image path and related subjects
+                        'order_index' => 'nullable|integer',
+                        'image_path' => 'nullable|string|max:255',
                         'subject_ids' => 'nullable',
                     ]);
                     if ($v->fails()) {
@@ -744,12 +597,8 @@ class ImportController extends Controller
                         $errors[] = ['row' => $rowNumber, 'messages' => $v->errors()->all(), 'raw' => $rowAssoc];
                         continue;
                     }
-
-                    if (MedDevice::where('name', $rowAssoc['name'])->exists()) {
-                        $skipped++;
-                        $errors[] = ['row' => $rowNumber, 'messages' => ['الجهاز موجود مسبقاً (تخطي)'], 'raw' => $rowAssoc];
-                        continue;
-                    }
+                    // Check if device already exists
+                    $existing = MedDevice::where('name', $rowAssoc['name'])->first();
 
                     if ($persist) {
                         // Default status to 'published' when the uploaded value is empty or null
@@ -758,12 +607,131 @@ class ImportController extends Controller
                             $status = 'published';
                         }
 
-                        MedDevice::create([
-                            'name' => $rowAssoc['name'],
-                            'status' => $status,
-                        ]);
+                        if ($existing) {
+                            // update device fields if provided
+                            $existing->status = $status;
+                            if (isset($rowAssoc['order_index']) && $rowAssoc['order_index'] !== '') {
+                                $existing->order_index = (int)$rowAssoc['order_index'];
+                            }
+                            if (isset($rowAssoc['image_path']) && $rowAssoc['image_path'] !== '') {
+                                $existing->image_path = $rowAssoc['image_path'];
+                            }
+                            $existing->save();
+
+                            // attach subjects without detaching existing relations
+                            if (!empty($rowAssoc['subject_ids'])) {
+                                $tokens = preg_split('/[;,|]+/', (string)$rowAssoc['subject_ids']);
+                                $attachIds = [];
+                                $missing = [];
+                                foreach ($tokens as $t) {
+                                    $t = trim($t);
+                                    if ($t === '') continue;
+                                    if (is_numeric($t)) {
+                                        $sub = MedSubject::find((int)$t);
+                                    } else {
+                                        $sub = MedSubject::where('name', $t)->first();
+                                    }
+                                    if ($sub) {
+                                        $attachIds[] = $sub->id;
+                                    } else {
+                                        $missing[] = $t;
+                                    }
+                                }
+                                if (!empty($attachIds)) {
+                                    $existing->subjects()->syncWithoutDetaching($attachIds);
+                                }
+                                if (!empty($missing)) {
+                                    $errors[] = ['row' => $rowNumber, 'messages' => ['بعض المواد المذكورة غير موجودة: ' . implode(', ', $missing)], 'raw' => $rowAssoc];
+                                }
+                            }
+
+                            $updated++;
+                        } else {
+                            $device = MedDevice::create([
+                                'name' => $rowAssoc['name'],
+                                'status' => $status,
+                                'order_index' => isset($rowAssoc['order_index']) && $rowAssoc['order_index'] !== '' ? (int)$rowAssoc['order_index'] : 0,
+                                'image_path' => $rowAssoc['image_path'] ?? null,
+                            ]);
+
+                            // attach subjects (new device) replacing any defaults
+                            if (!empty($rowAssoc['subject_ids'])) {
+                                $tokens = preg_split('/[;,|]+/', (string)$rowAssoc['subject_ids']);
+                                $attachIds = [];
+                                $missing = [];
+                                foreach ($tokens as $t) {
+                                    $t = trim($t);
+                                    if ($t === '') continue;
+                                    if (is_numeric($t)) {
+                                        $sub = MedSubject::find((int)$t);
+                                    } else {
+                                        $sub = MedSubject::where('name', $t)->first();
+                                    }
+                                    if ($sub) {
+                                        $attachIds[] = $sub->id;
+                                    } else {
+                                        $missing[] = $t;
+                                    }
+                                }
+                                if (!empty($attachIds)) {
+                                    $device->subjects()->sync($attachIds);
+                                }
+                                if (!empty($missing)) {
+                                    $errors[] = ['row' => $rowNumber, 'messages' => ['بعض المواد المذكورة غير موجودة: ' . implode(', ', $missing)], 'raw' => $rowAssoc];
+                                }
+                            }
+
+                            $created++;
+                        }
+                    } else {
+                        // preview mode: resolve subject_ids to names for display and warnings
+                        if (!empty($rowAssoc['subject_ids'])) {
+                            $tokens = preg_split('/[;,|]+/', (string)$rowAssoc['subject_ids']);
+                            $resolvedNames = [];
+                            $missing = [];
+                            foreach ($tokens as $t) {
+                                $t = trim($t);
+                                if ($t === '') continue;
+                                if (is_numeric($t)) {
+                                    $sub = MedSubject::find((int)$t);
+                                } else {
+                                    $sub = MedSubject::where('name', $t)->first();
+                                }
+                                if ($sub) {
+                                    $resolvedNames[] = $sub->name;
+                                } else {
+                                    $missing[] = $t;
+                                }
+                            }
+
+                            $display = '';
+                            if (!empty($resolvedNames)) $display = implode(', ', $resolvedNames);
+                            if (!empty($missing)) {
+                                $display = $display ? ($display . ' | مفقود: ' . implode(', ', $missing)) : ('مفقود: ' . implode(', ', $missing));
+                            }
+
+                            $rowAssoc['subject_ids'] = $display;
+                            // update preview row display
+                            if (!empty($rowsList)) {
+                                $last = count($rowsList) - 1;
+                                $rowsList[$last]['raw'] = $rowAssoc;
+                                $rowsList[$last]['meta'] = array_merge($rowsList[$last]['meta'] ?? [], ['subject_resolution' => ['resolved' => $resolvedNames, 'missing' => $missing]]);
+                            }
+
+                            if (!empty($missing)) {
+                                // non-fatal warning so admin can fix before confirming
+                                $errors[] = ['row' => $rowNumber, 'messages' => ['بعض المواد المذكورة غير موجودة: ' . implode(', ', $missing)], 'raw' => $rowAssoc];
+                            }
+                        }
+
+                        // preview mode: note existence
+                        if ($existing) {
+                            $skipped++;
+                            $errors[] = ['row' => $rowNumber, 'messages' => ['الجهاز موجود مسبقاً (سيتم تحديثه عند التأكيد)'], 'raw' => $rowAssoc];
+                        } else {
+                            $created++;
+                        }
                     }
-                    $created++;
                 }
 
                 if ($type === 'med_subjects') {
@@ -771,6 +739,8 @@ class ImportController extends Controller
                         'name' => 'required|string|max:191',
                         'scope' => 'nullable|string|max:191',
                         'status' => 'nullable',
+                        'order_index' => 'nullable|integer',
+                        'image_path' => 'nullable|string|max:255',
                     ]);
                     if ($v->fails()) {
                         $failed++;
@@ -795,6 +765,8 @@ class ImportController extends Controller
                             'name' => $rowAssoc['name'],
                             'scope' => $rowAssoc['scope'] ?? null,
                             'status' => $status,
+                            'order_index' => isset($rowAssoc['order_index']) && $rowAssoc['order_index'] !== '' ? (int)$rowAssoc['order_index'] : 0,
+                            'image_path' => $rowAssoc['image_path'] ?? null,
                         ]);
                     }
                     $created++;
@@ -805,6 +777,7 @@ class ImportController extends Controller
                         'subject_id' => 'required|integer',
                         'name' => 'required|string|max:191',
                         'status' => 'nullable',
+                        'order_index' => 'nullable|integer',
                     ]);
                     if ($v->fails()) {
                         $failed++;
@@ -844,6 +817,7 @@ class ImportController extends Controller
                             'subject_id' => $subject->id,
                             'title' => $rowAssoc['name'] ?? null,
                             'status' => $status,
+                            'order_index' => isset($rowAssoc['order_index']) && $rowAssoc['order_index'] !== '' ? (int)$rowAssoc['order_index'] : 0,
                         ]);
                     }
                     $created++;
@@ -854,11 +828,51 @@ class ImportController extends Controller
                     $v = $this->makeValidator($type, $rowAssoc, [
                         'name' => 'required|string|max:191',
                         'status' => 'nullable',
+                        'order_index' => 'nullable|integer',
+                        'image_path' => 'nullable|string|max:255',
                     ]);
                     if ($v->fails()) {
                         $failed++;
                         $errors[] = ['row' => $rowNumber, 'messages' => $v->errors()->all(), 'raw' => $rowAssoc];
                         continue;
+                    }
+
+                    // In preview mode, resolve subject_ids to human-readable names for display
+                    if (!$persist && !empty($rowAssoc['subject_ids'])) {
+                        $tokens = preg_split('/[;,|]+/', (string)$rowAssoc['subject_ids']);
+                        $resolvedNames = [];
+                        $missing = [];
+                        foreach ($tokens as $t) {
+                            $t = trim($t);
+                            if ($t === '') continue;
+                            if (is_numeric($t)) {
+                                $sub = MedSubject::find((int)$t);
+                            } else {
+                                $sub = MedSubject::where('name', $t)->first();
+                            }
+                            if ($sub) {
+                                $resolvedNames[] = $sub->name;
+                            } else {
+                                $missing[] = $t;
+                            }
+                        }
+
+                        $display = '';
+                        if (!empty($resolvedNames)) $display = implode(', ', $resolvedNames);
+                        if (!empty($missing)) {
+                            $display = $display ? ($display . ' | مفقود: ' . implode(', ', $missing)) : ('مفقود: ' . implode(', ', $missing));
+                        }
+
+                        $rowAssoc['subject_ids'] = $display;
+                        if (!empty($rowsList)) {
+                            $last = count($rowsList) - 1;
+                            $rowsList[$last]['raw'] = $rowAssoc;
+                            $rowsList[$last]['meta'] = array_merge($rowsList[$last]['meta'] ?? [], ['subject_resolution' => ['resolved' => $resolvedNames, 'missing' => $missing]]);
+                        }
+
+                        if (!empty($missing)) {
+                            $errors[] = ['row' => $rowNumber, 'messages' => ['بعض المواد المذكورة غير موجودة: ' . implode(', ', $missing)], 'raw' => $rowAssoc];
+                        }
                     }
 
                     if (MedDoctor::where('name', $rowAssoc['name'])->exists()) {
@@ -878,6 +892,8 @@ class ImportController extends Controller
                             $doctor = MedDoctor::create([
                                 'name' => $rowAssoc['name'],
                                 'status' => $status,
+                                'order_index' => isset($rowAssoc['order_index']) && $rowAssoc['order_index'] !== '' ? (int)$rowAssoc['order_index'] : 0,
+                                'avatar_path' => $rowAssoc['image_path'] ?? null,
                             ]);
 
                             // If the import included a subject_ids column, parse and attach relations.
@@ -926,6 +942,7 @@ class ImportController extends Controller
             'headers' => $headers,
             'rows' => $rowsList,
             'created' => $created,
+            'updated' => $updated,
             'skipped' => $skipped,
             'failed' => $failed,
             'total' => count($dataRows),

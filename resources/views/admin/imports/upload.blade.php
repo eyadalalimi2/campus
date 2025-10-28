@@ -74,16 +74,15 @@
                                         <td>1</td>
                                     </tr>
                                     <tr>
-                                        <td>الشعار<br><small><code>logo</code></small></td>
-                                        <td>شعار الجامعة (بعد الانتهاء من استيراد الجامعات ارفع الشعار عبر لوحة التحكم).
+                                        <td>الشعار<br><small><code>logo</code> أو <code>logo_path</code></small></td>
+                                        <td>يمكنك إدخال مسار الشعار كنص (مثال: <code>uploads/universities/logo.png</code>  عند التأكيد سيُحفظ هذا النص في حقل
+                                            <code>logo_path</code> في جدول الجامعات.
                                         </td>
                                         <td>لا</td>
                                         <td>
-                                            الانتقال لصفحه الجامعات
-                                            <a href="{{ route('admin.universities.index') }}"
-                                                class="btn btn-sm btn-outline-primary">
-                                                من هنا
-                                            </a>
+                                            مثال: <code>uploads/universities/logo.png</code>
+                                            <br>
+                                            
                                         </td>
                                     </tr>
                                 </tbody>
@@ -240,7 +239,8 @@
                 @if ($type === 'med_devices')
                     <div class="alert alert-info">
                         <h6 class="mb-2">إرشادات استيراد الأجهزة الطبية</h6>
-                        <p class="small mb-2">كل صف يصف جهازًا طبيًا. الحقل المطلوب الوحيد هو <code>name</code>.</p>
+                        <p class="small mb-2">كل صف يصف جهازًا طبيًا. الحقل المطلوب هو <code>name</code>. يمكن الآن
+                            تحديد ترتيب العرض ومسار الصورة وربط الجهاز بمواد عند الاستيراد.</p>
                         <div class="table-responsive mb-2">
                             <table class="table table-sm table-bordered mb-0">
                                 <thead class="table-light">
@@ -259,34 +259,33 @@
                                         <td>جهاز تخطيط القلب</td>
                                     </tr>
                                     <tr>
-                                        <td>الصوره<br><small><code>image</code></small></td>
-                                        <td>يتم رفعها بواسطه لوحه التحكم</td>
+                                        <td>مسار الصورة<br><small><code>image_path</code></small></td>
+                                        <td>مسار الصورة داخل التخزين (مثال: <code>uploads/devices/ecg.png</code>). يمكنك ترك الحقل فارغًا ورفع الصورة لاحقًا عبر لوحة التحكم.</td>
                                         <td>لا</td>
-                                        <td>
-
-                                        </td>
+                                        <td>uploads/devices/ecg.png</td>
                                     </tr>
                                     <tr>
-                                        <td>المواد<br><small><code>device_ids</code></small></td>
-                                        <td>يتم ربط الاجهزة الطبية بالمادة بواسطة لوحة التحكم</td>
+                                        <td>ترتيب العرض<br><small><code>order_index</code></small></td>
+                                        <td>قيمة رقمية تحدد ترتيب ظهور الجهاز في القوائم؛ قيمة أصغر تُعرض أولاً.</td>
                                         <td>لا</td>
-                                        <td>
-
-                                        </td>
+                                        <td>5</td>
+                                    </tr>
+                                    <tr>
+                                        <td>المواد المرتبطة<br><small><code>subject_ids</code></small></td>
+                                        <td>قائمة معرّفات أو أسماء المواد المرتبطة بالجهاز مفصولة بفواصل أو نقاط فاصلة. يمكن أن تكون القيم أرقامًا (معرّفات) أو أسماء المواد؛ القيم غير الموجودة سيتم تجاهلها وتظهر كتحذير في تقرير الاستيراد.</td>
+                                        <td>لا</td>
+                                        <td>1,2,3 أو تشريح,فسيولوجي</td>
                                     </tr>
                                     <tr>
                                         <td>الحالة<br><small><code>status</code></small></td>
-                                        <td>حالة العرض للجهاز: اكتب <code>published</code> لتفعيله أو <code>draft</code> إن رغبت. إن
-                                            ترك الحقل
-                                            فارغًا سيتم استخدام القيمة الافتراضية.</td>
+                                        <td>حالة عرض الجهاز: اكتب <code>published</code> للتفعيل أو <code>draft</code> للتعطيل. إن ترك الحقل فارغًا سيُستخدم الافتراضي.</td>
                                         <td>لا</td>
                                         <td>published</td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
-                        <p class="small text-muted">ملاحظة:الصور و ربط الأجهزة الطبية بالمواد لم يعد
-                            مدعوماً في الاستيراد المباشر؛ يمكنك ربط المواد لاحقاً من خلال واجهة إدارة الاجهزة.</p>
+                        <p class="small text-muted">ملاحظة: عند استيراد عمود <code>subject_ids</code>، سيتم محاولة حل كل قيمة إما كمعرّف رقم أو كاسم مادة؛ المعرفات/الأسماء غير الموجودة ستُذكر في تقرير الاستيراد كتحذير.</p>
                     </div>
                 @endif
 
@@ -294,7 +293,8 @@
                     <div class="alert alert-info">
                         <h6 class="mb-2">إرشادات استيراد المواد الطبية</h6>
                         <p class="small mb-2">كل صف يصف مادة طبية (subject). الحقول المدعومة: <code>name</code> (مطلوب)،
-                            <code>scope</code> (النطاق، اختياري)، <code>status</code> (الحالة، اختياري).
+                            <code>scope</code> (النطاق، اختياري)، <code>status</code> (الحالة، اختياري)،
+                            <code>order_index</code> (ترتيب العرض، اختياري)، و<code>image_path</code> (مسار الصورة داخل التخزين، اختياري).
                         </p>
                         <div class="table-responsive mb-2">
                             <table class="table table-sm table-bordered mb-0">
@@ -315,20 +315,32 @@
                                     </tr>
                                     <tr>
                                         <td>النطاق<br><small><code>scope</code></small></td>
-                                        <td>نطاق المادة اختر clinical للمادة السريرية و basic للمادة الأساسية و both للمادة المتطلبة.</td>
+                                        <td>نطاق المادة: استخدم <code>clinical</code> للمادة السريرية، <code>basic</code> للمادة الأساسية، أو <code>both</code> للمواد المشتركة.</td>
                                         <td>لا</td>
-                                        <td>clinical & basic & both</td>
+                                        <td>clinical</td>
                                     </tr>
                                     <tr>
                                         <td>الحالة<br><small><code>status</code></small></td>
-                                        <td>حالة المادة: اكتب <code>published</code> أو <code>draft</code> إن رغبت في ايقافه.</td>
+                                        <td>حالة المادة: اكتب <code>published</code> لتفعيل العرض أو <code>draft</code> لإيقافه. إن ترك الحقل فارغًا سيُستخدم الافتراضي.</td>
                                         <td>لا</td>
                                         <td>published</td>
+                                    </tr>
+                                    <tr>
+                                        <td>ترتيب العرض<br><small><code>order_index</code></small></td>
+                                        <td>قيمة رقمية صحيحة تحدد ترتيب ظهور المادة في القوائم (قيمة أصغر تظهر أولاً). إن لم تُحدد فسيُستخدم الافتراضي.</td>
+                                        <td>لا</td>
+                                        <td>10</td>
+                                    </tr>
+                                    <tr>
+                                        <td>مسار الصورة<br><small><code>image_path</code></small></td>
+                                        <td>مسار الصورة داخل مساحة التخزين (مثال: <code>uploads/subjects/anatomy.png</code>). إن لم تكن لديك صورة، اترك الحقل فارغًا ويمكنك رفع الصورة لاحقًا عبر لوحة التحكم.</td>
+                                        <td>لا</td>
+                                        <td>uploads/subjects/anatomy.png</td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
-                        ملاحظة:الصور و ربط المواد بالأجهزة الطبية  لم يعد مدعوماً في الاستيراد المباشر؛ يمكنك ربط المواد لاحقاً من خلال واجهة إدارة المواد.
+                        <p class="small text-muted mb-0">ملاحظة: يُسمح الآن بتعيين مسار الصورة وحقول الترتيب عبر الاستيراد باستخدام <code>image_path</code> و<code>order_index</code>، أما ربط المواد بالأجهزة فيُدار من خلال واجهة إدارة الأجهزة ولا يتم إنشاؤه تلقائيًا عبر الاستيراد.</p>
                     </div>
                 @endif
 
@@ -361,6 +373,12 @@
                                         <td>اسم/عنوان الموضوع.</td>
                                         <td>نعم</td>
                                         <td>الجهاز الدوري</td>
+                                    </tr>
+                                    <tr>
+                                        <td>ترتيب العرض<br><small><code>order_index</code></small></td>
+                                        <td>قيمة رقمية تحدد ترتيب ظهور الموضوع ضمن قائمة المادة. القيمة الأصغر تظهر أولاً.</td>
+                                        <td>لا</td>
+                                        <td>20</td>
                                     </tr>
                                     <tr>
                                         <td>الحالة<br><small><code>status</code></small></td>
@@ -408,6 +426,18 @@
                                         </td>
                                         <td>لا</td>
                                         <td>1,2,3 أو تشريح,فسيولوجي</td>
+                                    </tr>
+                                    <tr>
+                                        <td>مسار الصورة<br><small><code>image_path</code></small></td>
+                                        <td>مسار صورة الدكتور داخل مساحة التخزين (مثال: <code>uploads/doctors/dr_salah.png</code>). يمكنك تركه فارغًا ورفع الصورة لاحقًا.</td>
+                                        <td>لا</td>
+                                        <td>uploads/doctors/dr_salah.png</td>
+                                    </tr>
+                                    <tr>
+                                        <td>ترتيب العرض<br><small><code>order_index</code></small></td>
+                                        <td>قيمة رقمية تحدد ترتيب ظهور الدكتور في القوائم.</td>
+                                        <td>لا</td>
+                                        <td>2</td>
                                     </tr>
                                 </tbody>
                             </table>

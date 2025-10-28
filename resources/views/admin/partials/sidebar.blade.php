@@ -18,19 +18,20 @@
             </a>
         </div>
 
-        <div class="nav-item">
-            <a href="{{ route('admin.med_devices.index') }}"
-                class="nav-link {{ request()->is('admin/devices*') ? 'active' : '' }}">
-                <i class="bi bi-cpu" style="color:#0ea5e9;"></i>
-                الأجهزة
-            </a>
-        </div>
+
 
         <div class="nav-item">
             <a href="{{ route('admin.med_subjects.index') }}"
                 class="nav-link {{ request()->is('admin/subjects*') ? 'active' : '' }}">
                 <i class="bi bi-journal-text" style="color:#22c55e;"></i>
                 المواد
+            </a>
+        </div>
+        <div class="nav-item">
+            <a href="{{ route('admin.med_devices.index') }}"
+                class="nav-link {{ request()->is('admin/devices*') ? 'active' : '' }}">
+                <i class="bi bi-cpu" style="color:#0ea5e9;"></i>
+                الأجهزة
             </a>
         </div>
 
