@@ -22,6 +22,7 @@
 
   <div class="col-12">
     <div class="form-check">
+      <input type="hidden" name="is_active" value="0">
       <input class="form-check-input" type="checkbox" name="is_active" value="1" id="is_active_term" @checked(old('is_active', optional($term)->is_active))>
       <label class="form-check-label" for="is_active_term">مفعل</label>
     </div>

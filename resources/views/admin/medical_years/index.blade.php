@@ -4,6 +4,16 @@
 <div class="container-fluid">
   <h1 class="mb-3">سنوات الطب (خاص)</h1>
 
+  <style>
+    .year-box{ display:inline-block; min-width:36px; text-align:center; padding:.35rem .5rem; border-radius:.375rem; color:#fff; font-weight:600; }
+    .year-box.active{ background:#198754; } /* bootstrap success */
+    .year-box.inactive{ background:#dc3545; } /* bootstrap danger */
+    .year-box:hover{ opacity:.92; }
+    .year-box + form { display:inline-block; vertical-align:middle; }
+  </style>
+
+ 
+
   @if(session('success'))
     <div class="alert alert-success">{{ session('success') }}</div>
   @endif
@@ -22,43 +32,55 @@
             <tr>
               <th>#</th>
               <th>الجامعة - الفرع - التخصص</th>
-              <th>رقم السنة</th>
-              <th>مفعل</th>
-              <th>الترتيب</th>
+              <th>السنوات</th>
               <th class="text-end">إجراءات</th>
             </tr>
           </thead>
           <tbody>
-            @forelse($years as $y)
+            @php
+              // If $years is a paginator, getCollection(); otherwise assume it's a collection
+              $yearsCollection = method_exists($years, 'getCollection') ? $years->getCollection() : $years;
+              $grouped = $yearsCollection->groupBy('major_id');
+            @endphp
+
+            @forelse($grouped as $majorId => $group)
+              @php $first = $group->first();
+                $major = $first->major ?? null;
+                $college = optional($major)->college;
+                $branch = optional($college)->branch;
+                $universityName = optional(optional($branch)->university)->name;
+                $branchName = optional($branch)->name;
+                $majorName = optional($major)->name;
+                $parts = array_filter([$universityName, $branchName, $majorName], fn($v) => filled($v));
+              @endphp
               <tr>
-                <td>{{ $y->id }}</td>
-                <td>
-                  @php
-                    $major = $y->major;
-                    $college = optional($major)->college;
-                    $branch = optional($college)->branch;
-                    $universityName = optional(optional($branch)->university)->name;
-                    $branchName = optional($branch)->name;
-                    $majorName = optional($major)->name;
-                    $parts = array_filter([$universityName, $branchName, $majorName], fn($v) => filled($v));
-                  @endphp
-                  {{ implode(' - ', $parts) }}
+                <td>{{ $loop->iteration }}</td>
+                <td style="min-width:220px;">
+                  <div class="fw-semibold">{{ implode(' - ', $parts) }}</div>
                 </td>
-                <td>{{ $y->year_number }}</td>
-                <td>{!! $y->is_active ? '<span class="badge bg-success">مفعل</span>' : '<span class="badge bg-secondary">معطل</span>' !!}</td>
-                <td>{{ $y->sort_order }}</td>
+                <td>
+                  <div class="d-flex flex-wrap align-items-center">
+                    @foreach($group->sortBy('year_number') as $y)
+                      <div class="me-2 mb-2 d-inline-flex align-items-center">
+                        <a href="{{ route('admin.medical_years.edit',$y) }}" class="year-box {{ $y->is_active ? 'active' : 'inactive' }} text-decoration-none">
+                          {{ $y->year_number }}
+                        </a>
+                        <form action="{{ route('admin.medical_years.destroy',$y) }}" method="post" class="d-inline ms-1" onsubmit="return confirm('تأكيد الحذف؟');">
+                          @csrf @method('DELETE')
+                          <button class="btn btn-sm btn-link text-danger p-0 ms-1" title="حذف"><i class="bi bi-trash"></i></button>
+                        </form>
+                      </div>
+                    @endforeach
+                  </div>
+                </td>
                 <td class="text-end">
-                  <a class="btn btn-sm btn-outline-secondary" href="{{ route('admin.medical_years.edit',$y) }}">
-                    تعديل
+                  <a class="btn btn-sm btn-outline-primary" href="{{ route('admin.medical_years.create', ['major_id' => $majorId]) }}">
+                    إضافة سنة
                   </a>
-                  <form action="{{ route('admin.medical_years.destroy',$y) }}" method="post" class="d-inline" onsubmit="return confirm('تأكيد الحذف؟');">
-                    @csrf @method('DELETE')
-                    <button class="btn btn-sm btn-outline-danger">حذف</button>
-                  </form>
                 </td>
               </tr>
             @empty
-              <tr><td colspan="6" class="text-center text-muted">لا توجد بيانات</td></tr>
+              <tr><td colspan="4" class="text-center text-muted">لا توجد بيانات</td></tr>
             @endforelse
           </tbody>
         </table>

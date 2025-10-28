@@ -12,7 +12,16 @@
         <div class="card-header bg-white d-flex align-items-center justify-content-between">
             <strong>القائمة</strong>
             <div class="w-50 d-none d-md-block">
-                <input type="search" class="form-control" placeholder="بحث سريع بالاسم (يمكن إضافة فلترة لاحقاً)">
+                <form method="get" class="d-flex">
+                    <input name="q" value="{{ request('q') }}" type="search" class="form-control" placeholder="بحث سريع بالاسم">
+                    <select name="is_active" class="form-select ms-2" style="max-width:120px">
+                        <option value="">الكل</option>
+                        <option value="1" @selected(request('is_active')==='1')>مفعل</option>
+                        <option value="0" @selected(request('is_active')==='0')>معطل</option>
+                    </select>
+                    <button class="btn btn-primary ms-2">تصفية</button>
+                    <a href="{{ url()->current() }}" class="btn btn-outline-secondary ms-2">مسح</a>
+                </form>
             </div>
         </div>
         <div class="table-responsive">
