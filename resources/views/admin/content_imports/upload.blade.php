@@ -334,7 +334,7 @@
                         {{-- removed explicit "مسح المعاينة" button: preview will disappear on refresh or after confirm --}}
 
                         <a href="{{ route('admin.content_imports.errors_export', $type) }}" class="btn btn-outline-secondary me-2">تنزيل أخطاء الاستيراد</a>
-                        <a href="{{ route('admin.content_imports.show', $type) }}?reanalyze=1" class="btn btn-outline-primary me-2">إعادة تحليل</a>
+                        {{-- زر إعادة التحليل أُزيل — المعاينة الآن تُحذف عند التحديث أو بعد التأكيد --}}
                     </div>
                         <div class="mt-2 small text-muted">ملاحظة: عند الضغط على "تأكيد الاستيراد" سيتم حفظ السجلات في قاعدة البيانات وسيتم إزالة معاينة الجلسة. تأكد من مراجعة الصفوف المميزة بالأحمر (أخطاء التحقق) أو الأصفر (أخطاء الربط) وتصحيحها قبل التأكيد.</div>
 
