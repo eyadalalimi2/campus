@@ -11,6 +11,14 @@
         </div>
 
         <div class="nav-item">
+            <a href="{{ route('admin.content_imports.index') }}"
+                class="nav-link {{ request()->is('admin/content-imports*') ? 'active' : '' }}">
+                <i class="bi bi-cloud-upload" style="color:#ef4444;"></i>
+                استيراد المحتوى
+            </a>
+        </div>
+
+        <div class="nav-item">
             <a href="{{ route('admin.dashboard') }}"
                 class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                 <i class="bi bi-speedometer2" style="color:#6366f1;"></i>

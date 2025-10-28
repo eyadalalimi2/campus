@@ -60,7 +60,7 @@ use App\Http\Controllers\Admin\AndroidAppReleaseController;
 use App\Http\Controllers\Admin\ClinicalSubjectPdfController;
 use App\Http\Controllers\Admin\StudyGuideController;
 use App\Http\Controllers\Admin\ImportController;
-
+use App\Http\Controllers\Admin\ContentImportController;
 /*
 |--------------------------------------------------------------------------
 | Admin Routes (prefix=admin, name=admin.) via RouteServiceProvider
@@ -301,6 +301,15 @@ Route::middleware('auth:admin')->group(function () {
     Route::post('imports/{type}/confirm', [ImportController::class, 'confirm'])->name('imports.confirm');
     Route::get('imports/{type}/errors-export', [ImportController::class, 'errorsExport'])->name('imports.errors_export');
     Route::get('imports/{type}/template', [ImportController::class, 'template'])->name('imports.template');
+
+    // Separate content imports (videos, resources, clinical PDFs)
+    Route::get('content-imports', [ContentImportController::class, 'index'])->name('content_imports.index');
+    Route::get('content-imports/{type}', [ContentImportController::class, 'show'])->name('content_imports.show');
+    Route::post('content-imports/{type}', [ContentImportController::class, 'upload'])->name('content_imports.upload');
+    Route::post('content-imports/{type}/preview', [ContentImportController::class, 'preview'])->name('content_imports.preview');
+    Route::post('content-imports/{type}/confirm', [ContentImportController::class, 'confirm'])->name('content_imports.confirm');
+    Route::get('content-imports/{type}/errors-export', [ContentImportController::class, 'errorsExport'])->name('content_imports.errors_export');
+    Route::get('content-imports/{type}/template', [ContentImportController::class, 'template'])->name('content_imports.template');
 
     // مميزات التطبيق
     Route::resource('app_features', AppFeatureController::class)->except(['show']);
