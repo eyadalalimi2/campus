@@ -25,4 +25,17 @@ class MedSubjectRequest extends FormRequest
             'device_ids.*' => ['integer','exists:med_devices,id'],
         ];
     }
+
+    /**
+     * Prepare the data for validation.
+     * Make status default to 'published' when creating a new subject.
+     */
+    protected function prepareForValidation(): void
+    {
+        if ($this->isMethod('post')) {
+            $this->merge([
+                'status' => $this->input('status', 'published'),
+            ]);
+        }
+    }
 }
