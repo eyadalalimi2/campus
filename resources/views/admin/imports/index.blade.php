@@ -82,7 +82,7 @@
                             <div class="card-body d-flex flex-column">
                                 <div class="d-flex align-items-start">
                                     <div class="me-3">
-                                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width:44px;height:44px;font-size:18px">@switch($t) @case('universities') 🎓 @break @case('branches') 🏢 @break @case('colleges') 🏫 @break @case('majors') 📚 @break @case('med_devices') ⚙️ @break @case('med_subjects') 🧾 @break @case('med_topics') 🗂️ @break @case('med_doctors') 👩‍⚕️ @break @case('clinical_subjects') 🩺 @break @default 📁 @endswitch</div>
+                                        <span style="font-size:20px;line-height:1">@switch($t) @case('universities') 🎓 @break @case('branches') 🏢 @break @case('colleges') 🏫 @break @case('majors') 📚 @break @case('med_devices') ⚙️ @break @case('med_subjects') 🧾 @break @case('med_topics') 🗂️ @break @case('med_doctors') 👩‍⚕️ @break @case('clinical_subjects') 🩺 @break @default 📁 @endswitch</span>
                                     </div>
                                     <div>
                                         <h5 class="card-title mb-1">{{ $labels[$t] ?? ucfirst($t) }}</h5>
