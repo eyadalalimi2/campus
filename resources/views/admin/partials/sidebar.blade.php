@@ -3,11 +3,33 @@
         <div class="nav-item mt-3 fw-bold" style="font-size:15px;color:#0e7490;">
             عناصر الطب البشري
         </div>
+        <!-- رابط نصائح طبية (شاشة مستقلة) -->
+        <div class="nav-item">
+            <a href="{{ route('admin.medical_tips.index') }}" class="nav-link {{ request()->is('admin/medical_tips*') ? 'active' : '' }}">
+                <i class="bi bi-heart-pulse" style="color:#ef4444;"></i>
+                نصائح طبية
+            </a>
+        </div>
+
         <!-- رابط الدورات والأنشطة (أوّل عنصر في القائمة) -->
         <div class="nav-item">
             <a href="{{ route('admin.activity_buttons.index') }}" class="nav-link {{ request()->is('admin/activity_buttons*') ? 'active' : '' }}">
                 <i class="bi bi-easel2" style="color:#0ea5e9;"></i>
                 الدورات والأنشطة
+            </a>
+        </div>
+        <div class="nav-item">
+            <a href="{{ route('admin.practice_pdfs.index') }}"
+                class="nav-link {{ request()->routeIs('admin.practice_pdfs.*') ? 'active' : '' }}">
+                <i class="bi bi-file-earmark-text" style="color:#7c3aed;"></i>
+                ملفات اختبار مزاولة المهنة
+            </a>
+        </div>
+        <div class="nav-item">
+            <a href="{{ route('admin.research_pdfs.index') }}"
+                class="nav-link {{ request()->routeIs('admin.research_pdfs.*') ? 'active' : '' }}">
+                <i class="bi bi-journal" style="color:#0ea5e9;"></i>
+                الأبحاث ورسائل الماجستير
             </a>
         </div>
         <div class="nav-item">

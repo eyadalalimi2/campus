@@ -63,6 +63,9 @@ use App\Http\Controllers\Admin\ImportController;
 use App\Http\Controllers\Admin\ContentImportController;
 use App\Http\Controllers\Admin\ActivityButtonController;
 use App\Http\Controllers\Admin\ActivityVideoController;
+use App\Http\Controllers\Admin\MedicalTipController;
+use App\Http\Controllers\Admin\ResearchPdfController;
+use App\Http\Controllers\Admin\PracticePdfController;
 /*
 |--------------------------------------------------------------------------
 | Admin Routes (prefix=admin, name=admin.) via RouteServiceProvider
@@ -287,6 +290,8 @@ Route::middleware('auth:admin')->group(function () {
     // Activity Buttons / الدورات والأنشطة
     Route::resource('activity_buttons', ActivityButtonController::class)
         ->except(['show']);
+    // Medical Tips (نصائح طبية) - شاشة إدارة قائمة الفيديوهات/النصائح
+    Route::resource('medical_tips', MedicalTipController::class)->except(['show']);
     // Videos nested under activity buttons (CRUD)
     Route::resource('activity_buttons.videos', ActivityVideoController::class)
         ->shallow()
@@ -351,4 +356,22 @@ Route::resource('clinical_subject_pdfs', ClinicalSubjectPdfController::class)->n
     'update' => 'clinical_subject_pdfs.update',
     'destroy' => 'clinical_subject_pdfs.destroy',
 ]);
+    // Practice PDFs (اختبار مزاولة المهنة) - شاشة إدارة ملفات PDF مستقلة
+    Route::resource('practice_pdfs', PracticePdfController::class)->names([
+        'index' => 'practice_pdfs.index',
+        'create' => 'practice_pdfs.create',
+        'store' => 'practice_pdfs.store',
+        'edit' => 'practice_pdfs.edit',
+        'update' => 'practice_pdfs.update',
+        'destroy' => 'practice_pdfs.destroy',
+    ]);
+    // Research PDFs (الأبحاث العلمية ورسائل الماجستير)
+    Route::resource('research_pdfs', ResearchPdfController::class)->names([
+        'index' => 'research_pdfs.index',
+        'create' => 'research_pdfs.create',
+        'store' => 'research_pdfs.store',
+        'edit' => 'research_pdfs.edit',
+        'update' => 'research_pdfs.update',
+        'destroy' => 'research_pdfs.destroy',
+    ]);
 });

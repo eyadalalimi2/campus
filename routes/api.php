@@ -39,6 +39,9 @@ use App\Http\Controllers\Api\V1\ContentAssistantController as ApiContentAssistan
 use App\Http\Controllers\Api\V1\AppFeaturesController;
 use App\Http\Controllers\Api\V1\AppContentsController;
 use App\Http\Controllers\Api\V1\ActivityButtonsController;
+use App\Http\Controllers\Api\V1\PracticePdfsController;
+use App\Http\Controllers\Api\V1\ResearchPdfsController;
+use App\Http\Controllers\Api\V1\MedicalTipsController;
 use App\Http\Controllers\Api\V1\ClinicalSubjectPdfController as ApiClinicalSubjectPdfController;
 use App\Http\Controllers\Api\V1\ClinicalSubjectController;
 use App\Http\Controllers\Api\V1\StudyGuideController as ApiStudyGuideController;
@@ -90,6 +93,12 @@ Route::prefix('v1')->group(function () {
     Route::get('activity-buttons', [ActivityButtonsController::class, 'index']);
     // قائمة الفيديوهات الخاصة بزر معين
     Route::get('activity-buttons/{button}/videos', [ActivityButtonsController::class, 'videos']);
+    // Medical Tips (نصائح طبية) - قائمة النصائح/الفيديوهات التي تُدار من لوحة التحكم
+    Route::get('medical-tips', [MedicalTipsController::class, 'index']);
+    // Practice PDFs (اختبار مزاولة المهنة)
+    Route::get('practice-pdfs', [PracticePdfsController::class, 'index']);
+    // Research PDFs (الأبحاث العلمية ورسائل الماجستير)
+    Route::get('research-pdfs', [ResearchPdfsController::class, 'index']);
     // Subjects
     Route::get('subjects', [MedSubjectController::class, 'index']);
     Route::get('subjects/{subject}/topics', [MedTopicController::class, 'bySubject']);
