@@ -17,6 +17,7 @@
                     'med_videos' => 'محتوى الفيديوهات',
                     'med_resources' => 'محتوى الموارد (ملفات)',
                     'clinical_subject_pdfs' => ' محتوى المواد السريرية PDF',
+                    'medical_contents' => 'محتوى المواد الطبية',
                 ];
 
                 $descriptions = [

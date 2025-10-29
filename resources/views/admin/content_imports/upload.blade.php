@@ -5,6 +5,7 @@
         'med_videos' => 'الفيديوهات ',
         'med_resources' => 'الموارد (ملفات)',
         'clinical_subject_pdfs' => ' المواد السريرية PDF',
+        'medical_contents' => 'المحتويات الطبية',
     ];
 @endphp
 
@@ -199,6 +200,86 @@
                                     </table>
                                 </div>
                                 <p class="small text-muted">ملاحظة: عند إدخال عمود ربط المادة السريرية سيتم محاولة حل القيمة كمعرّف أو اسم؛ القيم غير الموجودة ستظهر كتحذير في تقرير المعاينة.</p>
+                            </div>
+                        @elseif($type === 'medical_contents')
+                            <div class="alert alert-info">
+                                <h6 class="mb-2">إرشادات تعبئة قالب استيراد المحتويات الطبية</h6>
+                                <p class="small mb-2">افحص الأعمدة التالية واملأ كل صف بمحتوى طبي واحد. الرجاء عدم تعديل صف الرأس أو تسميات الأعمدة.</p>
+                                <div class="table-responsive mb-2">
+                                    <table class="table table-sm table-bordered mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>العمود</th>
+                                                <th>الوصف</th>
+                                                <th>مطلوب؟</th>
+                                                <th>مثال</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>العنوان<br><small><code>title</code></small></td>
+                                                <td>عنوان المحتوى كما سيظهر في التطبيق.</td>
+                                                <td>نعم</td>
+                                                <td>مذكرة محاضرة التشريح</td>
+                                            </tr>
+                                            <tr>
+                                                <td>الوصف<br><small><code>description</code></small></td>
+                                                <td>وصف موجز للمحتوى.</td>
+                                                <td>لا</td>
+                                                <td>ملخص المحاضرة مع المراجع الأساسية</td>
+                                            </tr>
+                                            <tr>
+                                                <td>نوع الملف<br><small><code>file_type</code></small></td>
+                                                <td>حدد إذا كان الملف PDF أو رابط مباشر. القيم المقبولة: <code>pdf</code> أو <code>link</code>. يُستخدم العمود <code>file_path</code> عندما يكون النوع <code>pdf</code>، ويُستخدم <code>source_url</code> عندما يكون النوع <code>link</code>.</td>
+                                                <td>نعم</td>
+                                                <td>pdf</td>
+                                            </tr>
+                                            <tr>
+                                                <td>مسار الملف (إن كان PDF)<br><small><code>file_path</code></small></td>
+                                                <td>مسار داخل التخزين أو مسار مرجعي لملف PDF. لا يتم رفع الملف فعليًا هنا — فقط مسار مرجعي يُخزن في العمود <code>file_path</code>.</td>
+                                                <td>لا</td>
+                                                <td>uploads/medical_contents/anatomy.pdf</td>
+                                            </tr>
+                                            <tr>
+                                                <td>رابط المصدر (إن كان رابطًا)<br><small><code>source_url</code></small></td>
+                                                <td>رابط مباشر للمحتوى الخارجي؛ يُستخدم عندما يكون <code>file_type</code> = <code>link</code>. هذا يُخزن في العمود <code>source_url</code>.</td>
+                                                <td>لا</td>
+                                                <td>https://example.com/anatomy.html</td>
+                                            </tr>
+                                            <tr>
+                                                <td>الجامعة<br><small><code>university_id_or_name</code></small></td>
+                                                <td>معرّف الجامعة أو اسمها لربط المحتوى بجمهور الجامعة.</td>
+                                                <td>نعم</td>
+                                                <td>1 أو جامعة القاهرة</td>
+                                            </tr>
+                                            <tr>
+                                                <td>الفرع<br><small><code>branch_id_or_name</code></small></td>
+                                                <td>معرّف أو اسم الفرع (اختياري).</td>
+                                                <td>لا</td>
+                                                <td>القاهرة أو 2</td>
+                                            </tr>
+                                            <tr>
+                                                <td>الكلية<br><small><code>college_id_or_name</code></small></td>
+                                                <td>معرّف أو اسم الكلية (اختياري).</td>
+                                                <td>لا</td>
+                                                <td>كلية الطب</td>
+                                            </tr>
+                                            <tr>
+                                                <td>التخصص<br><small><code>major_id_or_name</code></small></td>
+                                                <td>معرّف أو اسم التخصص/التخصص الفرعي (اختياري).</td>
+                                                <td>لا</td>
+                                                <td>تشريح</td>
+                                            </tr>
+                                            <tr>
+                                                <td>حالة النشر<br><small><code>publish_status</code></small></td>
+                                                <td>حالة المحتوى في النظام: <code>published</code> أو <code>draft</code>. القيمة الافتراضية: <code>published</code>.</td>
+                                                <td>لا</td>
+                                                <td>published</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <p class="small text-muted">ملاحظة: عند إدخال أعمدة الربط (جامعة/فرع/كلية/تخصص) سيتم محاولة حلها كمعرّف (ID) أو كاسم؛ في حال عدم العثور على السجل سيظهر تحذير في المعاينة ويمنع التأكيد حتى تقوم بتصحيح القيم أو إنشاء السجلات يدوياً.</p>
                             </div>
                         @endif
                         <p class="text-muted small mb-0">اتبع الإرشادات أعلاه بعناية، وحمّل الملف بصيغة Excel (.xlsx أو .xls). تأكد من أن أسماء الأعمدة لم تُعدّل.</p>

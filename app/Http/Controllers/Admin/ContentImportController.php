@@ -15,6 +15,11 @@ use App\Models\MedDoctor;
 use App\Models\MedSubject;
 use App\Models\MedTopic;
 use App\Models\MedResourceCategory;
+use App\Models\Content;
+use App\Models\University;
+use App\Models\UniversityBranch;
+use App\Models\College;
+use App\Models\Major;
 
 class ContentImportController extends Controller
 {
@@ -22,12 +27,14 @@ class ContentImportController extends Controller
         'med_videos',
         'med_resources',
         'clinical_subject_pdfs',
+        'medical_contents',
     ];
 
     protected $typeLabels = [
         'med_videos' => 'فيديوهات المحتوى',
         'med_resources' => 'الموارد (ملفات)',
         'clinical_subject_pdfs' => 'PDFs المواد السريرية',
+        'medical_contents' => 'المحتويات الطبية',
     ];
 
     public function index()
@@ -65,6 +72,8 @@ class ContentImportController extends Controller
             'med_videos' => ['title','youtube_url','thumbnail_url','doctor_id_or_name','subject_id_or_name','topic_id_or_name','order_index','status','published_at'],
             'med_resources' => ['title','file_url','file_size_bytes','pages_count','category_id_or_name','subject_id_or_name','topic_id_or_name','order_index','status'],
             'clinical_subject_pdfs' => ['name','file','content','order','clinical_subject_id_or_name'],
+            // medical_contents: عنوان، وصف، نوع الملف (pdf|link)، رابط الملف، جامعة/فرع/كلية/تخصص (معرّف أو اسم)، وحالة النشر
+            'medical_contents' => ['title','description','file_type','file_path','source_url','university_id_or_name','branch_id_or_name','college_id_or_name','major_id_or_name','publish_status'],
         ];
 
         $headers = $templates[$type] ?? [];
@@ -89,9 +98,10 @@ class ContentImportController extends Controller
         $headers = array_map(function($h){ return strtolower(trim((string)$h)); }, $rows[0]);
         $missing = [];
         // basic required header validation per type
-        if ($type === 'med_videos' && !in_array('title', $headers)) $missing[] = 'title';
-        if ($type === 'med_resources' && !in_array('title', $headers)) $missing[] = 'title';
-        if ($type === 'clinical_subject_pdfs' && !in_array('name', $headers)) $missing[] = 'name';
+    if ($type === 'med_videos' && !in_array('title', $headers)) $missing[] = 'title';
+    if ($type === 'med_resources' && !in_array('title', $headers)) $missing[] = 'title';
+    if ($type === 'clinical_subject_pdfs' && !in_array('name', $headers)) $missing[] = 'name';
+    if ($type === 'medical_contents' && !in_array('title', $headers)) $missing[] = 'title';
         if (!empty($missing)) return back()->withErrors(['file' => 'أعمدة مفقودة: ' . implode(', ', $missing)]);
 
         $report = $this->processFile($path, $type, true);
@@ -592,6 +602,180 @@ class ContentImportController extends Controller
                         'clinical_subject_id' => $clinical->id,
                     ]);
                     $created++;
+                }
+
+                // medical_contents import handling
+                if ($type === 'medical_contents') {
+                    $v = Validator::make($rowAssoc, [
+                        'title' => 'required|string|max:255',
+                        'file_type' => 'required|string',
+                        'file_path' => 'nullable|string|max:1000',
+                        'source_url' => 'nullable|string|max:1000',
+                        'university_id_or_name' => 'required',
+                    ]);
+                    if ($v->fails()) {
+                        $failed++;
+                        $errs = $v->errors()->all();
+                        $rowsList[count($rowsList)-1]['meta']['messages'] = array_map(function($m){ return ['type'=>'validation','text'=>$m]; }, $errs);
+                        $errors[]= ['row'=>$rowNumber,'messages'=>$errs,'raw'=>$rowAssoc,'type'=>'validation'];
+                        continue;
+                    }
+
+                    // ensure the appropriate column is present depending on file_type
+                    $ft = strtolower((string)($rowAssoc['file_type'] ?? ''));
+                    if (in_array($ft, ['pdf','file'])) {
+                        if (empty($rowAssoc['file_path'])) {
+                            $failed++;
+                            $msg = 'حقل file_path مطلوب عندما يكون file_type = pdf';
+                            $rowsList[count($rowsList)-1]['meta']['messages'] = [['type'=>'validation','text'=>$msg]];
+                            $errors[] = ['row'=>$rowNumber,'messages'=>[$msg],'raw'=>$rowAssoc,'type'=>'validation'];
+                            continue;
+                        }
+                    } else {
+                        // treat anything non-file as link
+                        if (empty($rowAssoc['source_url'])) {
+                            $failed++;
+                            $msg = 'حقل source_url مطلوب عندما يكون file_type = link';
+                            $rowsList[count($rowsList)-1]['meta']['messages'] = [['type'=>'validation','text'=>$msg]];
+                            $errors[] = ['row'=>$rowNumber,'messages'=>[$msg],'raw'=>$rowAssoc,'type'=>'validation'];
+                            continue;
+                        }
+                    }
+
+                    // resolve relations: university, branch, college, major
+                    $university = null; $branch = null; $college = null; $major = null;
+                    if (!empty($rowAssoc['university_id_or_name'])) {
+                        $u = $rowAssoc['university_id_or_name'];
+                        $university = is_numeric($u) ? University::find((int)$u) : University::where('name',$u)->first();
+                    }
+                    if (!empty($rowAssoc['branch_id_or_name'])) {
+                        $b = $rowAssoc['branch_id_or_name'];
+                        $branch = is_numeric($b) ? UniversityBranch::find((int)$b) : UniversityBranch::where('name',$b)->first();
+                    }
+                    if (!empty($rowAssoc['college_id_or_name'])) {
+                        $c = $rowAssoc['college_id_or_name'];
+                        $college = is_numeric($c) ? College::find((int)$c) : College::where('name',$c)->first();
+                    }
+                    if (!empty($rowAssoc['major_id_or_name'])) {
+                        $m = $rowAssoc['major_id_or_name'];
+                        $major = is_numeric($m) ? Major::find((int)$m) : Major::where('name',$m)->first();
+                    }
+
+                    if (!$persist) {
+                        $msg = [];$providedCount=0;$foundCount=0;
+                        if (isset($rowAssoc['university_id_or_name']) && $rowAssoc['university_id_or_name'] !== '') {
+                            $providedCount++;
+                            if ($university) { $foundCount++; $rowsList[count($rowsList)-1]['meta']['relations']['university'] = true; $rowAssoc['university_id_or_name'] = $university->name; }
+                            else { $rowsList[count($rowsList)-1]['meta']['relations']['university'] = false; $msg[] = ['type'=>'relation','text'=>'الجامعة غير موجودة: ' . $rowAssoc['university_id_or_name']]; }
+                        }
+                        if (isset($rowAssoc['branch_id_or_name']) && $rowAssoc['branch_id_or_name'] !== '') {
+                            $providedCount++;
+                            if ($branch) { $foundCount++; $rowsList[count($rowsList)-1]['meta']['relations']['branch'] = true; $rowAssoc['branch_id_or_name'] = $branch->name; }
+                            else { $rowsList[count($rowsList)-1]['meta']['relations']['branch'] = false; $msg[] = ['type'=>'relation','text'=>'الفرع غير موجود: ' . $rowAssoc['branch_id_or_name']]; }
+                        }
+                        if (isset($rowAssoc['college_id_or_name']) && $rowAssoc['college_id_or_name'] !== '') {
+                            $providedCount++;
+                            if ($college) { $foundCount++; $rowsList[count($rowsList)-1]['meta']['relations']['college'] = true; $rowAssoc['college_id_or_name'] = $college->name; }
+                            else { $rowsList[count($rowsList)-1]['meta']['relations']['college'] = false; $msg[] = ['type'=>'relation','text'=>'الكلية غير موجودة: ' . $rowAssoc['college_id_or_name']]; }
+                        }
+                        if (isset($rowAssoc['major_id_or_name']) && $rowAssoc['major_id_or_name'] !== '') {
+                            $providedCount++;
+                            if ($major) { $foundCount++; $rowsList[count($rowsList)-1]['meta']['relations']['major'] = true; $rowAssoc['major_id_or_name'] = $major->name; }
+                            else { $rowsList[count($rowsList)-1]['meta']['relations']['major'] = false; $msg[] = ['type'=>'relation','text'=>'التخصص غير موجود: ' . $rowAssoc['major_id_or_name']]; }
+                        }
+
+                        $rowsList[count($rowsList)-1]['raw'] = $rowAssoc;
+                        $relation_ok = $providedCount === 0 ? null : ($foundCount === $providedCount);
+                        $rowsList[count($rowsList)-1]['meta']['relation_ok'] = $relation_ok;
+                        $rowsList[count($rowsList)-1]['meta']['messages'] = $msg;
+                        if (!empty($msg)) { $errors[] = ['row'=>$rowNumber,'messages'=>array_map(function($m){return $m['text'];}, $msg),'raw'=>$rowAssoc,'type'=>'relation']; }
+
+                        // detect duplicates on preview (by file_path/source_url or title)
+                        $isDuplicate = false;
+                        $ft = strtolower((string)($rowAssoc['file_type'] ?? ''));
+                        if (in_array($ft, ['pdf','file'])) {
+                            if (!empty($rowAssoc['file_path'])) {
+                                $exists = Content::where('file_path', $rowAssoc['file_path'])->first();
+                                if ($exists) $isDuplicate = true;
+                            }
+                        } else {
+                            if (!empty($rowAssoc['source_url'])) {
+                                $exists = Content::where('source_url', $rowAssoc['source_url'])->first();
+                                if ($exists) $isDuplicate = true;
+                            }
+                        }
+                        if (!$isDuplicate) {
+                            $exists = Content::where('title', $rowAssoc['title'])->first();
+                            if ($exists) $isDuplicate = true;
+                        }
+                        if ($isDuplicate) {
+                            $rowsList[count($rowsList)-1]['meta']['skip'] = true;
+                            $rowsList[count($rowsList)-1]['meta']['skip_reason'] = 'موجود مسبقًا — تم التخطي';
+                            $errors[] = ['row'=>$rowNumber,'messages'=>['موجود مسبقًا — تم التخطي'],'raw'=>$rowAssoc,'type'=>'skip'];
+                        } else {
+                            $created++;
+                        }
+                        continue;
+                    }
+
+                    // persist: skip existing (by file_path/source_url depending on file_type, else by title)
+                    $exists = null;
+                    $ft = strtolower((string)($rowAssoc['file_type'] ?? ''));
+                    if (in_array($ft, ['pdf','file'])) {
+                        if (!empty($rowAssoc['file_path'])) {
+                            $exists = Content::where('file_path', $rowAssoc['file_path'])->first();
+                        }
+                    } else {
+                        if (!empty($rowAssoc['source_url'])) {
+                            $exists = Content::where('source_url', $rowAssoc['source_url'])->first();
+                        }
+                    }
+                    if (!$exists) {
+                        $exists = Content::where('title', $rowAssoc['title'])->first();
+                    }
+                    if ($exists) {
+                        $skipped++;
+                        $skipReason = 'موجود مسبقًا';
+                        $skipped_items[] = ['row'=>$rowNumber,'title'=>$rowAssoc['title'] ?? null,'file_url'=>$rowAssoc['file_url'] ?? null,'reason'=>$skipReason];
+                        $rowsList[count($rowsList)-1]['meta']['skip'] = true;
+                        $rowsList[count($rowsList)-1]['meta']['skip_reason'] = $skipReason;
+                        continue;
+                    }
+
+                    // map file_type to Content types and store in the correct column
+                    $ft = strtolower((string)($rowAssoc['file_type'] ?? ''));
+                    if (in_array($ft, ['pdf','file'])) {
+                        $ctype = Content::TYPE_FILE;
+                    } else {
+                        $ctype = Content::TYPE_LINK;
+                    }
+
+                    $status = $rowAssoc['publish_status'] ?? 'published';
+                    $isActive = $status === Content::STATUS_PUBLISHED ? 1 : 0;
+
+                    $contentData = [
+                        'title' => $rowAssoc['title'],
+                        'description' => $rowAssoc['description'] ?? null,
+                        'type' => $ctype,
+                        'university_id' => $university->id ?? null,
+                        'branch_id' => $branch->id ?? null,
+                        'college_id' => $college->id ?? null,
+                        'major_id' => $major->id ?? null,
+                        'status' => $status,
+                        'is_active' => $isActive,
+                        'published_at' => $isActive ? now() : null,
+                    ];
+                    if (in_array($ft, ['pdf','file'])) {
+                        $contentData['file_path'] = $rowAssoc['file_path'] ?? null;
+                        $contentData['source_url'] = null;
+                    } else {
+                        $contentData['source_url'] = $rowAssoc['source_url'] ?? null;
+                        $contentData['file_path'] = null;
+                    }
+
+                    $content = Content::create($contentData);
+                    $created++;
+                    $created_items[] = ['row'=>$rowNumber,'id'=>$content->id,'title'=>$content->title,'source_url'=>$content->source_url];
                 }
 
             } catch (\Throwable $e) {
