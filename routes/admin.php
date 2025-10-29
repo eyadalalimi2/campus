@@ -61,6 +61,8 @@ use App\Http\Controllers\Admin\ClinicalSubjectPdfController;
 use App\Http\Controllers\Admin\StudyGuideController;
 use App\Http\Controllers\Admin\ImportController;
 use App\Http\Controllers\Admin\ContentImportController;
+use App\Http\Controllers\Admin\ActivityButtonController;
+use App\Http\Controllers\Admin\ActivityVideoController;
 /*
 |--------------------------------------------------------------------------
 | Admin Routes (prefix=admin, name=admin.) via RouteServiceProvider
@@ -282,6 +284,22 @@ Route::middleware('auth:admin')->group(function () {
     Route::resource('courses', MedicalCourseController::class)
         ->except(['show'])
         ->names('courses');
+    // Activity Buttons / الدورات والأنشطة
+    Route::resource('activity_buttons', ActivityButtonController::class)
+        ->except(['show']);
+    // Videos nested under activity buttons (CRUD)
+    Route::resource('activity_buttons.videos', ActivityVideoController::class)
+        ->shallow()
+        ->except(['show'])
+        ->names([
+            'index' => 'activity_buttons.videos.index',
+            'create' => 'activity_buttons.videos.create',
+            'store' => 'activity_buttons.videos.store',
+            // shallow names
+            'edit' => 'activity_videos.edit',
+            'update' => 'activity_videos.update',
+            'destroy' => 'activity_videos.destroy',
+        ]);
     Route::resource('content_assistants', ContentAssistantController::class)->except(['show']);
 
     // User Devices

@@ -3,6 +3,13 @@
         <div class="nav-item mt-3 fw-bold" style="font-size:15px;color:#0e7490;">
             عناصر الطب البشري
         </div>
+        <!-- رابط الدورات والأنشطة (أوّل عنصر في القائمة) -->
+        <div class="nav-item">
+            <a href="{{ route('admin.activity_buttons.index') }}" class="nav-link {{ request()->is('admin/activity_buttons*') ? 'active' : '' }}">
+                <i class="bi bi-easel2" style="color:#0ea5e9;"></i>
+                الدورات والأنشطة
+            </a>
+        </div>
         <div class="nav-item">
             <a href="{{ route('admin.imports.index') }}"
                 class="nav-link {{ request()->is('admin/imports*') ? 'active' : '' }}">

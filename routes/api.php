@@ -38,6 +38,7 @@ use App\Http\Controllers\Api\V1\Me\VisibilityController as ApiVisibilityControll
 use App\Http\Controllers\Api\V1\ContentAssistantController as ApiContentAssistantController;
 use App\Http\Controllers\Api\V1\AppFeaturesController;
 use App\Http\Controllers\Api\V1\AppContentsController;
+use App\Http\Controllers\Api\V1\ActivityButtonsController;
 use App\Http\Controllers\Api\V1\ClinicalSubjectPdfController as ApiClinicalSubjectPdfController;
 use App\Http\Controllers\Api\V1\ClinicalSubjectController;
 use App\Http\Controllers\Api\V1\StudyGuideController as ApiStudyGuideController;
@@ -85,6 +86,10 @@ Route::prefix('v1')->group(function () {
     Route::get('app-features', [AppFeaturesController::class, 'index']);
     //App Contents
     Route::get('app-contents', [AppContentsController::class, 'index']);
+    // Activity Buttons (الدورات والأنشطة) - قائمة الأزرار المتوفرة في التطبيق
+    Route::get('activity-buttons', [ActivityButtonsController::class, 'index']);
+    // قائمة الفيديوهات الخاصة بزر معين
+    Route::get('activity-buttons/{button}/videos', [ActivityButtonsController::class, 'videos']);
     // Subjects
     Route::get('subjects', [MedSubjectController::class, 'index']);
     Route::get('subjects/{subject}/topics', [MedTopicController::class, 'bySubject']);
