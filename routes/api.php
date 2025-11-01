@@ -312,8 +312,9 @@ Route::prefix('v1')->group(function () {
         // محتوى مادة (يرجع من contents عبر MedicalSubjectContent)
         Route::get('medical/subjects/{subject}/contents', [MedicalPrivateController::class, 'subjectContents']); // ?type=file|link
 
-        /* تقييمات التطبيق (آراء المستخدمين) */
-        Route::get('me/reviews', [ReviewsController::class, 'index']);
-        Route::post('me/reviews', [ReviewsController::class, 'store']);
+    /* تقييمات التطبيق (آراء المستخدمين) */
+    Route::get('me/reviews', [ReviewsController::class, 'index']);
+    Route::post('me/reviews', [ReviewsController::class, 'store']);
+    Route::match(['put','patch'], 'me/reviews', [ReviewsController::class, 'update']);
     });
 });

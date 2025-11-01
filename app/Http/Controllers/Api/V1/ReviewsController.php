@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Reviews\StoreReviewRequest;
+use App\Http\Requests\Api\V1\Reviews\UpdateReviewRequest;
 use App\Models\Review;
 use Illuminate\Http\Request;
 
@@ -55,6 +56,16 @@ class ReviewsController extends Controller
     {
         $user = $request->user();
 
+        // منع تكرار التقييم: مستخدم واحد ← تقييم واحد
+        $existing = Review::where('user_id', $user->id)->first();
+        if ($existing) {
+            return response()->json([
+                'code'    => 'REVIEW_EXISTS',
+                'message' => 'لديك تقييم سابق. استخدم تعديل التقييم.',
+                'data'    => $existing->load('replyAdmin'),
+            ], 409);
+        }
+
         $review = Review::create([
             'user_id' => $user->id,
             'rating'  => (int) $request->integer('rating'),
@@ -66,5 +77,40 @@ class ReviewsController extends Controller
             'message' => 'تم إرسال التقييم بنجاح',
             'data'    => $review->load('replyAdmin'),
         ], 201);
+    }
+
+    // PUT/PATCH v1/me/reviews — تحديث التقييم الحالي للمستخدم
+    public function update(UpdateReviewRequest $request)
+    {
+        $user = $request->user();
+        $review = Review::where('user_id', $user->id)->first();
+
+        if (!$review) {
+            return response()->json([
+                'code'    => 'REVIEW_NOT_FOUND',
+                'message' => 'لا يوجد لديك تقييم سابق لإنشاء تعديل عليه.',
+            ], 404);
+        }
+
+        $data = $request->validated();
+
+        if (array_key_exists('comment', $data)) {
+            $review->comment = $data['comment'];
+        }
+        if (array_key_exists('rating', $data) && $data['rating'] !== null) {
+            $review->rating = (int) $data['rating'];
+        }
+
+        // إعادة الحالة إلى "pending" لإعادة المراجعة، ومسح رد الإدارة السابق إن وُجد
+        $review->status = 'pending';
+        $review->reply_text = null;
+        $review->reply_admin_id = null;
+        $review->replied_at = null;
+        $review->save();
+
+        return response()->json([
+            'message' => 'تم تحديث التقييم، وسيتم مراجعته من الإدارة.',
+            'data'    => $review->load('replyAdmin'),
+        ]);
     }
 }
