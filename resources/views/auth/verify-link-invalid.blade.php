@@ -7,8 +7,17 @@
       <div class="mx-auto mb-2" style="width:80px;height:80px;border-radius:50%;background:#fff4f4;display:flex;align-items:center;justify-content:center;border:1px solid #f8d7da;">
         <span style="font-size:34px;color:#dc3545;">!</span>
       </div>
-      <h5 class="fw-bold mb-2">الرابط غير صالح أو تم استخدامه مسبقًا</h5>
-      <p class="text-muted small mb-0">قد يكون الرابط منتهي الصلاحية أو تم فتحه سابقًا. لا تقلق، يمكنك طلب رابط جديد بسهولة.</p>
+      @php($r = $reason ?? null)
+      @if($r === 'expired')
+        <h5 class="fw-bold mb-2">انتهت صلاحية رابط التفعيل</h5>
+        <p class="text-muted small mb-0">انتهت صلاحية الرابط. يمكنك طلب رابط جديد وسيعمل فورًا.</p>
+      @elseif($r === 'used')
+        <h5 class="fw-bold mb-2">تم استخدام رابط التفعيل مسبقًا</h5>
+        <p class="text-muted small mb-0">يبدو أن الرابط استُخدم من قبل. إذا لم يُفعّل بريدك بعد، اطلب رابطًا جديدًا.</p>
+      @else
+        <h5 class="fw-bold mb-2">الرابط غير صالح</h5>
+        <p class="text-muted small mb-0">قد يكون الرابط غير مكتمل أو تم تعديله. اطلب رابط تفعيل جديد.</p>
+      @endif
     </div>
 
     @auth

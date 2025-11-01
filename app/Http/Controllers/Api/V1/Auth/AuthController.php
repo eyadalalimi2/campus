@@ -175,16 +175,29 @@ final class AuthController extends Controller
      */
     public function verifyEmailByToken(Request $request, string $token)
     {
+        // إن لم يطلب JSON، نعامله كتجربة ويب ونعرض صفحات ودّية
+        $wantsHtml = ! $request->expectsJson();
+
         $row = DB::table('email_verification_tokens')->where('token', $token)->first();
         if (!$row) {
+            if ($wantsHtml) {
+                return response()->view('auth.verify-link-invalid', ['reason' => 'invalid'], 422);
+            }
             return ApiResponse::error('TOKEN_INVALID', 'رابط التفعيل غير صالح.', [], 422);
         }
 
         if (!empty($row->used_at)) {
+            // اعتبره ناجحًا للمستخدم النهائي في الويب (تم استخدامه مسبقًا = غالبًا تم التفعيل)
+            if ($wantsHtml) {
+                return redirect()->route('verification.success');
+            }
             return ApiResponse::error('TOKEN_USED', 'تم استخدام رابط التفعيل مسبقًا.', [], 422);
         }
 
         if (Carbon::parse($row->expires_at)->isPast()) {
+            if ($wantsHtml) {
+                return response()->view('auth.verify-link-invalid', ['reason' => 'expired'], 422);
+            }
             return ApiResponse::error('TOKEN_EXPIRED', 'انتهت صلاحية رابط التفعيل.', [], 422);
         }
 
@@ -195,6 +208,9 @@ final class AuthController extends Controller
             ->whereNull('used_at')
             ->delete();
 
+        if ($wantsHtml) {
+            return redirect()->route('verification.success');
+        }
         return redirect()->away('com.eyadalalimi.students://email-verified');
     }
 
