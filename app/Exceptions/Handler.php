@@ -40,6 +40,23 @@ class Handler extends ExceptionHandler
 
     public function render($request, Throwable $e)
     {
+        // تجربة محسّنة لمسار تفعيل البريد: إن كان الرابط غير صالح/منتهي أو حدثت حالة خاصة، أظهر صفحة ودية
+        try {
+            if (method_exists($request, 'route') && $request->route() && $request->routeIs('verification.verify')) {
+                // رابط موقّع غير صالح (Expired/تم التلاعب به)
+                if ($e instanceof \Illuminate\Routing\Exceptions\InvalidSignatureException) {
+                    return response()->view('auth.verify-link-invalid', [
+                        'reason' => 'invalid',
+                    ], 403);
+                }
+                // غير مصدّق: أعِد التوجيه لتسجيل الدخول برسالة لطيفة بدل JSON
+                if ($e instanceof AuthenticationException) {
+                    return redirect()->guest(route('login'))
+                        ->with('status', 'يرجى تسجيل الدخول لإكمال تفعيل بريدك.');
+                }
+            }
+        } catch (\Throwable $ignore) {}
+
         // نرجع JSON لطلبات API أو لمن يطلب صراحة JSON
         if ($request->expectsJson() || $request->is('api/*')) {
             // Validation

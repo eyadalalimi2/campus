@@ -43,6 +43,11 @@ Route::middleware('auth')->group(function () {
                 ->middleware(['signed', 'throttle:6,1'])
                 ->name('verification.verify');
 
+    // صفحة نجاح التفعيل بعد النقر على رابط التحقق
+    Route::get('verify-email/success', function() {
+        return view('auth.verified');
+    })->name('verification.success');
+
     Route::post('email/verification-notification', [EmailVerificationNotificationController::class, 'store'])
                 ->middleware('throttle:6,1')
                 ->name('verification.send');
