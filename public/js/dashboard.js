@@ -134,4 +134,26 @@
       }
     }
   });
+
+  // === عمودي: توزيع تقييمات التطبيق (1..5) ===
+  mkChart(byId('chartReviewsDistribution'), {
+    type: 'bar',
+    data: {
+      labels: payload.reviewsDistribution?.labels ?? ['1','2','3','4','5'],
+      datasets: [{
+        label: 'عدد التقييمات',
+        data: payload.reviewsDistribution?.data ?? [0,0,0,0,0],
+        backgroundColor: '#f59e0b',
+        borderColor: '#f59e0b',
+        borderWidth: 1,
+        borderRadius: 6,
+      }]
+    },
+    options: Object.assign({}, baseOptions, {
+      scales: {
+        x: { grid: { display: false } },
+        y: { beginAtZero: true, ticks: { callback: (v) => nf(v) }, grid: { color: '#f3f4f6' } }
+      }
+    })
+  });
 })();

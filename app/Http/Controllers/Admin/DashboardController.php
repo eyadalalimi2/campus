@@ -214,9 +214,21 @@ class DashboardController extends Controller
                     ->whereColumn('doctors.major_id', 'majors.id');
             })->count();
 
-        // متوسط تقييم التطبيق (من التقييمات الموافق عليها)
+        // متوسط تقييم التطبيق + توزيع التقييمات (الموافق عليها فقط)
         $reviewsAvg = (float) DB::table('reviews')->where('status','approved')->avg('rating');
         $reviewsCountApproved = (int) DB::table('reviews')->where('status','approved')->count();
+        $distRows = DB::table('reviews')
+            ->select('rating', DB::raw('COUNT(*) as c'))
+            ->where('status','approved')
+            ->groupBy('rating')
+            ->pluck('c','rating');
+        $reviewsDistribution = [
+            1 => (int) ($distRows[1] ?? 0),
+            2 => (int) ($distRows[2] ?? 0),
+            3 => (int) ($distRows[3] ?? 0),
+            4 => (int) ($distRows[4] ?? 0),
+            5 => (int) ($distRows[5] ?? 0),
+        ];
 
     // إحصائيات الكورسات
     $coursesTotal = DB::table('courses')->count();
@@ -332,7 +344,8 @@ class DashboardController extends Controller
             ,
             // تقييمات التطبيق
             'reviewsAvg',
-            'reviewsCountApproved'
+            'reviewsCountApproved',
+            'reviewsDistribution'
         ));
     }
 }

@@ -289,16 +289,17 @@
         </div>
     </div>
 
-    {{-- بطاقة: متوسط تقييم التطبيق (بدلاً من مخطط الفروع) --}}
+    {{-- بطاقة: متوسط تقييم التطبيق + توزيع التقييمات --}}
     <div class="col-lg-6">
         <div class="card card-soft p-3 h-100">
             <div class="d-flex justify-content-between align-items-center">
                 <h6 class="mb-0">متوسط تقييم التطبيق</h6>
                 <i class="bi bi-star-fill" style="color:#f59e0b"></i>
             </div>
-            <div class="d-flex flex-column align-items-center justify-content-center" style="height: 220px">
-                <div class="display-5 fw-bold mb-2">{{ number_format($reviewsAvg ?? 0, 1) }}</div>
-                <div class="fs-3 mb-2">
+            <div class="row align-items-stretch g-3 mt-2" style="min-height: 220px">
+              <div class="col-md-5 d-flex flex-column align-items-center justify-content-center">
+                <div class="display-6 fw-bold mb-2">{{ number_format($reviewsAvg ?? 0, 1) }}</div>
+                <div class="fs-4 mb-2">
                     @php $avg = (float)($reviewsAvg ?? 0); @endphp
                     @for($i=1;$i<=5;$i++)
                         @if($i <= floor($avg))
@@ -310,8 +311,14 @@
                         @endif
                     @endfor
                 </div>
-                <div class="text-muted">عدد التقييمات المعتمدة: {{ number_format($reviewsCountApproved ?? 0) }}</div>
+                <div class="text-muted small">عدد التقييمات المعتمدة: {{ number_format($reviewsCountApproved ?? 0) }}</div>
                 <a href="{{ route('admin.reviews.index') }}" class="btn btn-sm btn-outline-primary mt-3">إدارة التقييمات</a>
+              </div>
+              <div class="col-md-7">
+                <div style="height: 200px">
+                  <canvas id="chartReviewsDistribution"></canvas>
+                </div>
+              </div>
             </div>
         </div>
     </div>
@@ -523,6 +530,17 @@
     'studentsMonthly' => [
         'labels' => $studentsMonthly->pluck('ym')->values()->all(),
         'data'   => $studentsMonthly->pluck('c')->values()->all(),
+    ],
+    // توزيع التقييمات (1..5) الموافق عليها
+    'reviewsDistribution' => [
+        'labels' => ['1','2','3','4','5'],
+        'data'   => [
+            (int)($reviewsDistribution[1] ?? 0),
+            (int)($reviewsDistribution[2] ?? 0),
+            (int)($reviewsDistribution[3] ?? 0),
+            (int)($reviewsDistribution[4] ?? 0),
+            (int)($reviewsDistribution[5] ?? 0),
+        ],
     ],
     'pieStatus' => [
         'active'    => $stdActive,
