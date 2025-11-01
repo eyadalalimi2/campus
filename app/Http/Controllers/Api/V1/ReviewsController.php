@@ -32,10 +32,16 @@ class ReviewsController extends Controller
         // أعِد تنسيق الإخراج ليشمل اسم وصورة المستخدم، التقييم، التعليق، ورد الإدارة بطريقة جاهزة للعرض
         $data = $items->map(function (Review $r) {
             $u = $r->user;
+            // نعيد مسار الصورة فقط (بدون رابط كامل)
             $avatar = null;
             $path = $u?->profile_photo_path;
             if ($path) {
-                $avatar = Str::startsWith($path, ['http://','https://']) ? $path : url($path);
+                if (Str::startsWith($path, ['http://','https://'])) {
+                    $parsed = parse_url($path);
+                    $avatar = $parsed['path'] ?? $path; // إن كانت URL، خذ الجزء path فقط
+                } else {
+                    $avatar = $path; // مسار مخزن مسبقًا
+                }
             }
 
             return [
