@@ -214,6 +214,10 @@ class DashboardController extends Controller
                     ->whereColumn('doctors.major_id', 'majors.id');
             })->count();
 
+        // متوسط تقييم التطبيق (من التقييمات الموافق عليها)
+        $reviewsAvg = (float) DB::table('reviews')->where('status','approved')->avg('rating');
+        $reviewsCountApproved = (int) DB::table('reviews')->where('status','approved')->count();
+
     // إحصائيات الكورسات
     $coursesTotal = DB::table('courses')->count();
     $coursesActive = DB::table('courses')->where('is_active', 1)->count();
@@ -325,6 +329,10 @@ class DashboardController extends Controller
             'activationCodesTotal',
             'activationCodesActive',
             'activationCodesInactive'
+            ,
+            // تقييمات التطبيق
+            'reviewsAvg',
+            'reviewsCountApproved'
         ));
     }
 }

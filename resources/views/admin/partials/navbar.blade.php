@@ -40,6 +40,73 @@
                     </a>
                 </li>
 
+                {{-- أيقونة تنبيهات إجمالية (شكاوى/طلبات/تقييمات) --}}
+                @php
+                    try {
+                        $pendingComplaints = \App\Models\Complaint::whereIn('status',[
+                            'open','triaged','in_progress'
+                        ])->count();
+                    } catch (\Throwable $e) { $pendingComplaints = 0; }
+
+                    try {
+                        $pendingRequests = \App\Models\StudentRequest::whereIn('status',[
+                            'open','in_progress'
+                        ])->count();
+                    } catch (\Throwable $e) { $pendingRequests = 0; }
+
+                    try {
+                        $pendingReviews = \App\Models\Review::where(function($q){
+                                $q->whereNull('reply_text')
+                                  ->orWhere('status','pending');
+                            })->count();
+                    } catch (\Throwable $e) { $pendingReviews = 0; }
+
+                    $pendingTotal = ($pendingComplaints + $pendingRequests + $pendingReviews);
+                @endphp
+
+                <li class="nav-item dropdown me-2">
+                    <a class="nav-link position-relative" href="#" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-bell fs-5"></i>
+                        @if($pendingTotal > 0)
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                {{ $pendingTotal }}
+                                <span class="visually-hidden">تنبيهات غير مقروءة</span>
+                            </span>
+                        @endif
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                        <li class="dropdown-header small text-muted">التنبيهات</li>
+                        <li>
+                            <a class="dropdown-item d-flex justify-content-between align-items-center" href="{{ route('admin.complaints.index') }}">
+                                <span><i class="bi bi-exclamation-diamond me-2 text-danger"></i> الشكاوى</span>
+                                @if($pendingComplaints>0)
+                                    <span class="badge bg-danger">{{ $pendingComplaints }}</span>
+                                @endif
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item d-flex justify-content-between align-items-center" href="{{ route('admin.requests.index') }}">
+                                <span><i class="bi bi-envelope-paper me-2 text-primary"></i> الطلبات</span>
+                                @if($pendingRequests>0)
+                                    <span class="badge bg-primary">{{ $pendingRequests }}</span>
+                                @endif
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item d-flex justify-content-between align-items-center" href="{{ route('admin.reviews.index') }}">
+                                <span><i class="bi bi-star-half me-2 text-warning"></i> التقييمات</span>
+                                @if($pendingReviews>0)
+                                    <span class="badge bg-warning text-dark">{{ $pendingReviews }}</span>
+                                @endif
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <div class="dropdown-item small text-muted">الإجمالي: {{ $pendingTotal }}</div>
+                        </li>
+                    </ul>
+                </li>
+
                 <li class="nav-item">
                     <a class="nav-link" href="{{ route('admin.settings.edit') }}">
                         <i class="bi bi-gear"></i> الإعدادات

@@ -58,6 +58,7 @@ use App\Http\Controllers\Admin\AppContentController;
 use App\Http\Controllers\Admin\AndroidAppController;
 use App\Http\Controllers\Admin\AndroidAppReleaseController;
 use App\Http\Controllers\Admin\ClinicalSubjectPdfController;
+use App\Http\Controllers\Admin\ReviewController;
 use App\Http\Controllers\Admin\StudyGuideController;
 use App\Http\Controllers\Admin\ImportController;
 use App\Http\Controllers\Admin\ContentImportController;
@@ -255,6 +256,12 @@ Route::middleware('auth:admin')->group(function () {
     Route::get('/notifications/options/universities', [AdminNotificationsController::class, 'optionsUniversities'])->name('notifications.options.universities');
     Route::get('/notifications/options/colleges',     [AdminNotificationsController::class, 'optionsColleges'])->name('notifications.options.colleges');     // ?university_id=
     Route::get('/notifications/options/majors',       [AdminNotificationsController::class, 'optionsMajors'])->name('notifications.options.majors');       // ?college_id
+
+    // Reviews (User feedback)
+    Route::get('/reviews', [ReviewController::class, 'index'])->name('reviews.index');
+    Route::get('/reviews/{review}', [ReviewController::class, 'show'])->name('reviews.show');
+    Route::post('/reviews/{review}/reply', [ReviewController::class, 'reply'])->name('reviews.reply');
+    Route::patch('/reviews/{review}/status', [ReviewController::class, 'updateStatus'])->name('reviews.status');
 
     // موارد كاملة
     Route::resource('medical_years', MedicalYearController::class)->names('medical_years');

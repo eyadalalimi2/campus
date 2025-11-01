@@ -226,6 +226,11 @@
                 </a>
             </div>
             <div class="nav-item">
+                <a href="{{ route('admin.reviews.index') }}" class="nav-link {{ request()->routeIs('admin.reviews.*') ? 'active' : '' }}">
+                    <i class="bi bi-star-half" style="color:#f59e0b;"></i> التقييمات
+                </a>
+            </div>
+            <div class="nav-item">
                 <a href="{{ route('admin.complaints.index') }}" class="nav-link">
                     <i class="bi bi-exclamation-diamond" style="color:#e11d48;"></i> الشكاوى
                 </a>

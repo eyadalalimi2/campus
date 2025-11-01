@@ -44,6 +44,7 @@ use App\Http\Controllers\Api\V1\ResearchPdfsController;
 use App\Http\Controllers\Api\V1\MedicalTipsController;
 use App\Http\Controllers\Api\V1\ClinicalSubjectPdfController as ApiClinicalSubjectPdfController;
 use App\Http\Controllers\Api\V1\ClinicalSubjectController;
+use App\Http\Controllers\Api\V1\ReviewsController;
 use App\Http\Controllers\Api\V1\StudyGuideController as ApiStudyGuideController;
 use App\Http\Controllers\Api\V1\{
     MedDeviceController,
@@ -55,6 +56,8 @@ use App\Http\Controllers\Api\V1\{
 };
 
 Route::prefix('v1')->group(function () {
+    // Public Reviews (approved only)
+    Route::get('reviews', [ReviewsController::class, 'publicIndex']);
     // Clinical Subjects
     Route::get('clinical-subjects', [ClinicalSubjectController::class, 'index']);
     // Clinical Subject PDFs
@@ -308,5 +311,9 @@ Route::prefix('v1')->group(function () {
             ->whereNumber('term'); // term_number أو id، سنحله مخصصًا
         // محتوى مادة (يرجع من contents عبر MedicalSubjectContent)
         Route::get('medical/subjects/{subject}/contents', [MedicalPrivateController::class, 'subjectContents']); // ?type=file|link
+
+        /* تقييمات التطبيق (آراء المستخدمين) */
+        Route::get('me/reviews', [ReviewsController::class, 'index']);
+        Route::post('me/reviews', [ReviewsController::class, 'store']);
     });
 });

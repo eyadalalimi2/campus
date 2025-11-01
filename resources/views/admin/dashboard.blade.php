@@ -289,15 +289,29 @@
         </div>
     </div>
 
-    {{-- مخطط الفروع (جديد) --}}
+    {{-- بطاقة: متوسط تقييم التطبيق (بدلاً من مخطط الفروع) --}}
     <div class="col-lg-6">
         <div class="card card-soft p-3 h-100">
             <div class="d-flex justify-content-between align-items-center">
-                <h6 class="mb-0">توزيع الطلاب على الفروع (Top 10)</h6>
-                <i class="bi bi-bar-chart"></i>
+                <h6 class="mb-0">متوسط تقييم التطبيق</h6>
+                <i class="bi bi-star-fill" style="color:#f59e0b"></i>
             </div>
-            <div style="height: 220px">
-                <canvas id="chartStudentsPerBranch"></canvas>
+            <div class="d-flex flex-column align-items-center justify-content-center" style="height: 220px">
+                <div class="display-5 fw-bold mb-2">{{ number_format($reviewsAvg ?? 0, 1) }}</div>
+                <div class="fs-3 mb-2">
+                    @php $avg = (float)($reviewsAvg ?? 0); @endphp
+                    @for($i=1;$i<=5;$i++)
+                        @if($i <= floor($avg))
+                            <span class="text-warning">★</span>
+                        @elseif($i - $avg < 1)
+                            <span class="text-warning">☆</span>
+                        @else
+                            <span class="text-muted">☆</span>
+                        @endif
+                    @endfor
+                </div>
+                <div class="text-muted">عدد التقييمات المعتمدة: {{ number_format($reviewsCountApproved ?? 0) }}</div>
+                <a href="{{ route('admin.reviews.index') }}" class="btn btn-sm btn-outline-primary mt-3">إدارة التقييمات</a>
             </div>
         </div>
     </div>
