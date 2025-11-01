@@ -221,14 +221,12 @@ class DashboardController extends Controller
             ->select('rating', DB::raw('COUNT(*) as c'))
             ->where('status','approved')
             ->groupBy('rating')
-            ->pluck('c','rating');
-        $reviewsDistribution = [
-            1 => (int) ($distRows[1] ?? 0),
-            2 => (int) ($distRows[2] ?? 0),
-            3 => (int) ($distRows[3] ?? 0),
-            4 => (int) ($distRows[4] ?? 0),
-            5 => (int) ($distRows[5] ?? 0),
-        ];
+            ->pluck('c','rating')
+            ->toArray(); // قد تكون المفاتيح نصية '1'..'5'
+        $reviewsDistribution = [];
+        for ($i = 1; $i <= 5; $i++) {
+            $reviewsDistribution[$i] = (int) ($distRows[$i] ?? $distRows[(string)$i] ?? 0);
+        }
 
     // إحصائيات الكورسات
     $coursesTotal = DB::table('courses')->count();

@@ -314,11 +314,12 @@
                 <div class="text-muted small">عدد التقييمات المعتمدة: {{ number_format($reviewsCountApproved ?? 0) }}</div>
                 <a href="{{ route('admin.reviews.index') }}" class="btn btn-sm btn-outline-primary mt-3">إدارة التقييمات</a>
               </div>
-              <div class="col-md-7">
-                <div style="height: 200px">
-                  <canvas id="chartReviewsDistribution"></canvas>
-                </div>
-              </div>
+                            <div class="col-md-7">
+                                <div style="height: 200px">
+                                    <canvas id="chartReviewsDistribution" class="w-100 h-100" style="width:100%;height:100%"></canvas>
+                                    <div id="chartReviewsFallback" class="mt-2"></div>
+                                </div>
+                            </div>
             </div>
         </div>
     </div>
@@ -514,7 +515,32 @@
 @endpush
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{{-- تحميل Chart.js من CDN مع خطة بديلة (fallback) في حال فشل CDN الأول --}}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+    (function(){
+        function load(src, cb){
+            var s=document.createElement('script'); s.src=src; s.async=false;
+            s.onload=function(){ cb && cb(true); };
+            s.onerror=function(){ cb && cb(false); };
+            document.head.appendChild(s);
+        }
+        // إن لم تُحمَّل Chart.js من الـ CDN الأول نجرّب بدائل
+        function ensureChart(){
+            if (window.Chart) return;
+            var cdns=[
+                'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js',
+                'https://unpkg.com/chart.js@4.4.1/dist/chart.umd.min.js'
+            ];
+            var i=0;
+            (function next(){
+                if (window.Chart || i>=cdns.length) return;
+                load(cdns[i++], function(){ if(!window.Chart) next(); });
+            })();
+        }
+        ensureChart();
+    })();
+</script>
 
 <script id="dashboard-data" type="application/json">
 {!! json_encode([
@@ -554,5 +580,5 @@
 ], JSON_UNESCAPED_UNICODE) !!}
 </script>
 
-<script src="{{ asset('js/dashboard.js') }}"></script>
+<script src="{{ asset('js/dashboard.js') }}?v={{ \Illuminate\Support\Facades\File::exists(public_path('js/dashboard.js')) ? filemtime(public_path('js/dashboard.js')) : '1' }}"></script>
 @endpush
