@@ -36,6 +36,7 @@ class NotificationsController extends Controller
             'asset_created',
             'asset_updated',
             'asset_deleted',
+            'review_reply',
             'system',
             'other'
         ];
@@ -52,6 +53,7 @@ class NotificationsController extends Controller
             'asset_created',
             'asset_updated',
             'asset_deleted',
+            'review_reply',
             'system',
             'other'
         ];
@@ -66,7 +68,7 @@ class NotificationsController extends Controller
             'body'         => 'required|string|max:5000',
             'action_url'   => 'nullable|url|max:1000',
             'image_url'    => 'nullable|url|max:1000',
-            'type'         => 'nullable|in:content_created,content_updated,content_deleted,asset_created,asset_updated,asset_deleted,system,other',
+            'type'         => 'nullable|in:content_created,content_updated,content_deleted,asset_created,asset_updated,asset_deleted,review_reply,system,other',
 
             'target_type'  => 'required|in:all,users,university,college,major',
 
@@ -161,7 +163,7 @@ class NotificationsController extends Controller
 
         // إدراج على دفعات
         $createdCount = 0;
-        \DB::transaction(function () use ($usersQuery, $data, $dataJson, $type, $now, &$createdCount) {
+        DB::transaction(function () use ($usersQuery, $data, $dataJson, $type, $now, &$createdCount) {
             $usersQuery->chunkById(1000, function ($users) use ($data, $dataJson, $type, $now, &$createdCount) {
                 $rows = [];
                 foreach ($users as $u) {
@@ -179,7 +181,7 @@ class NotificationsController extends Controller
                     ];
                 }
                 if ($rows) {
-                    \DB::table('notifications')->insert($rows);
+                    DB::table('notifications')->insert($rows);
                     $createdCount += count($rows);
                 }
             });
