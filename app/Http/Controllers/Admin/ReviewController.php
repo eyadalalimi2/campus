@@ -61,27 +61,21 @@ class ReviewController extends Controller
     $review->status = 'approved';
     $review->save();
 
-        // إشعار المستخدم بالرد
-        try {
-            \App\Models\Notification::create([
-                'user_id'     => $review->user_id,
-                'title'       => 'تم الرد على تقييمك',
-                'body'        => mb_substr($review->reply_text, 0, 180),
-                'type'        => 'review_reply',
-                'target_type' => 'review',
-                'target_id'   => $review->id,
-                'data'        => [
-                    'review_id'  => $review->id,
-                    'rating'     => $review->rating,
-                    'comment'    => $review->comment,
-                    'reply_text' => $review->reply_text,
-                ],
-                'created_at'  => now(),
-                'updated_at'  => now(),
-            ]);
-        } catch (\Throwable $e) {
-            // تجاهل فشل الإشعار حتى لا يعرقل حفظ الرد
-        }
+        // إشعار المستخدم بالرد (طريقة موحّدة عبر الخدمة)
+        \App\Services\Notify::toUser(
+            userId: $review->user_id,
+            title: 'تم الرد على تقييمك',
+            body: mb_substr($review->reply_text, 0, 180),
+            type: 'review_reply',
+            targetType: 'review',
+            targetId: $review->id,
+            data: [
+                'review_id'  => $review->id,
+                'rating'     => $review->rating,
+                'comment'    => $review->comment,
+                'reply_text' => $review->reply_text,
+            ]
+        );
 
         return back()->with('status', 'تم حفظ الرد بنجاح');
     }

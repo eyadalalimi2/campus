@@ -10,6 +10,7 @@
     'asset_created'   => 'تم إنشاء مادة تعليمية',
     'asset_updated'   => 'تم تحديث مادة تعليمية',
     'asset_deleted'   => 'تم حذف مادة تعليمية',
+    'review_reply'    => 'رد على تقييم',
     'system'          => 'نظام',
     'other'           => 'أخرى',
   ];
