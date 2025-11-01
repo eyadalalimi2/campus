@@ -146,19 +146,25 @@
     const distLabels = payload.reviewsDistribution?.labels ?? ['1','2','3','4','5'];
     const distData = payload.reviewsDistribution?.data ?? [0,0,0,0,0];
     const distSum = (Array.isArray(distData) ? distData.reduce((a,b)=>a+Number(b||0),0) : 0);
+    // حوّل الأرقام إلى نجوم لعرضها كعناوين للأعمدة
+    const starLabels = (distLabels || []).map((l) => {
+      const n = Number(l);
+      return n > 0 ? '★'.repeat(n) : '—';
+    });
+    // ألوان مخصصة لكل عمود (من الأحمر إلى الأخضر/الأزرق)
+    const barColors = ['#ef4444','#f59e0b','#fbbf24','#10b981','#3b82f6'];
     const drawFallbackBars = () => {
       if (!fallbackBox) return;
       const max = distData.reduce((m,v)=>Math.max(m, Number(v||0)),0) || 1;
-      const colors = ['#ef4444','#f59e0b','#fbbf24','#10b981','#3b82f6'];
       let html = '';
       distLabels.forEach((lab, idx) => {
         const val = Number(distData[idx] || 0);
         const pct = Math.round((val / max) * 100);
         html += `
           <div class="d-flex align-items-center gap-2 mb-1">
-            <span class="badge bg-light text-dark" style="min-width:32px">${lab}★</span>
+            <span class="badge bg-light text-dark" style="min-width:48px">${starLabels[idx] || '—'}</span>
             <div class="flex-grow-1 progress" style="height:10px">
-              <div class="progress-bar" role="progressbar" style="width:${pct}%;background-color:${colors[idx]||'#888'}" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"></div>
+              <div class="progress-bar" role="progressbar" style="width:${pct}%;background-color:${barColors[idx]||'#888'}" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"></div>
             </div>
             <span class="text-muted small" style="min-width:28px;text-align:end">${nf(val)}</span>
           </div>`;
@@ -172,12 +178,12 @@
     const chart = mkChart(distTarget, {
     type: 'bar',
     data: {
-      labels: distLabels,
+      labels: starLabels,
       datasets: [{
         label: 'عدد التقييمات',
         data: distData,
-        backgroundColor: '#f59e0b',
-        borderColor: '#f59e0b',
+        backgroundColor: barColors,
+        borderColor: barColors,
         borderWidth: 1,
         borderRadius: 6,
       }]
@@ -186,6 +192,25 @@
       scales: {
         x: { grid: { display: false } },
         y: { beginAtZero: true, ticks: { callback: (v) => nf(v) }, grid: { color: '#f3f4f6' } }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            title: (items) => {
+              const i = items?.[0];
+              return i ? (starLabels[i.dataIndex] || i.label) : '';
+            },
+            label: (ctx) => {
+              const val = Number(ctx.parsed.y ?? ctx.parsed ?? 0);
+              if (distSum > 0) {
+                const pct = ((val / distSum) * 100).toFixed(1);
+                return `عدد: ${nf(val)} (${pct}%)`;
+              }
+              return `عدد: ${nf(val)}`;
+            }
+          }
+        }
       }
     })
     });
