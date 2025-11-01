@@ -7,6 +7,7 @@ use App\Http\Requests\Api\V1\Reviews\StoreReviewRequest;
 use App\Http\Requests\Api\V1\Reviews\UpdateReviewRequest;
 use App\Models\Review;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class ReviewsController extends Controller
 {
@@ -17,7 +18,7 @@ class ReviewsController extends Controller
         $limit = (int) max(1, min(50, (int) $request->query('limit', 10)));
 
         $q = Review::query()
-            ->with(['replyAdmin'])
+            ->with(['user:id,name,profile_photo_path','replyAdmin:id,name'])
             ->where('status', 'approved');
 
         if ($sort === 'top') {
@@ -28,8 +29,31 @@ class ReviewsController extends Controller
 
         $items = $q->limit($limit)->get(['id','user_id','rating','comment','reply_text','reply_admin_id','replied_at','created_at']);
 
-        // يمكن إخفاء أسماء المستخدمين إذا رغبت مستقبلاً
-        return response()->json(['data' => $items]);
+        // أعِد تنسيق الإخراج ليشمل اسم وصورة المستخدم، التقييم، التعليق، ورد الإدارة بطريقة جاهزة للعرض
+        $data = $items->map(function (Review $r) {
+            $u = $r->user;
+            $avatar = null;
+            $path = $u?->profile_photo_path;
+            if ($path) {
+                $avatar = Str::startsWith($path, ['http://','https://']) ? $path : url($path);
+            }
+
+            return [
+                'id'         => $r->id,
+                'user'       => [
+                    'name'   => $u?->name ?? 'مستخدم',
+                    'avatar' => $avatar,
+                ],
+                'rating'     => (int) $r->rating,
+                'comment'    => (string) ($r->comment ?? ''),
+                'admin_reply'=> $r->reply_text,
+                'admin_name' => $r->replyAdmin?->name,
+                'replied_at' => $r->replied_at?->toIso8601String(),
+                'created_at' => $r->created_at?->toIso8601String(),
+            ];
+        })->values();
+
+        return response()->json(['data' => $data]);
     }
     // GET v1/me/reviews
     public function index(Request $request)
