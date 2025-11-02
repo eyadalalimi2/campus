@@ -1,8 +1,8 @@
 <?php
 return [
     'pagination' => [
-        'default' => 20,
-        'max'     => 50,
+        'default' => 200,
+        'max'     => 500,
     ],
 
     'throttle' => [

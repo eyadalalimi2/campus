@@ -65,10 +65,15 @@ class ReviewsController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
+        $default = (int) config('api.pagination.default', 20);
+        $max     = (int) config('api.pagination.max', 50);
+        $perPage = (int) $request->query('per_page', $default);
+        $perPage = max(1, min($perPage, $max));
+
         $reviews = Review::with('replyAdmin')
             ->where('user_id', $user->id)
             ->latest()
-            ->paginate(10);
+            ->paginate($perPage);
 
         return response()->json([
             'data' => $reviews->items(),

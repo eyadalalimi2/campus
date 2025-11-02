@@ -10,7 +10,10 @@ class MedResourceController extends Controller
 {
     public function index()
     {
-        $perPage = (int) request('per_page', 20);
+        $default = (int) config('api.pagination.default', 20);
+        $max     = (int) config('api.pagination.max', 50);
+        $perPage = (int) request('per_page', $default);
+        $perPage = max(1, min($perPage, $max));
 
         $resources = MedResource::with(['category','subject','topic'])
             ->when(request('subject_id'), fn($q,$v) => $q->where('subject_id', $v))
@@ -44,7 +47,10 @@ class MedResourceController extends Controller
 
     public function bySubject(MedSubject $subject)
     {
-        $perPage = (int) request('per_page', 20);
+        $default = (int) config('api.pagination.default', 20);
+        $max     = (int) config('api.pagination.max', 50);
+        $perPage = (int) request('per_page', $default);
+        $perPage = max(1, min($perPage, $max));
 
         $resources = $subject->resources()
             ->with(['category','topic'])
@@ -76,7 +82,10 @@ class MedResourceController extends Controller
 
     public function byTopic(MedTopic $topic)
     {
-        $perPage = (int) request('per_page', 20);
+        $default = (int) config('api.pagination.default', 20);
+        $max     = (int) config('api.pagination.max', 50);
+        $perPage = (int) request('per_page', $default);
+        $perPage = max(1, min($perPage, $max));
 
         $resources = $topic->resources()
             ->with(['category','subject'])

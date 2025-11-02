@@ -28,7 +28,12 @@ class NotificationsController extends Controller
             })
             ->latest('created_at');
 
-        $page = $q->paginate(20)->withQueryString();
+    $default = (int) config('api.pagination.default', 20);
+    $max     = (int) config('api.pagination.max', 50);
+    $perPage = (int) $request->query('per_page', $default);
+    $perPage = max(1, min($perPage, $max));
+
+    $page = $q->paginate($perPage)->withQueryString();
 
         return NotificationResource::collection($page)->additional(['status' => 'ok']);
     }

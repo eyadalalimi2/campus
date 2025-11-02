@@ -30,7 +30,12 @@ class ComplaintController extends Controller
                                      ->orWhere('body','like',"%{$q}%"));
         }
 
-        $complaints = $query->latest('created_at')->paginate(15)->withQueryString();
+    $default = (int) config('api.pagination.default', 20);
+    $max     = (int) config('api.pagination.max', 50);
+    $perPage = (int) $request->query('per_page', $default);
+    $perPage = max(1, min($perPage, $max));
+
+    $complaints = $query->latest('created_at')->paginate($perPage)->withQueryString();
 
         return ComplaintResource::collection($complaints)->additional(['status'=>'ok']);
     }
