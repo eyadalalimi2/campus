@@ -25,6 +25,7 @@
               <th>السنة</th>
               <th>الترم</th>
               <th>الجهاز العام</th>
+              <th>الصورة</th>
               <th>الاسم الظاهر</th>
               <th>مفعل</th>
               <th>الترتيب</th>
@@ -39,6 +40,16 @@
                 <td>{{ optional($sys->year)->year_number }}</td>
                 <td>{{ optional($sys->term)->term_number }}</td>
                 <td>{{ optional($sys->device)->name }}</td>
+                <td>
+                  @php
+                    $img = $sys->image ?: ($sys->device ? $sys->device->image_path : null);
+                  @endphp
+                  @if($img)
+                    <img src="{{ asset('storage/' . $img) }}" alt="صورة النظام" style="max-width:60px;max-height:60px;">
+                  @else
+                    <span class="text-muted">لا يوجد</span>
+                  @endif
+                </td>
                 <td>{{ $sys->display_name }}</td>
                 <td>{!! $sys->is_active ? '<span class="badge bg-success">مفعل</span>' : '<span class="badge bg-secondary">معطل</span>' !!}</td>
                 <td>{{ $sys->sort_order }}</td>

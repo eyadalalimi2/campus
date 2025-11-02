@@ -14,6 +14,7 @@ class MedicalTermResource extends JsonResource
             'term_number' => (int) $this->term_number,
             'is_active'   => (bool) $this->is_active,
             'sort_order'  => (int) ($this->sort_order ?? 0),
+            'image_url'   => $this->image_path ? \Illuminate\Support\Facades\Storage::url($this->image_path) : null,
         ];
     }
 }

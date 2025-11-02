@@ -32,7 +32,7 @@ class MedicalPrivateController extends Controller
         }
 
         $rows = DB::table('MedicalYears as my')
-            ->select('my.id', 'my.major_id', 'my.year_number', 'my.is_active', 'my.sort_order')
+            ->select('my.id', 'my.major_id', 'my.year_number', 'my.is_active', 'my.sort_order', 'my.image_path')
             ->where('my.major_id', $majorId)
             ->where('my.is_active', 1)
             ->orderBy('my.sort_order')
@@ -58,7 +58,7 @@ class MedicalPrivateController extends Controller
         }
 
         $terms = DB::table('MedicalTerms as mt')
-            ->select('mt.id', 'mt.year_id', 'mt.term_number', 'mt.is_active', 'mt.sort_order')
+            ->select('mt.id', 'mt.year_id', 'mt.term_number', 'mt.is_active', 'mt.sort_order', 'mt.image_path')
             ->where('mt.year_id', $yearId)
             ->where('mt.is_active', 1)
             ->orderBy('mt.sort_order')
@@ -162,7 +162,7 @@ class MedicalPrivateController extends Controller
         $yearIdFromPath = is_numeric($year) ? (int)$year : null;
 
         // تأكيد وجود الترم
-        $term = \DB::table('MedicalTerms')->where('id', $termId)->first();
+        $term = DB::table('MedicalTerms')->where('id', $termId)->first();
         if (!$term) {
             return response()->json(['status' => 'error', 'message' => 'المورد غير موجود.'], 404);
         }
@@ -173,7 +173,7 @@ class MedicalPrivateController extends Controller
         }
 
         // جلب السنة للتحقق من تخصّص المستخدم
-        $yearRow = \DB::table('MedicalYears')->where('id', $term->year_id)->first();
+        $yearRow = DB::table('MedicalYears')->where('id', $term->year_id)->first();
         if (!$yearRow) {
             return response()->json(['status' => 'error', 'message' => 'المورد غير موجود.'], 404);
         }
@@ -184,7 +184,7 @@ class MedicalPrivateController extends Controller
         }
 
         // جلب الأنظمة المقيدة بالترم
-        $rows = \DB::table('MedicalSystems as sys')
+        $rows = DB::table('MedicalSystems as sys')
             ->join('med_devices as d', 'd.id', '=', 'sys.med_device_id')
             ->select(
                 'sys.id',

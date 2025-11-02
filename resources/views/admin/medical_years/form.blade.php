@@ -27,4 +27,15 @@
       <label class="form-check-label" for="is_active_year">مفعل</label>
     </div>
   </div>
+
+  <div class="col-md-6">
+    <label class="form-label">الصورة (اختياري)</label>
+    <input type="file" name="image" accept="image/*" class="form-control">
+    @error('image')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+    @if(!empty($year?->image_url))
+      <div class="mt-2">
+        <img src="{{ $year->image_url }}" alt="current image" style="max-height:80px" class="border rounded">
+      </div>
+    @endif
+  </div>
 </div>

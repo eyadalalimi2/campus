@@ -48,6 +48,18 @@ class MedicalSubjectController extends Controller
             $data['sort_order'] = is_null($max) ? 0 : ($max + 1);
         }
 
+        // معالجة رفع الصورة أو أخذ صورة المادة العامة
+        if ($request->hasFile('image_file')) {
+            $file = $request->file('image_file');
+            $path = $file->store('medical_subjects', 'public');
+            $data['image'] = $path;
+        } elseif (empty($data['image']) && !empty($data['med_subject_id'])) {
+            $base = \App\Models\MedSubject::find($data['med_subject_id']);
+            if ($base) {
+                $data['image'] = $base->image_path;
+            }
+        }
+
         try {
             MedicalSubject::create($data);
         } catch (QueryException $e) {
@@ -96,6 +108,18 @@ class MedicalSubjectController extends Controller
         if (!array_key_exists('sort_order', $data) || $data['sort_order'] === null || $data['sort_order'] === '') {
             // إن لم يُرسل في التعديل، اتركه كما هو
             $data['sort_order'] = $medical_subject->sort_order;
+        }
+
+        // معالجة رفع الصورة أو أخذ صورة المادة العامة
+        if ($request->hasFile('image_file')) {
+            $file = $request->file('image_file');
+            $path = $file->store('medical_subjects', 'public');
+            $data['image'] = $path;
+        } elseif (empty($data['image']) && !empty($data['med_subject_id'])) {
+            $base = \App\Models\MedSubject::find($data['med_subject_id']);
+            if ($base) {
+                $data['image'] = $base->image_path;
+            }
         }
 
         try {

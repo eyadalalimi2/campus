@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 
 class MedicalYearResource extends JsonResource
 {
@@ -14,6 +15,7 @@ class MedicalYearResource extends JsonResource
             'year_number' => (int) $this->year_number,
             'is_active'   => (bool) $this->is_active,
             'sort_order'  => (int) ($this->sort_order ?? 0),
+            'image_url'   => $this->image_path ? Storage::url($this->image_path) : null,
         ];
     }
 }

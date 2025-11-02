@@ -15,6 +15,7 @@ class MedicalSubjectResource extends JsonResource
             'track'         => (string) $this->track,
             'name'          => (string) ($this->display_name ?: $this->base_name),
             'display_name'  => $this->display_name,
+            'image'         => $this->image ? asset('storage/'.$this->image) : ($this->base_image ? asset('storage/'.$this->base_image) : null),
             'base' => [
                 'name'       => $this->base_name ?? null,
                 'slug'       => $this->base_slug ?? null,

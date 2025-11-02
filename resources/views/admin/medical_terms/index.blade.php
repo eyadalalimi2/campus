@@ -67,6 +67,9 @@
                         <div class="year-label">سنة {{ $yearNumber }}</div>
                         @foreach($termsInYear->sortBy('term_number') as $t)
                           <div class="me-2 d-inline-flex align-items-center">
+                            @if($t->image_url)
+                              <img src="{{ $t->image_url }}" alt="img" class="rounded me-1" style="width:24px;height:24px;object-fit:cover;border:1px solid #ddd;">
+                            @endif
                             <a href="{{ route('admin.medical_terms.edit',$t) }}" class="term-box {{ $t->is_active ? 'active' : 'inactive' }} text-decoration-none">{{ $t->term_number }}</a>
                             <form action="{{ route('admin.medical_terms.destroy',$t) }}" method="post" class="d-inline ms-1" onsubmit="return confirm('تأكيد الحذف؟');">
                               @csrf @method('DELETE')

@@ -8,7 +8,7 @@ class MedicalYear extends Model
 {
     protected $table = 'MedicalYears';
     protected $fillable = [
-        'major_id', 'year_number', 'is_active', 'sort_order',
+        'major_id', 'year_number', 'is_active', 'sort_order', 'image_path',
     ];
 
     public function major()
@@ -24,5 +24,13 @@ class MedicalYear extends Model
     public function systems()
     {
         return $this->hasMany(MedicalSystem::class, 'year_id');
+    }
+
+    public function getImageUrlAttribute(): ?string
+    {
+        if (!$this->image_path) {
+            return null;
+        }
+        return \Illuminate\Support\Facades\Storage::url($this->image_path);
     }
 }

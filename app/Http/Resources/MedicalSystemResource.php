@@ -14,6 +14,7 @@ class MedicalSystemResource extends JsonResource
             'med_device_id'=> (int) $this->med_device_id,
             'name'         => (string) ($this->display_name ?: $this->device_name),
             'display_name' => $this->display_name,
+                'image'        => $this->image ? asset('storage/'.$this->image) : ($this->device_image ? asset('storage/'.$this->device_image) : null),
             'device' => [
                 'name'  => $this->device_name ?? null,
                 'slug'  => $this->device_slug ?? null,

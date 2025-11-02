@@ -27,7 +27,18 @@ class MedicalSystemController extends Controller
 
     public function store(MedicalSystemRequest $request)
     {
-        MedicalSystem::create($request->validated());
+        $data = $request->validated();
+        if ($request->hasFile('image_file')) {
+            $file = $request->file('image_file');
+            $path = $file->store('medical_systems', 'public');
+            $data['image'] = $path;
+        } elseif (empty($data['image']) && !empty($data['med_device_id'])) {
+            $device = \App\Models\MedDevice::find($data['med_device_id']);
+            if ($device) {
+                $data['image'] = $device->image_path;
+            }
+        }
+        MedicalSystem::create($data);
         return redirect()->route('admin.medical_systems.index')->with('success','تم الإنشاء');
     }
 
@@ -43,7 +54,18 @@ class MedicalSystemController extends Controller
 
     public function update(MedicalSystemRequest $request, MedicalSystem $medical_system)
     {
-        $medical_system->update($request->validated());
+        $data = $request->validated();
+        if ($request->hasFile('image_file')) {
+            $file = $request->file('image_file');
+            $path = $file->store('medical_systems', 'public');
+            $data['image'] = $path;
+        } elseif (empty($data['image']) && !empty($data['med_device_id'])) {
+            $device = \App\Models\MedDevice::find($data['med_device_id']);
+            if ($device) {
+                $data['image'] = $device->image_path;
+            }
+        }
+        $medical_system->update($data);
         return redirect()->route('admin.medical_systems.index')->with('success','تم التحديث');
     }
 

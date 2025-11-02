@@ -23,6 +23,7 @@
               <th>#</th>
               <th>الاسم الظاهر</th>
               <th>المادة العامة</th>
+              <th>الصورة</th>
               <th>المسار</th>
               <th>السنة/الترم</th>
               <th>مفعل</th>
@@ -36,6 +37,16 @@
                 <td>{{ $s->id }}</td>
                 <td>{{ $s->display_name ?? optional($s->medSubject)->name }}</td>
                 <td>{{ optional($s->medSubject)->name }}</td>
+                <td>
+                  @php
+                    $img = $s->image ?: (optional($s->medSubject)->image_path ?? null);
+                  @endphp
+                  @if($img)
+                    <img src="{{ asset('storage/' . $img) }}" alt="صورة المادة" style="max-width:60px;max-height:60px;">
+                  @else
+                    <span class="text-muted">لا يوجد</span>
+                  @endif
+                </td>
                 <td>{{ $s->track }}</td>
                 <td>{{ optional($s->term->year)->year_number }} / {{ optional($s->term)->term_number }}</td>
                 <td>{!! $s->is_active ? '<span class="badge bg-success">مفعل</span>' : '<span class="badge bg-secondary">معطل</span>' !!}</td>

@@ -27,4 +27,17 @@
       <label class="form-check-label" for="is_active_term">مفعل</label>
     </div>
   </div>
+
+  <div class="col-md-6">
+    <label class="form-label">صورة الترم (اختياري)</label>
+    <input type="file" name="image" class="form-control" accept="image/*">
+    @error('image')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+  </div>
+
+  @if(optional($term)->image_url)
+    <div class="col-md-6">
+      <label class="form-label d-block">المعاينة الحالية</label>
+      <img src="{{ $term->image_url }}" alt="term image" class="img-thumbnail" style="max-height:120px">
+    </div>
+  @endif
 </div>

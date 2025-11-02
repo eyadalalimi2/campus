@@ -68,6 +68,16 @@
   </div>
 
   <div class="col-12">
+    <label class="form-label">الصورة (اختياري)</label>
+    <input type="file" name="image_file" class="form-control" accept="image/*">
+    @if(optional($system)->image)
+      <div class="mt-2">
+        <img src="{{ asset('storage/' . $system->image) }}" alt="صورة النظام الطبي" style="max-width:150px;max-height:150px;">
+      </div>
+    @endif
+    @error('image_file')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+  </div>
+  <div class="col-12">
     <div class="form-check">
       <input class="form-check-input" type="checkbox" name="is_active" value="1" id="is_active_system" @checked(old('is_active', optional($system)->is_active))>
       <label class="form-check-label" for="is_active_system">مفعل</label>

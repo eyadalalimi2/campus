@@ -15,6 +15,7 @@ class MedicalTermRequest extends FormRequest
             'term_number' => ['required','integer','min:1','max:3'],
             'is_active'   => ['nullable','boolean'],
             'sort_order'  => ['nullable','integer','min:0'],
+            'image'       => ['nullable','image','mimes:jpg,jpeg,png,webp,gif','max:2048'],
         ];
     }
 }

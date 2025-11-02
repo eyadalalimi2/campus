@@ -10,6 +10,7 @@
     .year-box.inactive{ background:#dc3545; } /* bootstrap danger */
     .year-box:hover{ opacity:.92; }
     .year-box + form { display:inline-block; vertical-align:middle; }
+    .year-box .year-thumb{ height:20px; width:20px; object-fit:cover; border-radius:4px; background:#fff; vertical-align:middle; margin-inline-end:6px; }
   </style>
 
  
@@ -63,6 +64,9 @@
                     @foreach($group->sortBy('year_number') as $y)
                       <div class="me-2 mb-2 d-inline-flex align-items-center">
                         <a href="{{ route('admin.medical_years.edit',$y) }}" class="year-box {{ $y->is_active ? 'active' : 'inactive' }} text-decoration-none">
+                          @if(!empty($y->image_url))
+                            <img src="{{ $y->image_url }}" alt="" class="year-thumb">
+                          @endif
                           {{ $y->year_number }}
                         </a>
                         <form action="{{ route('admin.medical_years.destroy',$y) }}" method="post" class="d-inline ms-1" onsubmit="return confirm('تأكيد الحذف؟');">

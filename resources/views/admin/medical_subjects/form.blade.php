@@ -38,6 +38,16 @@
     <label class="form-label">ملاحظات</label>
     <textarea name="notes" class="form-control" rows="3">{{ old('notes', optional($subject)->notes) }}</textarea>
   </div>
+  <div class="col-12">
+    <label class="form-label">الصورة (اختياري)</label>
+    <input type="file" name="image_file" class="form-control" accept="image/*">
+    @if(optional($subject)->image)
+      <div class="mt-2">
+        <img src="{{ asset('storage/' . $subject->image) }}" alt="صورة المادة الطبية" style="max-width:150px;max-height:150px;">
+      </div>
+    @endif
+    @error('image_file')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+  </div>
 
   <div class="col-md-3">
     <label class="form-label">الترتيب</label>

@@ -8,7 +8,7 @@ class MedicalSubject extends Model
 {
     protected $table = 'MedicalSubjects';
     protected $fillable = [
-        'term_id', 'med_subject_id', 'track', 'display_name', 'notes', 'is_active', 'sort_order',
+        'term_id', 'med_subject_id', 'track', 'display_name', 'notes', 'is_active', 'sort_order', 'image',
     ];
 
     public function term()

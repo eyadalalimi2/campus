@@ -20,6 +20,7 @@ class MedicalSubjectRequest extends FormRequest
             'notes'          => ['nullable','string'],
             'is_active'      => ['nullable','boolean'],
             'sort_order'     => ['nullable','integer','min:0'],
+            'image'          => ['nullable','string','max:255'],
         ];
     }
 

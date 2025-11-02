@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\MedicalTermRequest;
 use App\Models\MedicalTerm;
 use App\Models\MedicalYear;
+use Illuminate\Support\Facades\Storage;
 
 class MedicalTermController extends Controller
 {
@@ -41,7 +42,14 @@ class MedicalTermController extends Controller
 
     public function store(MedicalTermRequest $request)
     {
-        MedicalTerm::create($request->validated());
+        $data = $request->validated();
+
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('medical_terms', 'public');
+            $data['image_path'] = $path;
+        }
+
+        MedicalTerm::create($data);
         return redirect()->route('admin.medical_terms.index')->with('success','تم الإنشاء');
     }
 
@@ -67,12 +75,26 @@ class MedicalTermController extends Controller
 
     public function update(MedicalTermRequest $request, MedicalTerm $medical_term)
     {
-        $medical_term->update($request->validated());
+        $data = $request->validated();
+
+        if ($request->hasFile('image')) {
+            // حذف الصورة القديمة إن وجدت
+            if ($medical_term->image_path && Storage::disk('public')->exists($medical_term->image_path)) {
+                Storage::disk('public')->delete($medical_term->image_path);
+            }
+            $path = $request->file('image')->store('medical_terms', 'public');
+            $data['image_path'] = $path;
+        }
+
+        $medical_term->update($data);
         return redirect()->route('admin.medical_terms.index')->with('success','تم التحديث');
     }
 
     public function destroy(MedicalTerm $medical_term)
     {
+        if ($medical_term->image_path && Storage::disk('public')->exists($medical_term->image_path)) {
+            Storage::disk('public')->delete($medical_term->image_path);
+        }
         $medical_term->delete();
         return back()->with('success','تم الحذف');
     }

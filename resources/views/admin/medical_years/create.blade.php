@@ -6,7 +6,7 @@
 
   <div class="card">
     <div class="card-body">
-      <form method="post" action="{{ route('admin.medical_years.store') }}">
+  <form method="post" action="{{ route('admin.medical_years.store') }}" enctype="multipart/form-data">
         @csrf
         @include('admin.medical_years.form', ['year' => null])
         <button class="btn btn-primary mt-2">حفظ</button>
