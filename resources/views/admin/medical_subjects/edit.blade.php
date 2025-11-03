@@ -6,7 +6,7 @@
 
   <div class="card">
     <div class="card-body">
-      <form method="post" action="{{ route('admin.medical_subjects.update',$subject) }}">
+  <form method="post" action="{{ route('admin.medical_subjects.update',$subject) }}" enctype="multipart/form-data">
         @csrf @method('PUT')
         @include('admin.medical_subjects.form', ['subject'=>$subject])
         <button class="btn btn-primary mt-2">تحديث</button>
