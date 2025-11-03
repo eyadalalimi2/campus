@@ -9,13 +9,14 @@ class MedicalYearResource extends JsonResource
 {
     public function toArray($request)
     {
+
         return [
             'id'          => (int) $this->id,
             'major_id'    => (int) $this->major_id,
             'year_number' => (int) $this->year_number,
             'is_active'   => (bool) $this->is_active,
             'sort_order'  => (int) ($this->sort_order ?? 0),
-            'image_url'   => $this->image_path ? Storage::url($this->image_path) : null,
+            'image_url'   => $this->image_path ? \Illuminate\Support\Facades\Storage::url($this->image_path) : null,
         ];
     }
 }
