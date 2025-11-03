@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Support\Facades\Storage;
 class MedicalYear extends Model
 {
     protected $table = 'MedicalYears';
@@ -26,11 +26,8 @@ class MedicalYear extends Model
         return $this->hasMany(MedicalSystem::class, 'year_id');
     }
 
-    public function getImageUrlAttribute(): ?string
+   public function getImageUrlAttribute(): ?string
     {
-        if (!$this->image_path) {
-            return null;
-        }
-        return \Illuminate\Support\Facades\Storage::url($this->image_path);
+        return $this->image_path ? Storage::url($this->image_path) : null;
     }
 }
