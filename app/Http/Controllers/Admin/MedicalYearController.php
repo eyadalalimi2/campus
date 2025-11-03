@@ -42,11 +42,10 @@ class MedicalYearController extends Controller
     {
         $data = $request->validated();
 
-        // Handle image upload
+        // Handle image upload (same approach as MedicalTerm: store on 'public' disk without 'public/' prefix)
         if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('public/medical_years');
-            // Normalize to storage relative path for Storage::url
-            $data['image_path'] = $path;
+            $path = $request->file('image')->store('medical_years', 'public');
+            $data['image_path'] = $path; // e.g. 'medical_years/xyz.png'
         }
 
         MedicalYear::create($data);
@@ -75,10 +74,10 @@ class MedicalYearController extends Controller
 
         if ($request->hasFile('image')) {
             // delete old
-            if ($medical_year->image_path && Storage::exists($medical_year->image_path)) {
-                Storage::delete($medical_year->image_path);
+            if ($medical_year->image_path && Storage::disk('public')->exists($medical_year->image_path)) {
+                Storage::disk('public')->delete($medical_year->image_path);
             }
-            $path = $request->file('image')->store('public/medical_years');
+            $path = $request->file('image')->store('medical_years', 'public');
             $data['image_path'] = $path;
         }
 
@@ -88,8 +87,8 @@ class MedicalYearController extends Controller
 
     public function destroy(MedicalYear $medical_year)
     {
-        if ($medical_year->image_path && Storage::exists($medical_year->image_path)) {
-            Storage::delete($medical_year->image_path);
+        if ($medical_year->image_path && Storage::disk('public')->exists($medical_year->image_path)) {
+            Storage::disk('public')->delete($medical_year->image_path);
         }
         $medical_year->delete();
         return back()->with('success', 'تم الحذف');
