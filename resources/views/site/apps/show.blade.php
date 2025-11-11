@@ -27,8 +27,13 @@
   .bar>span{display:block;height:100%;background:#f5a623;width:0}
   @media(max-width:768px){.sticky-install{position:fixed;inset-block-end:0;inset-inline:0;background:var(--gp-card);border-top:1px solid #eee;padding:.75rem;z-index:1030}}
   .clamp{display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden}
+  .clamp-3{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
   .app-card{width:140px} .app-card .icon{width:64px;height:64px;border-radius:18%;object-fit:cover}
   .kv dt{color:var(--gp-sub);font-weight:500} .kv dd{margin-inline-start:0;margin-bottom:.75rem}
+  /* cover image */
+  .cover-img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;background:#000;max-height:420px}
+  @media (min-width:992px){.cover-img{border-radius:var(--radius);max-height:360px}}
+  @media (max-width:575.98px){.cover-img{aspect-ratio:auto;height:190px;object-fit:cover}}
   /* reviews */
   .rv-item{display:flex;gap:.75rem}
   .rv-avatar{width:40px;height:40px;border-radius:50%;object-fit:cover}
@@ -71,6 +76,13 @@
 
 <div class="py-2" dir="rtl"><!-- لا نُكرّر حاوية .container لأن التخطيط يوفرها -->
 
+  {{-- ===== صورة الغلاف (Feature Image) ===== --}}
+  @if(!empty($app->feature_image_path))
+    <section class="gp-card p-0 overflow-hidden mb-3">
+      <img class="cover-img" src="{{ Storage::url($app->feature_image_path) }}" alt="صورة الغلاف {{ $app->name }}" loading="lazy">
+    </section>
+  @endif
+
   {{-- ===== رأس التطبيق (على نمط Google Play) ===== --}}
   <section class="gp-card p-3 p-md-4 mb-3">
     <div class="row g-3 align-items-start">
@@ -90,11 +102,14 @@
             <div class="stars" style="--fill: {{ $ratingFill }}%;" title="{{ number_format($rating,1) }} / 5"></div>
             <span>( {{ number_format($reviewsCount) }} مراجعة )</span>
           </div>
-          <span>+{{ $installsLabel }} تنزيل</span>
+          <span>{{ $installsLabel }} تنزيل</span>
           @if($app->content_rating)
             <span>{{ $app->content_rating }}</span>
           @endif
         </div>
+        @if(!empty($app->short_description))
+          <div class="text-muted mt-2 clamp-3">{{ $app->short_description }}</div>
+        @endif
       </div>
       <div class="col-12 col-md-auto d-flex gap-2 mt-2 mt-md-0">
         <a class="btn btn-install" id="installBtn" href="{{ route('apps.download', $app->slug) }}">
@@ -147,7 +162,6 @@
   {{-- ===== عن هذا التطبيق ===== --}}
   <section class="gp-card p-3 p-md-4 mb-3">
     <h2 class="h5">عن هذا التطبيق</h2>
-    <p class="clamp" id="aboutText">{{ $app->short_description }}</p>
     @if($app->long_description)
       <div class="clamp" id="aboutLong">{!! nl2br(e($app->long_description)) !!}</div>
     @endif
@@ -252,13 +266,13 @@
   <section class="gp-card p-3 p-md-4 mb-3">
     <h2 class="h5">معلومات إضافية</h2>
     <dl class="row kv mb-0">
-      <dt class="col-sm-3 col-md-2">الحجم</dt><dd class="col-sm-9 col-md-4">{{ $app->apk_size ?? '-' }}</dd>
-      <dt class="col-sm-3 col-md-2">عمليات التنزيل</dt><dd class="col-sm-9 col-md-4">+{{ $installsLabel }}</dd>
-      <dt class="col-sm-3 col-md-2">الإصدار الحالي</dt><dd class="col-sm-9 col-md-4">{{ $app->version_name ?? '-' }}</dd>
+  <dt class="col-sm-3 col-md-2">الحجم</dt><dd class="col-sm-9 col-md-4">{{ $app->apk_size ? $app->apk_size.' MB' : '-' }}</dd>
+      <dt class="col-sm-3 col-md-2">عمليات التنزيل</dt><dd class="col-sm-9 col-md-4">{{ $installsLabel }}</dd>
+  <dt class="col-sm-3 col-md-2">الإصدار الحالي</dt><dd class="col-sm-9 col-md-4">{{ $app->version_name ? $app->version_name.( $app->version_code ? ' ('.$app->version_code.')' : '' ) : '-' }}</dd>
       <dt class="col-sm-3 col-md-2">يتطلّب أندرويد</dt><dd class="col-sm-9 col-md-4">{{ $app->min_sdk ?? '-' }} وما فوق</dd>
       <dt class="col-sm-3 col-md-2">تم التحديث في</dt><dd class="col-sm-9 col-md-4">{{ !empty($app->updated_at) ? optional($app->updated_at)->format('d F Y') : '-' }}</dd>
-      <dt class="col-sm-3 col-md-2">تم الإطلاق في</dt><dd class="col-sm-9 col-md-4">{{ !empty($app->released_at) ? optional($app->released_at)->format('d F Y') : '-' }}</dd>
-      <dt class="col-sm-3 col-md-2">مقدَّم من</dt><dd class="col-sm-9 col-md-4">{{ $app->developer_name ?? '-' }}</dd>
+  <dt class="col-sm-3 col-md-2">تم الإطلاق في</dt><dd class="col-sm-9 col-md-4">{{ !empty($app->published_at) ? optional($app->published_at)->format('d F Y') : '-' }}</dd>
+  <dt class="col-sm-3 col-md-2">التطبيق من تطوير وبرمجة</dt><dd class="col-sm-9 col-md-4">{{ $app->developer_name ?? '—' }}</dd>
     </dl>
   </section>
 
