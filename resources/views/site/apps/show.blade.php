@@ -29,6 +29,16 @@
   .clamp{display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden}
   .app-card{width:140px} .app-card .icon{width:64px;height:64px;border-radius:18%;object-fit:cover}
   .kv dt{color:var(--gp-sub);font-weight:500} .kv dd{margin-inline-start:0;margin-bottom:.75rem}
+  /* reviews */
+  .rv-item{display:flex;gap:.75rem}
+  .rv-avatar{width:40px;height:40px;border-radius:50%;object-fit:cover}
+  .rv-body{flex:1}
+  .rv-name{font-weight:600}
+  .rv-stars{--fill:0%;position:relative;width:90px;height:18px}
+  .rv-stars::before,.rv-stars::after{content:"★★★★★";position:absolute;inset:0;font-size:18px;letter-spacing:2px}
+  .rv-stars::before{color:#d6d6d6}.rv-stars::after{color:#f5a623;width:var(--fill,0%);overflow:hidden;white-space:nowrap}
+  .rv-reply{background:rgba(15,157,88,.06);border:1px solid rgba(15,157,88,.15);border-radius:12px;padding:.75rem}
+  @if($dark).rv-reply{background:#102a1d;border-color:#1f4d37}@endif
 </style>
 @endpush
 
@@ -42,10 +52,11 @@
   // يوتيوب embed
   $embed = null; if (!empty($app->video_url)) { $v = $app->video_url; if (Str::contains($v, 'youtu.be/')) { $embed = preg_replace('~https?://youtu\.be/([A-Za-z0-9_\-]+)~', 'https://www.youtube.com/embed/$1', $v); } elseif (Str::contains($v, 'watch?v=')) { $embed = preg_replace('~.*watch\?v=([A-Za-z0-9_\-]+).*~', 'https://www.youtube.com/embed/$1', $v); } elseif (Str::contains($v, '/embed/')) { $embed = $v; } }
   // تقييم
-  $rating = floatval($app->rating ?? 0); $ratingFill = max(0,min(100, round(($rating/5)*100)));
-  $reviewsCount = intval($app->reviews_count ?? 0);
+  $rating = isset($rating) ? floatval($rating) : floatval($app->rating ?? 0);
+  $reviewsCount = isset($reviewsCount) ? intval($reviewsCount) : intval($app->reviews_count ?? 0);
+  $ratingFill = max(0,min(100, round(($rating/5)*100)));
   // تفصيل التقييمات
-  $breakdown = $app->ratings_breakdown ?? null; // مثال: [5=>80,4=>12,3=>5,2=>2,1=>1]
+  $breakdown = $breakdown ?? ($app->ratings_breakdown ?? null); // مثال: [5=>80,4=>12,3=>5,2=>2,1=>1]
   // التنزيلات
   $installsLabel = $app->installs_label ?? (($app->downloads_total ?? 0) > 0 ? number_format($app->downloads_total).'+' : '—');
   // سجل التغييرات كسطور
@@ -172,6 +183,55 @@
         @endforeach
       </div>
     </div>
+
+    @isset($reviews)
+      <hr class="my-3" />
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h3 class="h6 m-0">تعليقات المستخدمين</h3>
+      </div>
+      <div class="vstack gap-3">
+        @forelse($reviews as $rv)
+          @php
+            $u = $rv->user;
+            $name = $u->name ?? 'مستخدم';
+            $avatar = method_exists($u, 'getProfilePhotoUrlAttribute') ? ($u->profile_photo_url ?? null) : null;
+            if (!$avatar && !empty($u->profile_photo_path)) { $avatar = Storage::url($u->profile_photo_path); }
+            $fill = max(0,min(100, round(($rv->rating/5)*100)));
+          @endphp
+          <div class="rv-item">
+            <img class="rv-avatar" src="{{ $avatar ?: asset('images/default-avatar.svg') }}" alt="{{ $name }}" loading="lazy">
+            <div class="rv-body">
+              <div class="d-flex flex-wrap align-items-center gap-2">
+                <span class="rv-name">{{ $name }}</span>
+                <span class="rv-stars" style="--fill: {{ $fill }}%" aria-label="{{ $rv->rating }} من 5"></span>
+                <span class="text-muted small">{{ optional($rv->created_at)->diffForHumans() }}</span>
+              </div>
+              @if($rv->comment)
+                <div class="mt-1">{{ $rv->comment }}</div>
+              @endif
+
+              @if($rv->reply_text)
+                <div class="rv-reply mt-2">
+                  <div class="d-flex align-items-center gap-2 mb-1">
+                    <i class="bi bi-patch-check-fill text-success"></i>
+                    <strong>رد المطوّر</strong>
+                    @if($rv->replyAdmin)
+                      <span class="text-muted small">— {{ $rv->replyAdmin->name }}</span>
+                    @endif
+                    @if($rv->replied_at)
+                      <span class="text-muted small">• {{ optional($rv->replied_at)->diffForHumans() }}</span>
+                    @endif
+                  </div>
+                  <div>{{ $rv->reply_text }}</div>
+                </div>
+              @endif
+            </div>
+          </div>
+        @empty
+          <div class="text-muted">لا توجد تعليقات حتى الآن.</div>
+        @endforelse
+      </div>
+    @endisset
   </section>
 
   {{-- ===== أمان البيانات ===== --}}
