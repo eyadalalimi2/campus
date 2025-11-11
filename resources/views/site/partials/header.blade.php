@@ -1,6 +1,11 @@
 <nav class="navbar navbar-expand-lg bg-white shadow-sm">
+  <style>
+    /* تكبير مساحة عرض الشعار */
+    .navbar .brand-xl{font-size:2rem;line-height:1.2;font-weight:700;padding:.65rem 0;margin-inline-end:1.5rem;white-space:nowrap;}
+    @media(min-width:992px){.navbar .brand-xl{font-size:2.25rem;}}
+  </style>
   <div class="container">
-    <a class="navbar-brand fw-bold" href="{{ route('site.home') }}">المنهج الاكاديمي</a>
+    <a class="navbar-brand fw-bold brand-xl" href="{{ route('site.home') }}" aria-label="المنهج الأكاديمي - الرئيسية">المنهج الاكاديمي</a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
       <span class="navbar-toggler-icon"></span>
     </button>

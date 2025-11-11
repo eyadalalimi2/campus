@@ -1,9 +1,25 @@
 {{-- شريط التنقّل --}}
 <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
+  <style>
+    /* تكبير مساحة الشعار في شريط التنقّل (نسخة موسّعة) */
+    :root{--brand-img-mobile:72px;--brand-img-lg:84px;--brand-font-mobile:1.35rem;--brand-font-lg:1.6rem}
+    .navbar .navbar-brand.brand-wide{padding:.6rem 0;margin-inline-end:1.75rem;display:flex;align-items:center;gap:.85rem}
+    .navbar .navbar-brand.brand-wide img{height:var(--brand-img-mobile);width:auto;display:block}
+    .navbar .navbar-brand.brand-wide span{font-size:var(--brand-font-mobile);line-height:1.15;font-weight:700;letter-spacing:.5px}
+    @media (max-width:420px){
+      /* تقليل بسيط على الهواتف الأصغر جداً */
+      .navbar .navbar-brand.brand-wide img{height:64px}
+      .navbar .navbar-brand.brand-wide span{font-size:1.2rem}
+    }
+    @media(min-width:992px){
+      .navbar .navbar-brand.brand-wide img{height:var(--brand-img-lg)}
+      .navbar .navbar-brand.brand-wide span{font-size:var(--brand-font-lg)}
+    }
+  </style>
   <div class="container">
     {{-- الشعار --}}
-    <a class="navbar-brand d-flex align-items-center gap-2" href="{{ route('site.home') }}">
-      <img src="{{ Storage::url('images/logo.png') }}" alt="Logo" style="height:40px">
+    <a class="navbar-brand d-flex align-items-center gap-2 brand-wide" href="{{ route('site.home') }}" aria-label="المنهج الأكاديمي - الرئيسية">
+      <img src="{{ Storage::url('images/logos.png') }}" alt="Logo">
       <span class="fw-bold">{{ $currentUniversity->name ?? 'المنهج الأكاديمي' }}</span>
     </a>
 
