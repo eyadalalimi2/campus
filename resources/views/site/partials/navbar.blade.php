@@ -1,62 +1,90 @@
-<nav class="main-header navbar navbar-expand navbar-white navbar-light" style="direction:ltr;">
-    <!-- Left navbar links -->
-    <ul class="navbar-nav">
+{{-- شريط التنقّل --}}
+<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
+  <div class="container">
+    {{-- الشعار --}}
+    <a class="navbar-brand d-flex align-items-center gap-2" href="{{ route('site.home') }}">
+      <img src="{{ Storage::url('images/logo.png') }}" alt="Logo" style="height:40px">
+      <span class="fw-bold">{{ $currentUniversity->name ?? 'المنهج الأكاديمي' }}</span>
+    </a>
+
+    {{-- زر قائمة الجوّال --}}
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
+            aria-controls="mainNav" aria-expanded="false" aria-label="تبديل القائمة">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    {{-- العناصر القابلة للطي --}}
+    <div class="collapse navbar-collapse" id="mainNav">
+      <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
+
+        {{-- اختيار الجامعة + الثيم الافتراضي --}}
         <li class="nav-item">
-            <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+          <form method="GET" action="{{ url()->current() }}" class="d-flex my-2 my-lg-0">
+            <select name="university_id" class="form-select form-select-sm"
+                    onchange="this.form.submit()" aria-label="اختر جامعة">
+              <option value="default" @selected(request('university_id') === 'default')>
+                الثيم الافتراضي
+              </option>
+              <option value="" disabled>──────────</option>
+              @foreach(\App\Models\University::where('is_active',true)->orderBy('name')->get() as $u)
+                <option value="{{ $u->id }}" @selected(request('university_id') == $u->id)>{{ $u->name }}</option>
+              @endforeach
+            </select>
+          </form>
         </li>
-        <li class="nav-item d-none d-sm-inline-block">
-            <a href="{{ route('admin.dashboard') }}" class="nav-link arabic">لوحة التحكم</a>
+
+        {{-- روابط المصادقة/لوحة الطالب --}}
+        {{-- زر تطبيق الأندرويد --}}
+        <li class="nav-item">
+          <a class="nav-link" href="{{ route('apps.show', 'midecal') }}">
+            <i class="bi bi-phone me-1"></i> تطبيق الأندرويد
+          </a>
         </li>
-    </ul>
 
-    <!-- Right navbar links -->
-    <ul class="navbar-nav ml-auto">
-        @php
-            $u = auth()->user();
-            $profileImage = $u && $u->profile_image
-                ? (preg_match('#^https?://#', $u->profile_image)
-                    ? $u->profile_image
-                    : (Str::startsWith($u->profile_image, 'storage/')
-                        ? asset($u->profile_image)
-                        : asset('storage/'.$u->profile_image)))
-                : asset('images/user-placeholder.png');
-        @endphp
-
-        <li class="nav-item dropdown">
-            <a class="nav-link" data-toggle="dropdown" href="#" role="button" title="البروفايل">
-                <img src="{{ $profileImage }}" class="rounded-circle" style="width:32px;height:32px;object-fit:cover;vertical-align:middle;">
-                <span class="ml-2 arabic">{{ $u->name ?? 'المشرف' }}</span>
+        @guest
+          <li class="nav-item">
+            <a class="nav-link" href="{{ route('login') }}">
+              <i class="bi bi-box-arrow-in-right me-1"></i> تسجيل الدخول
             </a>
-
-            <div class="dropdown-menu dropdown-menu-right">
-                <a href="{{ route('admin.profile') }}" class="dropdown-item arabic">
-                    <i class="fas fa-user"></i> الملف الشخصي
+          </li>
+          <li class="nav-item">
+            <a class="btn btn-primary btn-sm ms-lg-1 my-2 my-lg-0" href="{{ route('register') }}">
+              <i class="bi bi-person-plus me-1"></i> إنشاء حساب
+            </a>
+          </li>
+        @else
+          <li class="nav-item">
+            <a class="btn btn-outline-primary btn-sm ms-lg-1 my-2 my-lg-0"
+               href="{{ route('student.dashboard') }}">
+              <i class="bi bi-speedometer2 me-1"></i> لوحة الطالب
+            </a>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button"
+               data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="bi bi-person-circle me-1"></i>
+              <span>{{ auth()->user()->name ?? 'الملف' }}</span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li>
+                <a class="dropdown-item" href="{{ route('student.dashboard') }}">
+                  <i class="bi bi-grid me-2"></i> لوحة الطالب
                 </a>
-                <div class="dropdown-divider"></div>
-                <form action="{{ route('admin.logout') }}" method="POST" class="d-inline">
-                    @csrf
-                    <button type="submit" class="dropdown-item arabic">
-                        <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
-                    </button>
+              </li>
+              <li><hr class="dropdown-divider"></li>
+              <li>
+                <form method="POST" action="{{ route('logout') }}">
+                  @csrf
+                  <button class="dropdown-item">
+                    <i class="bi bi-box-arrow-right me-2"></i> تسجيل الخروج
+                  </button>
                 </form>
-            </div>
-        </li>
+              </li>
+            </ul>
+          </li>
+        @endguest
 
-        <li class="nav-item">
-            <a class="nav-link" data-widget="fullscreen" href="#" role="button" title="شاشة كاملة">
-                <i class="fas fa-expand-arrows-alt"></i>
-            </a>
-        </li>
-
-        <li class="nav-item">
-            <a href="{{ route('admin.settings.index') }}" class="nav-link arabic"><i class="fas fa-cogs"></i> الإعدادات</a>
-        </li>
-        <li class="nav-item">
-            <a href="{{ route('admin.navigation') }}" class="nav-link arabic"><i class="fas fa-th-large"></i> التنقل</a>
-        </li>
-
-        <li class="nav-item">
-            <a href="#" class="nav-link arabic"><i class="fas fa-language"></i> اللغة</a>
-        </li>
-    </ul>
+      </ul>
+    </div>
+  </div>
 </nav>

@@ -1,6 +1,8 @@
-<footer class="py-4 bg-light">
-  <div class="container d-flex flex-wrap justify-content-between align-items-center">
-    <span class="text-muted">© {{ date('Y') }} Campus</span>
-    <a href="{{ route('admin.dashboard') }}" class="small">لوحة التحكم</a>
+<footer class="border-top py-3">
+  <div class="container text-muted small d-flex justify-content-between">
+    <span>© {{ date('Y') }} —  المنهج الاكاديمي</span>
+    @if($currentUniversity)
+      <span>{{ $currentUniversity->address }} — {{ $currentUniversity->phone }}</span>
+    @endif
   </div>
 </footer>

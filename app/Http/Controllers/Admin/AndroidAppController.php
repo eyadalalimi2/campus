@@ -110,6 +110,8 @@ class AndroidAppController extends Controller
             'icon' => 'nullable|image|max:2048',
             'feature_image' => 'nullable|image|max:4096',
             'screenshots.*' => 'nullable|image|max:4096',
+            'delete_screenshots' => 'sometimes|array',
+            'delete_screenshots.*' => 'string',
             'video_url' => 'nullable|string',
             'video_cover_image' => 'nullable|image|max:4096',
             'short_description' => 'nullable|string|max:200',
@@ -142,13 +144,38 @@ class AndroidAppController extends Controller
             $app->apk_file_path = $request->file('apk_file')->store('apps', 'public');
         }
 
-        // screenshots (append new ones)
+        // screenshots: process deletions, then append new ones
         $shots = $app->screenshots ?? [];
+
+        // Handle delete_screenshots[] from the form
+        $toDelete = collect($request->input('delete_screenshots', []))
+            ->filter()
+            ->values()
+            ->all();
+        if (!empty($toDelete) && !empty($shots)) {
+            $remaining = [];
+            foreach ($shots as $path) {
+                if (in_array($path, $toDelete, true)) {
+                    try {
+                        Storage::disk('public')->delete($path);
+                    } catch (\Throwable $e) {
+                        // Ignore deletion errors
+                    }
+                    continue;
+                }
+                $remaining[] = $path;
+            }
+            $shots = $remaining;
+        }
+
+        // Append newly uploaded screenshots
         if ($request->hasFile('screenshots')) {
             foreach ($request->file('screenshots') as $file) {
                 $shots[] = $file->store('apps', 'public');
             }
         }
+        // De-duplicate and persist
+        $shots = array_values(array_unique($shots));
         $app->screenshots = $shots ?: null;
 
         $app->video_url = $data['video_url'] ?? null;
@@ -176,10 +203,11 @@ class AndroidAppController extends Controller
         return redirect()->route('admin.apps.index')->with('success', 'تم تحديث التطبيق');
     }
 
-    public function destroy(AndroidApp $app)
+    public function destroy(AndroidApp $androidApp)
     {
         // لا نحذف الملفات فعليًا هنا لتفادي فقدان غير مقصود، لكن يمكن حذفها إن أردت
-        $app->delete();
+        /** @var AndroidApp $androidApp */
+        $androidApp->delete();
         return redirect()->route('admin.apps.index')->with('success', 'تم حذف التطبيق');
     }
 }

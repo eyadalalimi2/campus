@@ -93,9 +93,56 @@
         @if(!empty($appModel?->screenshots))
             <div class="mt-2 d-flex gap-2 flex-wrap">
                 @foreach($appModel->screenshots as $s)
-                    <img src="{{ Storage::url($s) }}" alt="" style="height:80px; border-radius:.5rem">
+                    <div class="position-relative screenshot-item" data-path="{{ $s }}" style="display:inline-block">
+                        <img src="{{ Storage::url($s) }}" alt="" style="height:80px; border-radius:.5rem; display:block">
+                        <button type="button" class="btn btn-sm btn-danger screenshot-delete" title="حذف" aria-label="حذف اللقطة" style="position:absolute; top:-8px; right:-8px; border-radius:999px; width:28px; height:28px; display:flex; align-items:center; justify-content:center; padding:0">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+                                <path d="M10 11v6"></path>
+                                <path d="M14 11v6"></path>
+                                <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"></path>
+                            </svg>
+                        </button>
+                    </div>
                 @endforeach
             </div>
+            <script>
+                (function() {
+                    // Attach a single delegated handler for delete buttons within this section
+                    document.addEventListener('click', function(e) {
+                        var target = e.target;
+                        // If SVG inner element clicked, bubble up to the button
+                        if (target && !target.classList.contains('screenshot-delete')) {
+                            var btn = target.closest && target.closest('.screenshot-delete');
+                            if (btn) target = btn; else return;
+                        }
+                        if (target && target.classList.contains('screenshot-delete')) {
+                            e.preventDefault();
+                            var item = target.closest('.screenshot-item');
+                            if (!item) return;
+                            var path = item.getAttribute('data-path');
+                            if (!path) return;
+
+                            var confirmDelete = window.confirm('هل تريد حذف هذه اللقطة؟');
+                            if (!confirmDelete) return;
+
+                            // Find the closest form to append a hidden input
+                            var form = item.closest('form') || document.querySelector('form');
+                            if (!form) return;
+
+                            var input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = 'delete_screenshots[]';
+                            input.value = path;
+                            form.appendChild(input);
+
+                            // Remove the preview from UI
+                            item.parentNode && item.parentNode.removeChild(item);
+                        }
+                    }, { passive: false });
+                })();
+            </script>
         @endif
     </div>
 
